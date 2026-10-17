@@ -1502,6 +1502,51 @@ mod tests {
         assert_eq!(Pace::new(f64::NAN).tick_period(f64::NAN), PRESENT);
     }
 
+    /// What the worker's resampler makes of a second of a lockstep core's sound when each tick
+    /// lasts `tick`: the core's frames resampled at `Pace::sound_hz`, rated by the measured
+    /// tick against the present (`scale`, as `TickRate` measures it), with the queue on target.
+    fn samples_a_second(fps: f64, tick: Duration) -> f64 {
+        let av = AvInfo {
+            fps,
+            sample_rate: 32_768.0,
+        };
+        let pace = Pace::new(fps);
+        assert!(pace.lockstep());
+        let device_hz = 48_000.0;
+        let mut resampler = Resampler::new(pace.sound_hz(av), device_hz);
+        let scale = tick.as_secs_f64() / PRESENT.as_secs_f64();
+        resampler.set_ratio(drc_ratio(1, 1) * scale);
+        let ticks = (10.0 / tick.as_secs_f64()).round() as usize;
+        let per_frame = (av.sample_rate / fps).round() as usize;
+        let src = vec![0i16; per_frame * 2];
+        let (mut out, mut made) = (Vec::new(), 0usize);
+        for _ in 0..ticks {
+            resampler.process(&src, &mut out);
+            made += out.len() / 2;
+        }
+        let seconds = ticks as f64 * tick.as_secs_f64();
+        // a frame's sound rounded to whole samples, as a core hands it over
+        let rounding = per_frame as f64 * fps / av.sample_rate;
+        made as f64 / seconds / device_hz / rounding
+    }
+
+    #[test]
+    fn a_lockstep_cores_sound_keeps_real_time_paced_by_the_present_or_by_its_own_clock() {
+        for fps in [59.7275, 60.0988] {
+            for (how, tick) in [
+                ("a 60 Hz present", PRESENT),
+                ("its own clock at 120 Hz", Pace::new(fps).tick_period(fps)),
+            ] {
+                let rate = samples_a_second(fps, tick);
+                assert!(
+                    (rate - 1.0).abs() < 0.0005,
+                    "{fps} fps paced by {how} made {rate:.5} of real time's sound, which the \
+                     rate correction would have to make up"
+                );
+            }
+        }
+    }
+
     #[test]
     fn a_pal_game_runs_fifty_frames_a_second_on_a_60_hz_present() {
         let mut pace = Pace::new(50.0);
