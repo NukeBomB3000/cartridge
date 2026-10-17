@@ -17,6 +17,7 @@ use crate::audio::Ring;
 use crate::drc::{drc_ratio, drc_target};
 use crate::frames::{FrameRef, Frames};
 use crate::link_state;
+use crate::pacing::{native_period, FrameClock};
 use crate::persist::Snapshot;
 use crate::resample::Resampler;
 use crate::rewind::{RewindThread, REWIND_BYTES};
@@ -92,6 +93,16 @@ impl Pace {
         match self.per_present {
             None => steps,
             Some(per) => ((f64::from(steps) * per).round() as u32).max(1),
+        }
+    }
+
+    /// How long a tick of the frontend's own clock stands for, where it keeps one (a 120 Hz
+    /// panel): one of the core's frames, at the core's own rate, for a core in lockstep; the
+    /// 60 Hz present the pace counts in for any other, which then runs its frames by the pace.
+    pub fn tick_period(&self, fps: f64) -> Duration {
+        match self.lockstep() {
+            true => native_period(fps),
+            false => PRESENT,
         }
     }
 
@@ -195,6 +206,8 @@ struct Shared {
     driven: AtomicBool,
     locked: AtomicBool,
     present_ns: AtomicU64,
+    /// How long a tick stands for at the core's rate: `Pace::tick_period`.
+    frame_ns: AtomicU64,
     requested: AtomicBool,
     clock: Mutex<Clock>,
     clocked: Condvar,
@@ -281,6 +294,7 @@ impl EmuHandle {
             driven: AtomicBool::new(false),
             locked: AtomicBool::new(false),
             present_ns: AtomicU64::new(PRESENT.as_nanos() as u64),
+            frame_ns: AtomicU64::new(PRESENT.as_nanos() as u64),
             requested: AtomicBool::new(false),
             clock: Mutex::new(Clock::default()),
             clocked: Condvar::new(),
@@ -396,6 +410,18 @@ impl EmuHandle {
 
     pub fn locked(&self) -> bool {
         self.shared.locked.load(Ordering::Acquire)
+    }
+
+    /// How long one tick of the frontend's own clock stands for while this core is paced by
+    /// it: one of its frames at its own rate, or the 60 Hz present for a core far from 60.
+    pub fn frame_period(&self) -> Duration {
+        Duration::from_nanos(self.shared.frame_ns.load(Ordering::Relaxed))
+    }
+
+    pub fn frame_clock(&self) -> FrameClock {
+        FrameClock {
+            period: self.frame_period(),
+        }
     }
 
     pub fn tick(&self, present: Duration) {
@@ -639,6 +665,7 @@ impl Worker {
         self.shared.disc.store(core.disc_index(), Ordering::Release);
         let mut av = core.av_info();
         let mut pace = Pace::new(av.fps);
+        self.set_frame_period(pace.tick_period(av.fps));
         let device_hz = match ring.sample_rate() {
             0 => av.sample_rate,
             hz => hz as f64,
@@ -941,6 +968,7 @@ impl Worker {
                     );
                     av = latest;
                     pace = Pace::new(av.fps);
+                    self.set_frame_period(pace.tick_period(av.fps));
                     resampler = Resampler::new(pace.sound_hz(av), device_hz);
                 }
             }
@@ -994,6 +1022,12 @@ impl Worker {
         if dropped > 0 || starved > 0 || crate::session::trace() {
             eprintln!("omega-zero: audio: {dropped} samples dropped, {starved} starved");
         }
+    }
+
+    fn set_frame_period(&self, period: Duration) {
+        self.shared
+            .frame_ns
+            .store(period.as_nanos() as u64, Ordering::Relaxed);
     }
 
     fn apply(
@@ -1451,6 +1485,21 @@ mod tests {
             );
             assert_eq!(pace.fast(6), 6);
         }
+    }
+
+    #[test]
+    fn a_tick_of_the_frontends_own_clock_is_a_frame_in_lockstep_and_a_present_otherwise() {
+        let gba = 59.7275;
+        assert_eq!(Pace::new(gba).tick_period(gba), native_period(gba));
+        assert_eq!(
+            Pace::new(60.0988).tick_period(60.0988),
+            native_period(60.0988)
+        );
+        for fps in [50.0, 75.0] {
+            assert_eq!(Pace::new(fps).tick_period(fps), PRESENT, "{fps}");
+        }
+        assert_eq!(Pace::new(0.0).tick_period(0.0), PRESENT);
+        assert_eq!(Pace::new(f64::NAN).tick_period(f64::NAN), PRESENT);
     }
 
     #[test]
