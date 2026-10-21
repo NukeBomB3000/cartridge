@@ -16,7 +16,8 @@ pub use sfx::Sfx;
 pub use sink::{AudioError, AudioSink};
 pub use stub::StubSink;
 
-pub const GBA_HZ: u32 = 32_768;
+/// The rate the device is opened at: 48 kHz, which the resampler reaches without aliasing.
+pub const OUTPUT_HZ: u32 = 48_000;
 
 #[cfg(feature = "host")]
 pub fn open_sink() -> Box<dyn AudioSink> {

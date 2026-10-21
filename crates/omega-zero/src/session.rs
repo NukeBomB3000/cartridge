@@ -7,7 +7,7 @@ use omega_store::Platform;
 use omega_ui::FfState;
 
 use crate::app::{App, Phase};
-use crate::audio::{open_sink, AudioSink, Ring, Sfx, GBA_HZ};
+use crate::audio::{open_sink, AudioSink, Ring, Sfx, OUTPUT_HZ};
 use crate::core::{open, Setup};
 use crate::emu::{CoreState, EmuHandle, Speed};
 use crate::frames::FrameRef;
@@ -49,7 +49,7 @@ impl Drop for Session {
 impl Session {
     pub fn boot(root: PathBuf) -> Self {
         let mut sink: Box<dyn AudioSink> = open_sink();
-        if let Err(e) = sink.open(GBA_HZ) {
+        if let Err(e) = sink.open(OUTPUT_HZ) {
             eprintln!("omega-zero: audio: {e}");
         }
         Session {

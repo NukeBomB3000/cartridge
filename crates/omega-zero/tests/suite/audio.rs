@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use omega_retro::MockCore;
-use omega_zero::audio::{ring_capacity, AudioSink, Ring, StubSink, GBA_HZ};
+use omega_zero::audio::{ring_capacity, AudioSink, Ring, StubSink, OUTPUT_HZ};
 use omega_zero::emu::{CoreState, EmuHandle, Speed};
 
 fn ramp(frames: usize, from: i16) -> Vec<i16> {
@@ -232,7 +232,7 @@ fn a_cart_sound_is_not_held_back_by_the_cushion() {
 #[test]
 fn a_rewinding_core_does_not_report_the_device_as_starved() {
     let mut sink = StubSink::new();
-    sink.open(GBA_HZ).expect("the stub refused to open");
+    sink.open(OUTPUT_HZ).expect("the stub refused to open");
     let ring = sink.ring();
     let emu = EmuHandle::spawn(
         Box::new(MockCore::new()),
@@ -269,12 +269,12 @@ fn a_rewinding_core_does_not_report_the_device_as_starved() {
 #[test]
 fn the_cushion_at_an_odd_capacity_still_ends_on_a_frame() {
     assert_eq!(
-        ring_capacity(GBA_HZ) % 2,
+        ring_capacity(32_768) % 2,
         1,
         "this rate no longer has an odd capacity, so it no longer exercises the bug"
     );
-    let r = Ring::new(ring_capacity(GBA_HZ));
-    r.reopen(GBA_HZ);
+    let r = Ring::new(ring_capacity(32_768));
+    r.reopen(32_768);
 
     let mut cushion = vec![1i16; r.queued_frames() * 2];
     r.fill(&mut cushion);
