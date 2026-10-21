@@ -60,24 +60,17 @@ impl VideoMode {
     }
 }
 
-pub fn video_mode_for(root: &Path, stem: &str) -> VideoMode {
-    stored_video_mode(root, stem).unwrap_or_default()
-}
-
-/// The mode `stem`, a game of `platform`, is played in: the one it was left in, else its
-/// system's first.
-pub fn video_mode_for_platform(root: &Path, stem: &str, platform: Platform) -> VideoMode {
-    stored_video_mode(root, stem).unwrap_or_else(|| VideoMode::default_for(platform))
-}
-
-fn stored_video_mode(root: &Path, stem: &str) -> Option<VideoMode> {
-    ini::value(root, VIDEO_MODE_FILE, stem)
+/// The mode every game of `platform` is played in: the one its system was last left in, kept
+/// under the system's folder name, else its system's first.
+pub fn video_mode_for(root: &Path, platform: Platform) -> VideoMode {
+    ini::value(root, VIDEO_MODE_FILE, platform.dir_name())
         .as_deref()
         .and_then(VideoMode::parse)
+        .unwrap_or_else(|| VideoMode::default_for(platform))
 }
 
-pub fn write_video_mode(root: &Path, stem: &str, mode: VideoMode) -> std::io::Result<()> {
-    ini::write(root, VIDEO_MODE_FILE, stem, mode.as_str())
+pub fn write_video_mode(root: &Path, platform: Platform, mode: VideoMode) -> std::io::Result<()> {
+    ini::write(root, VIDEO_MODE_FILE, platform.dir_name(), mode.as_str())
 }
 
 /// The part of the game texture a picture mode shows: a Game Boy game's own window when it is

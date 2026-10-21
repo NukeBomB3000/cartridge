@@ -881,10 +881,10 @@ impl App {
             return;
         }
         self.video_mode = mode;
-        let (Some(root), Phase::Playing { cart }) = (self.root.clone(), &self.phase) else {
+        let (Some(root), Phase::Playing { .. }) = (self.root.clone(), &self.phase) else {
             return;
         };
-        if let Err(e) = video_mode::write_video_mode(&root, cart, mode) {
+        if let Err(e) = video_mode::write_video_mode(&root, self.platform, mode) {
             eprintln!("omega-zero: video: could not write video_mode.ini: {e}");
         }
     }

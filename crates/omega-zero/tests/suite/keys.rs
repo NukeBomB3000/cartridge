@@ -187,10 +187,7 @@ fn a_gba_game_keeps_l2_and_r2_from_the_game() {
 fn select_and_y_goes_round_a_snes_picture_s_three_sizes() {
     let d = root_with(Platform::Snes, "Chrono Trigger");
     let (mut s, mut now) = playing(&d, Platform::Snes, "Chrono Trigger");
-    assert_eq!(
-        video_mode_for(d.path(), "Chrono Trigger"),
-        VideoMode::Actual
-    );
+    assert_eq!(video_mode_for(d.path(), Platform::Snes), VideoMode::Actual);
 
     let chord = |s: &mut Session, now: &mut Millis| {
         step(s, now, Some(RawEvent::Down(Btn::Select)));
@@ -201,6 +198,6 @@ fn select_and_y_goes_round_a_snes_picture_s_three_sizes() {
     };
     for want in [VideoMode::Aspect, VideoMode::Stretch, VideoMode::Actual] {
         chord(&mut s, &mut now);
-        assert_eq!(video_mode_for(d.path(), "Chrono Trigger"), want);
+        assert_eq!(video_mode_for(d.path(), Platform::Snes), want);
     }
 }
