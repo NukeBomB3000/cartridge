@@ -57,7 +57,7 @@ fn boot(c: &mut Compositor) -> (TempDir, Frontend) {
     let platform = SimPlatform::at(d.path().to_path_buf()).stopped_at(1_790_784_000);
     let mut f = Frontend::boot(Box::new(platform));
     f.upload_faces(c);
-    f.start_opening(&Facts::default());
+    f.play_opening(&Facts::default());
     (d, f)
 }
 

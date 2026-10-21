@@ -227,6 +227,10 @@ impl Frontend {
         self.session.app_mut().start_opening(facts);
     }
 
+    pub fn play_opening(&mut self, facts: &Facts) {
+        self.session.app_mut().play_opening(facts);
+    }
+
     /// Once the boot logo has faded, its texture shrinks to a pixel and gives its memory back.
     fn drop_boot_logo(&mut self, compositor: &mut Compositor) {
         if self.session.app().boot_logo_alpha().is_some() {

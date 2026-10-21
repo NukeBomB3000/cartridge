@@ -36,7 +36,7 @@ fn booted_on_the_shelf() -> (TempDir, App) {
 
 fn opened() -> (TempDir, App) {
     let (d, mut a) = booted_on_the_shelf();
-    a.start_opening(&Facts::default());
+    a.play_opening(&Facts::default());
     assert!(a.opening_shown());
     (d, a)
 }
@@ -370,7 +370,7 @@ fn the_logo_fades_over_the_black_on_top_of_it() {
     let (_d, mut a) = booted_on_the_shelf();
     let logo = TexId::from_raw(900);
     a.set_boot_logo(logo, out_w(), out_h());
-    a.start_opening(&Facts::default());
+    a.play_opening(&Facts::default());
     a.update(FRAME);
     let mut out = Vec::new();
     a.draw(&mut out);
@@ -393,7 +393,7 @@ fn only_a_boot_onto_the_shelf_plays_it() {
     write_app_state(d.path(), &AppState::default()).unwrap();
     let (mut a, _) = app_booting_at(d.path(), CLOCK_IS_SET);
     assert!(matches!(a.phase(), Phase::SetClock { .. }));
-    a.start_opening(&Facts::default());
+    a.play_opening(&Facts::default());
     assert!(!a.opening_shown(), "the clock's first boot played it");
     let d = tmp_root_with_carts(&["Emerald"]);
     write_app_state(
@@ -406,6 +406,14 @@ fn only_a_boot_onto_the_shelf_plays_it() {
     )
     .unwrap();
     let (mut a, _) = app_booting_at(d.path(), CLOCK_IS_SET);
-    a.start_opening(&Facts::default());
+    a.play_opening(&Facts::default());
     assert!(!a.opening_shown(), "a boot back into a game played it");
+}
+
+#[test]
+fn a_boot_plays_no_opening_and_the_shelf_is_there_at_once() {
+    let (_d, mut a) = booted_on_the_shelf();
+    a.start_opening(&Facts::default());
+    assert!(!a.opening_shown(), "the boot played the opening");
+    assert_eq!(a.opening_levels(), None);
 }

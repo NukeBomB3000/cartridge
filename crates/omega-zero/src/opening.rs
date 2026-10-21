@@ -383,10 +383,16 @@ fn origin() -> (f32, f32) {
 }
 
 impl App {
+    /// Readies the start notice to name the handheld with `facts`. The opening itself is not
+    /// played: the boot goes from the bootloader's logo straight to the shelf, its twelve
+    /// seconds of terminal saved. `play_opening` still plays it.
+    pub fn start_opening(&mut self, facts: &Facts) {
+        self.tell_start_notice(facts);
+    }
+
     /// Plays the opening over the shelf from the next frame, telling `facts`. It is only
     /// played while the boot is still on the shelf it landed on, as the boot logo's fade is.
-    /// The start notice names the handheld as it does, whether it plays or not.
-    pub fn start_opening(&mut self, facts: &Facts) {
+    pub fn play_opening(&mut self, facts: &Facts) {
         self.tell_start_notice(facts);
         if self.boot_fades() {
             self.opening = Some(Opening::new(facts));

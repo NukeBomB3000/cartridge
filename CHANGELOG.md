@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The boot goes from the bootloader's logo straight to the shelf: the NOM ENGINEER terminal and
+  its fades, some twelve seconds, are no longer played. A start that failed still says so.
 - The GBA and Game Boy games blend each frame with the last, as the LCDs they were drawn for
   blurred them, so a game that flickers a sprite to draw it see-through, as F-Zero and the Boktai
   games do, shows it as it was meant to be seen. mGBA mixes the two frames and gpSP its frame

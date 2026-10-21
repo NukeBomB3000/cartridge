@@ -61,7 +61,7 @@ fn fallen() -> TempDir {
 /// Boots on `d`, the opening playing as the handheld plays it.
 fn booted(d: &TempDir) -> App {
     let (mut a, _) = app_booting_at(d.path(), CLOCK_IS_SET);
-    a.start_opening(&Facts::default());
+    a.play_opening(&Facts::default());
     a
 }
 
@@ -454,4 +454,19 @@ fn a_note_naming_a_game_no_longer_on_the_card_shows_nothing() {
         "the seated game was resumed after a crash: {:?}",
         a.phase()
     );
+}
+
+#[test]
+fn without_the_opening_the_notice_still_comes_up_in_place_of_the_shelf() {
+    let d = fallen();
+    let (mut a, _) = app_booting_at(d.path(), CLOCK_IS_SET);
+    a.start_opening(&Facts::default());
+    assert!(!a.opening_shown());
+    let mut ms = 0.0;
+    while !a.start_notice_prompted() {
+        a.update(FRAME);
+        ms += FRAME_MS;
+        assert!(ms < 5_000.0, "the prompt never came up");
+    }
+    assert!(a.start_notice_shown());
 }
