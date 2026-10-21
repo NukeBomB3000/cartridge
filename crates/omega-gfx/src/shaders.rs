@@ -224,6 +224,9 @@ vec2 grid_band(vec2 x) {
 float dot_weight(vec2 f, vec2 o, float bloom) {
     return exp(-4.0 * length(f - (o + vec2(0.5))) * bloom);
 }
+float grain(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
 void main() {
     vec2 texel = (u_uv.xy + v_uv * u_uv.zw) * u_src;
     vec2 from_centre = fract(texel) - 0.5;
@@ -232,7 +235,25 @@ void main() {
     vec3 c = texture2D(u_game, (floor(texel) + s) / u_src).rgb;
     vec2 f = fract(texel);
     float row = mod(floor(gl_FragCoord.y), 2.0);
-    if (u_mode > 4.5) {
+    vec2 hp = 0.5 / u_scale;
+    vec2 edge = (grid_band(f + hp) - grid_band(f - hp)) / (2.0 * hp);
+    float line = max(edge.x, edge.y);
+    float lum = dot(c, vec3(0.299, 0.587, 0.114));
+    if (u_mode > 7.5) {
+        float shade = clamp(floor(lum * 3.0 + 0.5), 0.0, 3.0);
+        vec3 p = shade < 0.5 ? vec3(0.06, 0.22, 0.06)
+            : (shade < 1.5 ? vec3(0.19, 0.38, 0.19)
+            : (shade < 2.5 ? vec3(0.55, 0.67, 0.06) : vec3(0.61, 0.74, 0.06)));
+        c = mix(p, vec3(0.58, 0.70, 0.08), 0.3 * line);
+    } else if (u_mode > 6.5) {
+        vec2 back = floor(texel - 0.35) + 0.5;
+        float under = dot(texture2D(u_game, back / u_src).rgb, vec3(0.299, 0.587, 0.114));
+        vec3 bg = vec3(0.82, 0.83, 0.78) * (1.0 - 0.22 * (1.0 - under));
+        c = mix(bg, c, (1.0 - 0.5 * lum) * (1.0 - 0.85 * line));
+    } else if (u_mode > 5.5) {
+        vec3 paper = vec3(0.88, 0.87, 0.81) * (0.96 + 0.04 * grain(floor(gl_FragCoord.xy)));
+        c = mix(paper, min(c * paper * 1.15, vec3(1.0)), 1.0 - 0.6 * line);
+    } else if (u_mode > 4.5) {
         c *= 1.0 - 0.35 * row;
         float m = mod(floor(gl_FragCoord.x), 3.0);
         vec3 mask = m < 0.5 ? vec3(1.0, 0.7, 0.7) : (m < 1.5 ? vec3(0.7, 1.0, 0.7) : vec3(0.7, 0.7, 1.0));
@@ -250,9 +271,7 @@ void main() {
         }
         c = mix(c, mix(1.2 * c * mid, c * sum, 0.85), 0.85);
     } else if (u_mode > 1.5) {
-        vec2 hp = 0.5 / u_scale;
-        vec2 edge = (grid_band(f + hp) - grid_band(f - hp)) / (2.0 * hp);
-        c *= 1.0 - 0.75 * max(edge.x, edge.y);
+        c *= 1.0 - 0.75 * line;
     } else if (u_mode > 0.5) {
         vec2 angle = f * 6.283185307;
         float yfactor = (16.0 + sin(angle.y)) / 17.0;

@@ -24,7 +24,8 @@ pub enum Filter {
 }
 
 /// A look laid over the game's picture as it is drawn, whatever its filter: none, the
-/// handhelds' LCD stripes, pixel grid or round dots, or a television's scanlines or CRT.
+/// handhelds' LCD stripes, pixel grid, round dots, paper, see-through pixels or the Game Boy's
+/// green, or a television's scanlines or CRT.
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
 pub enum Look {
     #[default]
@@ -34,16 +35,25 @@ pub enum Look {
     Dot,
     Scanlines,
     Crt,
+    /// Pixels printed over grained paper, simpletex_lcd's idea.
+    Simpletex,
+    /// Light pixels let a pale LCD background through, and dark ones cast a shadow onto it.
+    Transparent,
+    /// The Game Boy's four greens, over a faint grid.
+    Dmg,
 }
 
 impl Look {
-    pub const ALL: [Look; 6] = [
+    pub const ALL: [Look; 9] = [
         Look::Off,
         Look::Lcd,
         Look::Grid,
         Look::Dot,
         Look::Scanlines,
         Look::Crt,
+        Look::Simpletex,
+        Look::Transparent,
+        Look::Dmg,
     ];
 
     /// The look's number in the look shader's `u_mode`.
@@ -55,6 +65,9 @@ impl Look {
             Look::Dot => 3.0,
             Look::Scanlines => 4.0,
             Look::Crt => 5.0,
+            Look::Simpletex => 6.0,
+            Look::Transparent => 7.0,
+            Look::Dmg => 8.0,
         }
     }
 
@@ -66,6 +79,9 @@ impl Look {
             Look::Dot => "dot",
             Look::Scanlines => "scanlines",
             Look::Crt => "crt",
+            Look::Simpletex => "simpletex",
+            Look::Transparent => "transparent",
+            Look::Dmg => "dmg",
         }
     }
 

@@ -250,6 +250,10 @@ fn select_and_x_goes_round_a_handheld_s_looks_each_without_and_with_the_colour_c
         (Look::Grid, true),
         (Look::Dot, false),
         (Look::Dot, true),
+        (Look::Simpletex, false),
+        (Look::Simpletex, true),
+        (Look::Transparent, false),
+        (Look::Transparent, true),
         (Look::Off, false),
         (Look::Off, true),
     ] {
@@ -262,6 +266,19 @@ fn select_and_x_goes_round_a_handheld_s_looks_each_without_and_with_the_colour_c
         .unwrap()
         .contains("GBC = off_cc"));
     assert_eq!(colour_for(d.path(), Platform::Gba), None);
+}
+
+#[test]
+fn the_game_boy_s_greens_come_once_without_the_colour_correction() {
+    use omega_zero::shader::next_look;
+    assert_eq!(
+        next_look(Platform::Gb, Look::Transparent, true),
+        (Look::Dmg, false)
+    );
+    assert_eq!(
+        next_look(Platform::Gb, Look::Dmg, false),
+        (Look::Off, false)
+    );
 }
 
 #[test]
@@ -278,13 +295,22 @@ fn a_handheld_s_game_starts_in_the_colour_correction_its_system_was_left_in() {
 
 #[test]
 fn each_system_offers_its_own_screen_s_looks() {
-    for p in [Platform::Gba, Platform::Gb, Platform::Gbc] {
-        assert_eq!(
-            looks_for(p),
-            [Look::Off, Look::Lcd, Look::Grid, Look::Dot],
-            "{p:?}"
-        );
+    let handheld = [
+        Look::Off,
+        Look::Lcd,
+        Look::Grid,
+        Look::Dot,
+        Look::Simpletex,
+        Look::Transparent,
+    ];
+    for p in [Platform::Gba, Platform::Gbc] {
+        assert_eq!(looks_for(p), handheld, "{p:?}");
     }
+    assert_eq!(
+        looks_for(Platform::Gb),
+        [handheld.as_slice(), &[Look::Dmg]].concat(),
+        "only the Game Boy has its greens"
+    );
     for p in [
         Platform::Snes,
         Platform::Nes,

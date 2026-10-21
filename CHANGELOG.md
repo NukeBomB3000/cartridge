@@ -8,6 +8,9 @@
   screen. L1 and R1 on the Game Boys still stretch and unstretch.
 - The colour correction goes round with the handhelds' looks on SELECT+X, each look without it
   and then with it (Off, Off CC, LCD, LCD CC, Grid, Grid CC, Dot, Dot CC), kept per system.
+- Three more handheld looks on SELECT+X, each one pass: Simpletex, pixels printed over grained
+  paper; Transparent, light pixels letting a pale LCD background through with dark ones casting
+  a shadow on it; and, on the Game Boy only, DMG, its four greens over a faint grid.
 - A handheld's look Off draws the picture with nothing over it; the LCD mask no longer stayed
   over it at 3x.
 - A game ScreenScraper knows but has no scan of the label for wears its box's front instead, cut

@@ -12,12 +12,28 @@ pub const SHADER_FILE: &str = "Config/shader.ini";
 const CC: &str = "_cc";
 
 /// The looks SELECT+X goes round for `platform`, none first: a handheld's LCD stripes, pixel
-/// grid and round dots, or a television's scanlines and CRT.
+/// grid, round dots, paper and see-through pixels, and on the Game Boy its greens; or a
+/// television's scanlines and CRT.
 pub fn looks_for(platform: Platform) -> &'static [Look] {
+    const HANDHELD: [Look; 6] = [
+        Look::Off,
+        Look::Lcd,
+        Look::Grid,
+        Look::Dot,
+        Look::Simpletex,
+        Look::Transparent,
+    ];
     match platform {
-        Platform::Gba | Platform::Gb | Platform::Gbc => {
-            &[Look::Off, Look::Lcd, Look::Grid, Look::Dot]
-        }
+        Platform::Gb => &[
+            Look::Off,
+            Look::Lcd,
+            Look::Grid,
+            Look::Dot,
+            Look::Simpletex,
+            Look::Transparent,
+            Look::Dmg,
+        ],
+        Platform::Gba | Platform::Gbc => &HANDHELD,
         Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md => {
             &[Look::Off, Look::Scanlines, Look::Crt]
         }
@@ -26,9 +42,10 @@ pub fn looks_for(platform: Platform) -> &'static [Look] {
 
 /// The look and colour correction after `look` and `cc` for `platform`: on a handheld each look
 /// comes without the correction and then with it, round to none without it after the last; a
-/// television's console has no correction to go round.
+/// television's console has no correction to go round, nor the Game Boy's greens, which have
+/// colours of their own.
 pub fn next_look(platform: Platform, look: Look, cc: bool) -> (Look, bool) {
-    if platform.colour_correction() && !cc {
+    if platform.colour_correction() && !cc && look != Look::Dmg {
         return (look, true);
     }
     let looks = looks_for(platform);
