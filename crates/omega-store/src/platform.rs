@@ -8,15 +8,17 @@ pub enum Platform {
     Gbc,
     Snes,
     Ps1,
+    Pce,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 5] = [
+    pub const ALL: [Platform; 6] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
         Platform::Snes,
         Platform::Ps1,
+        Platform::Pce,
     ];
 
     pub fn name(self) -> &'static str {
@@ -26,6 +28,7 @@ impl Platform {
             Platform::Gbc => "Game Boy Color",
             Platform::Snes => "Super Nintendo",
             Platform::Ps1 => "PlayStation",
+            Platform::Pce => "PC Engine",
         }
     }
 
@@ -36,6 +39,7 @@ impl Platform {
             Platform::Gbc => "GBC",
             Platform::Snes => "SNES",
             Platform::Ps1 => "PS1",
+            Platform::Pce => "PCE",
         }
     }
 
@@ -45,6 +49,7 @@ impl Platform {
             Platform::Gb | Platform::Gbc => &["gb", "gbc"],
             Platform::Snes => &["sfc", "smc"],
             Platform::Ps1 => &["cue", "chd", "pbp", "m3u"],
+            Platform::Pce => &["pce"],
         }
     }
 
@@ -54,6 +59,7 @@ impl Platform {
             Platform::Gb | Platform::Gbc => (160, 144),
             Platform::Snes => (256, 224),
             Platform::Ps1 => (320, 240),
+            Platform::Pce => (256, 240),
         }
     }
 
@@ -76,7 +82,7 @@ impl Platform {
     /// Whether SELECT+Y switches the picture between its actual size and stretched: on the
     /// television's consoles, which have no colour correction and a picture of their own shape.
     pub fn picture_toggle(self) -> bool {
-        matches!(self, Platform::Snes | Platform::Ps1)
+        matches!(self, Platform::Snes | Platform::Ps1 | Platform::Pce)
     }
 
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states

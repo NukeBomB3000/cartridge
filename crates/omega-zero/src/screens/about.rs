@@ -39,8 +39,8 @@ pub const AUTHOR: &str = "@OAURAMOS";
 pub const CREDITS: [&str; 8] = [
     "Emulation by mGBA (MPL-2.0), gpSP (GPL-2.0),",
     "Snes9x (no commercial use), Mednafen's",
-    "Supafaust and PCSX-ReARMed (both GPL-2.0).",
-    "Made on BaseOS by pvaibhav.",
+    "Supafaust, Beetle PCE Fast, PCSX-ReARMed",
+    "(all GPL-2.0). Made on BaseOS by pvaibhav.",
     "Type is Pixel Code by Qwerasd.",
     "Panel mask from GigaHerz's LCD3x.",
     "Labels: ScreenScraper. Built with Claude.",

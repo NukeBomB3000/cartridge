@@ -204,6 +204,7 @@ pub fn system_id(platform: Platform) -> u32 {
         Platform::Gbc => 10,
         Platform::Snes => 4,
         Platform::Ps1 => 57,
+        Platform::Pce => 31,
     }
 }
 
@@ -342,6 +343,8 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
             }
             out.extend(["wor", "us", "eu", "jp"]);
         }
+        // a HuCard is the PC Engine's from Japan before it is the TurboGrafx-16's
+        Platform::Pce => out.extend(["jp", "wor", "us", "eu"]),
     }
     once_each(out)
 }
@@ -396,14 +399,14 @@ pub struct Lookup {
 /// image far more than this.
 const CUE_MAX: u64 = 64 * 1024;
 
-/// The copier header some SNES dumps start with, which leaves the file 512 bytes past a whole
+/// The copier header some SNES and PC Engine dumps start with, which leaves the file 512 bytes past a whole
 /// number of KiB.
 const COPIER: u64 = 512;
 
 /// The ways `want` is asked about, tried in turn while ScreenScraper knows none of them.
 ///
 /// A cart is asked about by the CRC of all of it, its name and size; a SNES dump with a copier
-/// header in front, which ScreenScraper keeps both with and without, also by the CRC and size
+/// header in front (or a PC Engine one), which ScreenScraper keeps both with and without, also by the CRC and size
 /// of the ROM after it. A PlayStation disc is never read whole, hundreds of megabytes taking
 /// far too long on the console: it is asked about by its cue sheet's CRC (ScreenScraper keeps
 /// the cue sheets of the discs it knows, a few hundred bytes each), then by the serial printed
@@ -429,7 +432,8 @@ pub fn lookups(want: &Want) -> Vec<Lookup> {
             serial: None,
         };
         let mut out = vec![whole.clone()];
-        if want.platform == Platform::Snes && whole.size % 1024 == COPIER {
+        let copied = matches!(want.platform, Platform::Snes | Platform::Pce);
+        if copied && whole.size % 1024 == COPIER {
             let rom = &bytes[COPIER as usize..];
             out.push(Lookup {
                 crc: Some(crc32(rom)),

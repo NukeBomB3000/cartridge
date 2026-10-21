@@ -10,16 +10,20 @@ vars:
   SNES9X_HOST: vendor/snes9x_libretro.dylib
   SUPAFAUST_HOST: vendor/mednafen_supafaust_libretro.dylib
   PCSX_HOST: vendor/pcsx_rearmed_libretro.dylib
+  PCE_FAST_HOST: vendor/mednafen_pce_fast_libretro.dylib
   MGBA_COMMIT: e31759b24e7a4e3899285ff720d7b573ac328ae7
   GPSP_COMMIT: 7b2dd37394e2822110cacef321e9bb291a305b77
   SNES9X_COMMIT: fae2fea08f74180759ef540ee94259213f503480
   SUPAFAUST_COMMIT: 642d1d1b6684aa7e306a02a89885f3f5456a5157
   PCSX_COMMIT: c8816799b50388e61cfe237fe2cdbb7d8175f20a
+  PCE_FAST_COMMIT: 3f946f277aef3aa99a95551618bbcd1dd2bda0d9
   # The libretro names of the cores the device bundle ships, <name>_libretro.so in System/
-  DEVICE_CORES: mgba gpsp snes9x mednafen_supafaust pcsx_rearmed
+  DEVICE_CORES: mgba gpsp snes9x mednafen_supafaust pcsx_rearmed mednafen_pce_fast
   # The cores built by cores/<name>/build.sh whose source archive ships in System/licenses/
   # beside them, as <name>:<libretro name>. gpSP's ships too, the way it always has
-  SOURCE_CORES: snes9x:snes9x supafaust:mednafen_supafaust pcsx_rearmed:pcsx_rearmed
+  SOURCE_CORES: >-
+    snes9x:snes9x supafaust:mednafen_supafaust pcsx_rearmed:pcsx_rearmed
+    pce_fast:mednafen_pce_fast
 
 tasks:
   default:
@@ -124,14 +128,15 @@ tasks:
 
   core:
     desc: >-
-      Build mGBA and Supafaust and fetch gpSP, Snes9x and pcsx_rearmed for this host. A missing
-      core silently runs the mock (a test pattern and a sine tone) instead
+      Build mGBA and Supafaust and fetch gpSP, Snes9x, pcsx_rearmed and Beetle PCE Fast for this
+      host. A missing core silently runs the mock (a test pattern and a sine tone) instead
     cmds:
       - task: core:mgba:host
       - task: core:gpsp:host
       - task: core:snes9x:host
       - task: core:supafaust:host
       - task: core:pcsx:host
+      - task: core:pce_fast:host
 
   core:mgba:host:
     desc: Build mgba_libretro for this host from the pinned libretro/mgba commit and cores/mgba's patches
@@ -160,6 +165,12 @@ tasks:
     cmds:
       - task: core:buildbot
         vars: {LIB: pcsx_rearmed}
+
+  core:pce_fast:host:
+    desc: Fetch the host Beetle PCE Fast core from the libretro buildbot
+    cmds:
+      - task: core:buildbot
+        vars: {LIB: mednafen_pce_fast}
 
   core:supafaust:host:
     desc: >-
@@ -203,12 +214,14 @@ tasks:
 
   core:src:
     desc: >-
-      Fetch libretro/NAME's source archive at COMMIT into vendor/NAME-src.tar.gz, checking it
-      holds FILE, and note the commit beside it in vendor/NAME-src.sha
+      Fetch libretro/REPO's source archive at COMMIT into vendor/NAME-src.tar.gz, checking it
+      holds FILE, and note the commit beside it in vendor/NAME-src.sha. REPO defaults to NAME
     internal: true
     run: when_changed
     requires:
       vars: [NAME, COMMIT, FILE]
+    vars:
+      REPO: '{{.REPO | default .NAME}}'
     status:
       - test -f vendor/{{.NAME}}-src.tar.gz
       - test "$(cat vendor/{{.NAME}}-src.sha 2>/dev/null)" = "{{.COMMIT}}"
@@ -218,8 +231,8 @@ tasks:
         mkdir -p vendor
         rm -f vendor/{{.NAME}}-src.tar.gz vendor/{{.NAME}}-src.sha
         curl -fsSL -o vendor/{{.NAME}}-src.tar.gz \
-          "https://github.com/libretro/{{.NAME}}/archive/{{.COMMIT}}.tar.gz"
-        tar -tzf vendor/{{.NAME}}-src.tar.gz | grep "^{{.NAME}}-{{.COMMIT}}/{{.FILE}}$" > /dev/null
+          "https://github.com/libretro/{{.REPO}}/archive/{{.COMMIT}}.tar.gz"
+        tar -tzf vendor/{{.NAME}}-src.tar.gz | grep "^{{.REPO}}-{{.COMMIT}}/{{.FILE}}$" > /dev/null
         echo "{{.COMMIT}}" > vendor/{{.NAME}}-src.sha
 
   core:update:
@@ -229,7 +242,7 @@ tasks:
     cmds:
       - >-
         rm -f {{.CORE}} {{.CORE}}.meta {{.GPSP_HOST}} {{.SNES9X_HOST}} {{.SUPAFAUST_HOST}}
-        {{.SUPAFAUST_HOST}}.meta {{.PCSX_HOST}}
+        {{.SUPAFAUST_HOST}}.meta {{.PCSX_HOST}} {{.PCE_FAST_HOST}}
       - task: core
 
   icons:
@@ -322,7 +335,7 @@ tasks:
       - cp target/release/omega-zero {{.OUT}}/System/omega-zero
       - >-
         cp {{.CORE}} {{.GPSP_HOST}} {{.SNES9X_HOST}} {{.SUPAFAUST_HOST}} {{.PCSX_HOST}}
-        {{.OUT}}/System/
+        {{.PCE_FAST_HOST}} {{.OUT}}/System/
       - 'echo "dist ready at {{.OUT}}, copy its contents to SD2"'
 
   core:device:
@@ -464,9 +477,66 @@ tasks:
         vendor/pcsx_rearmed-src.tar.gz vendor/pcsx_rearmed-src.sha
       - task: core:pcsx
 
+  core:pce_fast:
+    desc: >-
+      Build the aarch64 linux Beetle PCE Fast core from its pinned source archive, which ships
+      beside it as its GPL-2.0 section 3(a) corresponding source
+    status:
+      - test -f vendor/mednafen_pce_fast_libretro.so
+      - test "$(cat vendor/pce_fast-src.sha 2>/dev/null)" = "{{.PCE_FAST_COMMIT}}"
+      - test "$(cat vendor/mednafen_pce_fast_libretro.so.meta 2>/dev/null)" = "$(sh cores/pce_fast/build.sh stamp {{.PCE_FAST_COMMIT}})"
+    cmds:
+      - task: core:src
+        vars:
+          NAME: pce_fast
+          REPO: beetle-pce-fast-libretro
+          COMMIT: '{{.PCE_FAST_COMMIT}}'
+          FILE: Makefile
+      - task: device:sh
+        vars:
+          CMD: >-
+            sh cores/pce_fast/build.sh build {{.PCE_FAST_COMMIT}} vendor/pce_fast-src.tar.gz
+            target-device/pce_fast vendor/mednafen_pce_fast_libretro.so
+      - file vendor/mednafen_pce_fast_libretro.so | grep -q aarch64
+      - >-
+        echo "built vendor/mednafen_pce_fast_libretro.so from vendor/pce_fast-src.tar.gz @
+        {{.PCE_FAST_COMMIT}}"
+
+  core:pce_fast:cross:
+    desc: >-
+      core:pce_fast on an x86_64 host without arm64 emulation: cross-compiled in an amd64
+      container with the aarch64 toolchain
+    cmds:
+      - task: core:src
+        vars:
+          NAME: pce_fast
+          REPO: beetle-pce-fast-libretro
+          COMMIT: '{{.PCE_FAST_COMMIT}}'
+          FILE: Makefile
+      - |
+        set -eu
+        docker run --rm --platform linux/amd64 -v "$PWD":/src -w /src rust:1-bullseye sh -c '
+          set -e
+          apt-get update -qq
+          apt-get install -y -qq g++-aarch64-linux-gnu >/dev/null
+          CROSS=aarch64-linux-gnu- sh cores/pce_fast/build.sh build {{.PCE_FAST_COMMIT}} \
+            vendor/pce_fast-src.tar.gz target-device/pce_fast vendor/mednafen_pce_fast_libretro.so
+          chown -R '"$(id -u):$(id -g)"' vendor target-device'
+      - file vendor/mednafen_pce_fast_libretro.so | grep -q aarch64
+
+  core:pce_fast:update:
+    desc: Refetch Beetle PCE Fast's source archive and rebuild the device core from it, even if the set is current
+    cmds:
+      - >-
+        rm -f vendor/mednafen_pce_fast_libretro.so vendor/mednafen_pce_fast_libretro.so.meta
+        vendor/pce_fast-src.tar.gz vendor/pce_fast-src.sha
+      - task: core:pce_fast
+
   cores:device:
-    desc: Build every core the device bundle ships, mGBA, gpSP, Snes9x, Supafaust and pcsx_rearmed
-    deps: [core:device, core:gpsp, core:snes9x, core:supafaust, core:pcsx]
+    desc: >-
+      Build every core the device bundle ships, mGBA, gpSP, Snes9x, Supafaust, pcsx_rearmed and
+      Beetle PCE Fast
+    deps: [core:device, core:gpsp, core:snes9x, core:supafaust, core:pcsx, core:pce_fast]
 
   device:sh:
     desc: >-

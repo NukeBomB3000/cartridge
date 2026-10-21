@@ -133,7 +133,7 @@ fn the_picture_is_the_game_s_own_window_inside_its_view() {
 
 use omega_zero::video_mode::{picture_rect, screen_on_frame};
 
-const CONSOLES: [Platform; 2] = [Platform::Snes, Platform::Ps1];
+const CONSOLES: [Platform; 3] = [Platform::Snes, Platform::Ps1, Platform::Pce];
 
 /// Every picture size the SNES and the PlayStation draw.
 const FRAMES: [(u32, u32); 10] = [
@@ -193,7 +193,7 @@ fn a_snes_game_showing_its_overscan_is_still_twice_its_size() {
 
 #[test]
 fn a_console_kept_to_its_aspect_takes_a_television_s_shape() {
-    for platform in [Platform::Snes, Platform::Ps1] {
+    for platform in [Platform::Snes, Platform::Pce, Platform::Ps1] {
         for (c, rect) in [
             (Canvas::FOUR_THREE, [0.0, 0.0, 640.0, 480.0]),
             (Canvas::WIDE, [40.0, 0.0, 640.0, 480.0]),
@@ -208,7 +208,7 @@ fn a_console_kept_to_its_aspect_takes_a_television_s_shape() {
 
 #[test]
 fn a_stretched_console_fills_the_canvas() {
-    for platform in [Platform::Snes, Platform::Ps1] {
+    for platform in [Platform::Snes, Platform::Pce, Platform::Ps1] {
         for c in Canvas::ALL {
             let s = screen_on_frame(c, platform, VideoMode::Stretch, (256, 224));
             assert_eq!(
@@ -247,7 +247,7 @@ fn select_y_goes_round_integer_aspect_and_stretch() {
     assert_eq!(VideoMode::Aspect.next(), VideoMode::Stretch);
     assert_eq!(VideoMode::Stretch.next(), VideoMode::Actual);
     assert_eq!(VideoMode::default_for(Platform::Ps1), VideoMode::Aspect);
-    for p in [Platform::Snes, Platform::Gba, Platform::Gb] {
+    for p in [Platform::Snes, Platform::Pce, Platform::Gba, Platform::Gb] {
         assert_eq!(VideoMode::default_for(p), VideoMode::Actual, "{p:?}");
     }
     for m in [VideoMode::Actual, VideoMode::Aspect, VideoMode::Stretch] {
@@ -346,6 +346,20 @@ fn before_its_first_frame_a_console_game_is_laid_out_for_its_usual_picture() {
             assert_eq!(
                 screen_on(c, platform, VideoMode::Actual),
                 screen_on_frame(c, platform, VideoMode::Actual, platform.picture())
+            );
+        }
+    }
+}
+
+#[test]
+fn a_pc_engine_game_is_twice_its_size_as_a_snes_game_is() {
+    for c in Canvas::ALL {
+        for frame in [(256, 240), (320, 240), (352, 240), (512, 240)] {
+            let s = screen_on_frame(c, Platform::Pce, VideoMode::Actual, frame);
+            assert_eq!(
+                (s.view.rect[2], s.view.rect[3]),
+                (512.0, 480.0),
+                "{c:?} {frame:?}"
             );
         }
     }

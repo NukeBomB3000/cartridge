@@ -67,7 +67,7 @@ impl ControlsView {
         match platform {
             Platform::Gba | Platform::Gb | Platform::Gbc => game.push(("SELECT+MENU", "LINK")),
             Platform::Ps1 => game.push(("SELECT+MENU", "DISC")),
-            Platform::Snes => {}
+            Platform::Snes | Platform::Pce => {}
         }
         game.extend([
             ("SELECT+▲▼", "BRIGHTNESS"),

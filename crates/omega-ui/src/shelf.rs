@@ -21,7 +21,7 @@ pub const GB_SHELF_SCALE: f32 = 0.8;
 /// How big a cart for `platform` stands on the shelf, as a share of its own size.
 pub fn shelf_scale(platform: Platform) -> f32 {
     match platform {
-        Platform::Gba => 1.0,
+        Platform::Gba | Platform::Pce => 1.0,
         Platform::Gb | Platform::Gbc => GB_SHELF_SCALE,
         Platform::Snes => snes::SHELF_SCALE,
         Platform::Ps1 => disc::SHELF_SCALE,
