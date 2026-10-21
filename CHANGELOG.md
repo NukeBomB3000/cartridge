@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A Game Boy cart's clock is kept in its .sav after the save RAM, as other emulators write it,
+  so Pokemon Gold, Silver and Crystal keep their time.
 - Loading a state while a GBA game is saving to a 128 KB flash chip, as Pokemon Ruby, Sapphire
   and Emerald and Super Mario Advance 4 have, no longer writes the save into the wrong half of the
   chip: mGBA keeps the chip's bank through the load (slot's patch).
