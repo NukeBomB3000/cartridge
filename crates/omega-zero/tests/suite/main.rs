@@ -63,6 +63,7 @@ mod play_rules;
 mod polaroids;
 mod power;
 mod power_screens;
+mod prefetch;
 mod refusal;
 mod render;
 mod render_about;

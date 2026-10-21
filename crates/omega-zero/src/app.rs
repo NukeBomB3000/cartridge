@@ -607,6 +607,15 @@ impl App {
         }
     }
 
+    /// The ROM of the cart the shelf rests on, while the shelf is what shows.
+    pub fn browsed_rom(&self) -> Option<&std::path::Path> {
+        if !matches!(self.phase, Phase::Shelf) {
+            return None;
+        }
+        let shelf = self.shelf();
+        shelf.carts.get(shelf.index).map(|c| c.rom.as_path())
+    }
+
     pub(crate) fn shelf(&self) -> &Shelf {
         &self.shelves[self.shelf_at].1
     }

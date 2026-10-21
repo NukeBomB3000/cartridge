@@ -32,6 +32,7 @@ pub mod nav;
 pub mod opening;
 pub mod pacing;
 pub mod persist;
+pub mod prefetch;
 pub mod resample;
 pub mod rewind;
 pub mod root;

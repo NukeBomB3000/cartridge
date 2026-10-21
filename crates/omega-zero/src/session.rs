@@ -13,6 +13,7 @@ use crate::emu::{CoreState, EmuHandle, Speed};
 use crate::frames::FrameRef;
 use crate::input::Pad;
 use crate::persist;
+use crate::prefetch::Prefetch;
 
 /// How many frames a core runs before the card stops noting it as opening: two seconds, well
 /// past the first frame, where a core that cannot take its options gives up.
@@ -34,6 +35,8 @@ pub struct Session {
     running: Option<(Platform, String)>,
     /// The card notes the core as opening, until it has run a moment.
     starting: bool,
+    /// The cart the shelf rests on, read ahead.
+    prefetch: Prefetch,
 }
 
 impl Drop for Session {
@@ -66,6 +69,7 @@ impl Session {
             driven: false,
             running: None,
             starting: false,
+            prefetch: Prefetch::default(),
         }
     }
 
@@ -299,6 +303,13 @@ impl Session {
         self.sync_ff_hud();
         self.sync_rumble();
         self.sync_pad();
+        let now = self.app.now();
+        self.prefetch.browse(self.app.browsed_rom(), now);
+    }
+
+    /// The ROM being read ahead, if one is.
+    pub fn prefetching(&self) -> Option<&std::path::Path> {
+        self.prefetch.reading()
     }
 
     fn sync_rumble(&mut self) {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Games start sooner: resting on a cart on the shelf for half a second reads its ROM ahead into
+  memory, so inserting it no longer waits on the card. A PlayStation disc is left alone.
 - When the card turns read-only, a toast says so every 10 seconds, and SELECT+START repairs it:
   omega-zero hands the card to repair.sh, which unmounts it, runs fsck.fat or fsck.exfat until
   it comes back clean and reboots; the next boot says whether it worked. It waits for 20 %
