@@ -343,8 +343,17 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
             }
             out.extend(["wor", "us", "eu", "jp"]);
         }
-        // a HuCard is the PC Engine's from Japan before it is the TurboGrafx-16's
-        Platform::Pce => out.extend(["jp", "wor", "us", "eu"]),
+        // the label suits the card it is drawn on, as the shell does: an American game's black
+        // TurboChip takes an American label, any other game's HuCard a Japanese one
+        Platform::Pce => {
+            if Region::from_tags(&want.stem) == Some(Region::Usa) {
+                out.retain(|r| AMERICA.contains(r) || *r == "wor");
+                out.extend(["us", "wor", "jp", "eu"]);
+            } else {
+                out.retain(|r| !AMERICA.contains(r));
+                out.extend(["jp", "wor", "eu", "us"]);
+            }
+        }
     }
     once_each(out)
 }

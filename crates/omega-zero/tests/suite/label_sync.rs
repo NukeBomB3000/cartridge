@@ -965,3 +965,56 @@ fn a_disc_no_way_of_asking_finds_is_not_on_screenscraper() {
         }))
     );
 }
+
+#[test]
+fn a_pc_engine_label_suits_the_card_it_is_drawn_on() {
+    let pce = |stem: &str| {
+        Want::cart(&cart(
+            Platform::Pce,
+            stem,
+            PathBuf::from(format!("/nowhere/{stem}.pce")),
+            None,
+        ))
+    };
+    assert_eq!(
+        label_regions(&pce("Bonk's Adventure (USA)")),
+        ["us", "wor", "jp", "eu"]
+    );
+    assert_eq!(
+        label_regions(&pce("PC Genjin (Japan)")),
+        ["jp", "wor", "eu", "us"]
+    );
+    assert_eq!(
+        label_regions(&pce("Gomola Speed")),
+        ["jp", "wor", "eu", "us"]
+    );
+    assert_eq!(
+        label_regions(&pce("R-Type (Japan, USA)"))[0],
+        "jp",
+        "a pale HuCard took an American label first"
+    );
+}
+
+#[test]
+fn a_hucard_is_asked_about_as_system_31_and_a_headered_dump_without_its_header_too() {
+    let root = tempfile::tempdir().unwrap();
+    let rom = root.path().join("Games/PCE/Bonk's Adventure (USA).pce");
+    touch(&rom, &vec![0x11_u8; 2048]);
+    let card = cart(Platform::Pce, "Bonk's Adventure (USA)", rom, None);
+    let asked = lookups(&Want::cart(&card));
+    assert_eq!(asked.len(), 1);
+    assert_eq!((asked[0].system, asked[0].kind), (31, "rom"));
+    assert!(game_url(("id", "pw"), &Account::default(), &asked[0]).contains("systemeid=31"));
+
+    let headered = root.path().join("Games/PCE/PC Genjin (Japan).pce");
+    let mut dump = vec![0u8; 512];
+    dump.extend(vec![0x22_u8; 2048]);
+    touch(&headered, &dump);
+    let card = cart(Platform::Pce, "PC Genjin (Japan)", headered, None);
+    let asked = lookups(&Want::cart(&card));
+    assert_eq!(asked.len(), 2);
+    assert_eq!(
+        (asked[1].crc, asked[1].size),
+        (Some(crc32(&dump[512..])), 2048)
+    );
+}

@@ -5,8 +5,10 @@
 - PC Engine games play from `Games/PCE`, HuCards as `.pce` files, on Beetle PCE Fast (Mednafen's
   pce_fast, GPL-2.0), which ships with its source in `System/licenses/`. The picture is laid out
   as the SNES's, twice its size, 4:3 or stretched with SELECT+Y, and labels come from
-  ScreenScraper. Until the HuCard's own model lands, a PC Engine game stands on the shelf as a
-  GBA cart.
+  ScreenScraper.
+- A PC Engine game stands on the shelf as a HuCard, 54 by 85 mm, its label across most of its
+  face: pale grey for a Japanese game, a black TurboChip for an American one, its label from
+  ScreenScraper taken from the same region as the card.
 - SELECT+X in a game steps through screen looks for its system, kept per system in
   `Config/shader.ini`: off, LCD, grid and dot for the Game Boys and the GBA, ported from slot's
   ports of the libretro shaders, and off, scanlines and CRT for the SNES and the PlayStation.
