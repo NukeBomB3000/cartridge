@@ -11,6 +11,8 @@ fn a_choice_reads_back_as_itself() {
         Outline::Sfc,
         Outline::Nes,
         Outline::Famicom,
+        Outline::MegaDrive,
+        Outline::Genesis,
     ] {
         for finish in [ShellFinish::Solid, ShellFinish::Clear, ShellFinish::Glitter] {
             for colour in [[0, 0, 0], [0xff, 0xff, 0xff], [0x86, 0xb9, 0xbf]] {
@@ -186,4 +188,13 @@ fn the_nes_shapes_read_as_the_game_pak_and_the_famicom_cart() {
     assert_eq!(famicom.outline, Outline::Famicom);
     assert_eq!(famicom.colour, [0xe8, 0xc3, 0x3a]);
     assert_eq!(famicom.to_value(), "famicom e8c33a solid");
+}
+
+#[test]
+fn the_mega_drive_shapes_read_as_the_mega_drive_cart_and_the_genesis_one() {
+    let md = ShellChoice::parse("megadrive 1f1f22 solid").unwrap();
+    assert_eq!(md.outline, Outline::MegaDrive);
+    let genesis = ShellChoice::parse("genesis 262629 solid").unwrap();
+    assert_eq!(genesis.outline, Outline::Genesis);
+    assert_eq!(genesis.to_value(), "genesis 262629 solid");
 }

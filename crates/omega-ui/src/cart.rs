@@ -4,6 +4,7 @@ use omega_store::gb::Class;
 use omega_store::{Cart, Outline, Platform};
 
 use crate::label_cut::label_art;
+use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::{disc, hucard, snes, snes::SnesShell};
 use crate::shell::{shell_for, Finish, Shell};
@@ -120,8 +121,7 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Ps1 => CartModel::Disc,
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(nes::shell_of(cart)),
-        // drawn as a GBA cart until the Mega Drive cart's own models land
-        Platform::Md => CartModel::Gba,
+        Platform::Md => CartModel::Md(md::shell_of(cart)),
     }
 }
 
@@ -143,6 +143,7 @@ pub(crate) fn spec(model: CartModel) -> Spec {
         CartModel::Disc => disc::spec(),
         CartModel::HuCard => hucard::spec(),
         CartModel::Nes(shell) => nes::spec(shell),
+        CartModel::Md(shell) => md::spec(shell),
         CartModel::Gba => Spec {
             w: CART_W,
             h: CART_H,
@@ -188,7 +189,8 @@ const GB_SEATED_H: u32 = 259;
 
 pub fn seated_box(platform: Platform) -> (u32, u32) {
     match platform {
-        Platform::Gba | Platform::Md => (SEATED_W, SEATED_H),
+        Platform::Gba => (SEATED_W, SEATED_H),
+        Platform::Md => md::face_box(MdShell::MegaDrive),
         Platform::Nes => nes::face_box(NesShell::Nes),
         Platform::Pce => (hucard::W, hucard::H),
         Platform::Gb | Platform::Gbc => (SEATED_W, GB_SEATED_H),
@@ -206,7 +208,8 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
 /// The size of a face for `platform` in pixels: its first model's, where it has several.
 pub fn cart_box(platform: Platform) -> (u32, u32) {
     model_box(match platform {
-        Platform::Gba | Platform::Md => CartModel::Gba,
+        Platform::Gba => CartModel::Gba,
+        Platform::Md => CartModel::Md(MdShell::MegaDrive),
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(NesShell::Nes),
         Platform::Gb | Platform::Gbc => CartModel::Gb(GbShell::Notched),
@@ -247,7 +250,8 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
     CartModel::ALL
         .into_iter()
         .filter(|model| match model {
-            CartModel::Gba => matches!(platform, Platform::Gba | Platform::Md),
+            CartModel::Gba => platform == Platform::Gba,
+            CartModel::Md(_) => platform == Platform::Md,
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),
