@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The speaker no longer buzzes while nothing plays: omega-zero lets go of the audio device after
+  3 seconds of silence and takes it back when sound starts, retrying a device the BaseOS startup
+  sound still holds.
 - The card is written less: the resume state only when it changed, the boot partition only when
   the boot logo changes, and temporary files a power cut left half-written are cleared at boot.
 - Game sound is resampled to 48 kHz through a windowed sinc instead of linearly to 32768 Hz, so
