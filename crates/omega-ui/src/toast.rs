@@ -16,9 +16,11 @@ pub enum Toast {
     BiosMismatch,
     ColourOn,
     ColourOff,
-    /// SELECT+Y on a SNES or PlayStation game: the picture at its actual size again.
+    /// SELECT+Y on a television's console: the picture at its actual size, a whole scale.
     PictureActual,
-    /// SELECT+Y on a SNES or PlayStation game: the picture stretched.
+    /// SELECT+Y on a television's console: the picture a television's 4:3.
+    PictureAspect,
+    /// SELECT+Y on a television's console: the picture stretched over the screen.
     PictureStretch,
     /// SELECT + MENU on a PlayStation game on one disc: there is no other to swap in.
     OneDisc,
@@ -41,7 +43,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1.
-    pub const ALL: [Toast; 13] = [
+    pub const ALL: [Toast; 14] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -52,6 +54,7 @@ impl Toast {
         Toast::ColourOn,
         Toast::ColourOff,
         Toast::PictureActual,
+        Toast::PictureAspect,
         Toast::PictureStretch,
         Toast::OneDisc,
         Toast::Disc(1),
@@ -70,9 +73,10 @@ impl Toast {
             Toast::ColourOn => 7,
             Toast::ColourOff => 8,
             Toast::PictureActual => 9,
-            Toast::PictureStretch => 10,
-            Toast::OneDisc => 11,
-            Toast::Disc(_) => 12,
+            Toast::PictureAspect => 10,
+            Toast::PictureStretch => 11,
+            Toast::OneDisc => 12,
+            Toast::Disc(_) => 13,
         }
     }
 
@@ -86,7 +90,7 @@ impl Toast {
             | Toast::PeerEnded
             | Toast::BiosMismatch => "LINK",
             Toast::ColourOn | Toast::ColourOff => "COLOUR",
-            Toast::PictureActual | Toast::PictureStretch => "PICTURE",
+            Toast::PictureActual | Toast::PictureAspect | Toast::PictureStretch => "PICTURE",
             Toast::OneDisc | Toast::Disc(_) => "DISC",
         }
     }
@@ -103,8 +107,9 @@ impl Toast {
             Toast::BiosMismatch => "BIOS does not match",
             Toast::ColourOn => "Correction on",
             Toast::ColourOff => "Correction off",
-            Toast::PictureActual => "Actual size",
-            Toast::PictureStretch => "Stretched",
+            Toast::PictureActual => "Integer scale",
+            Toast::PictureAspect => "Keep aspect 4:3",
+            Toast::PictureStretch => "Stretch",
             Toast::OneDisc => "Only one disc",
             Toast::Disc(n) => DISC_IN
                 .get(usize::from(n).wrapping_sub(1))

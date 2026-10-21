@@ -2,9 +2,11 @@
 
 ## Unreleased
 
-- SELECT+Y switches a SNES or PlayStation game's picture between its actual size and stretched,
-  and the game keeps the choice. Stretched, the SNES takes a television's 4:3 rather than its
-  pixels' 8:7, filling a 640x480 screen. The handhelds' SELECT+Y is still the colour correction.
+- SELECT+Y goes round a SNES or PlayStation game's picture sizes, and the game keeps the one it
+  was left in: integer, its actual size at the largest whole scale; keep aspect, a television's
+  4:3 rather than the SNES pixels' 8:7, filling a 640x480 screen; and stretch, over the whole
+  screen. A PlayStation game starts in 4:3, as it always has, its picture changing size between
+  menus and play. The handhelds' SELECT+Y is still the colour correction.
 
 ## omega-zero 1.2.0
 

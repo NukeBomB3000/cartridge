@@ -89,6 +89,7 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::ColourOn,
             Toast::ColourOff,
             Toast::PictureActual,
+            Toast::PictureAspect,
             Toast::PictureStretch,
             Toast::OneDisc,
             Toast::Disc(1),

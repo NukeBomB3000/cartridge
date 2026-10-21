@@ -1467,9 +1467,11 @@ impl App {
             if !matches!(self.phase, Phase::Playing { .. }) {
                 return false;
             }
-            let (mode, said) = match self.video_mode {
-                VideoMode::Actual => (VideoMode::Stretch, Toast::PictureStretch),
-                VideoMode::Stretch => (VideoMode::Actual, Toast::PictureActual),
+            let mode = self.video_mode.next();
+            let said = match mode {
+                VideoMode::Actual => Toast::PictureActual,
+                VideoMode::Aspect => Toast::PictureAspect,
+                VideoMode::Stretch => Toast::PictureStretch,
             };
             self.set_picture(mode);
             self.hud.toast(said, self.now());

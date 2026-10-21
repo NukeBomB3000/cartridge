@@ -184,7 +184,7 @@ fn a_gba_game_keeps_l2_and_r2_from_the_game() {
 }
 
 #[test]
-fn select_and_y_stretches_a_snes_picture_to_four_three_and_back() {
+fn select_and_y_goes_round_a_snes_picture_s_three_sizes() {
     let d = root_with(Platform::Snes, "Chrono Trigger");
     let (mut s, mut now) = playing(&d, Platform::Snes, "Chrono Trigger");
     assert_eq!(
@@ -199,14 +199,8 @@ fn select_and_y_stretches_a_snes_picture_to_four_three_and_back() {
         step(s, now, Some(RawEvent::Up(Btn::Y)));
         step(s, now, Some(RawEvent::Up(Btn::Select)));
     };
-    chord(&mut s, &mut now);
-    assert_eq!(
-        video_mode_for(d.path(), "Chrono Trigger"),
-        VideoMode::Stretch
-    );
-    chord(&mut s, &mut now);
-    assert_eq!(
-        video_mode_for(d.path(), "Chrono Trigger"),
-        VideoMode::Actual
-    );
+    for want in [VideoMode::Aspect, VideoMode::Stretch, VideoMode::Actual] {
+        chord(&mut s, &mut now);
+        assert_eq!(video_mode_for(d.path(), "Chrono Trigger"), want);
+    }
 }
