@@ -109,6 +109,7 @@ tasks:
     cmds:
       - sh card/test-link.sh
       - sh card/test-led.sh
+      - sh card/test-lid.sh
       - sh card/test-coresave.sh
       - sh card/test-probe.sh
       - sh card/test-wifi.sh

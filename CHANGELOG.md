@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- If omega-zero stops responding with the lid closed, a watcher apart from it powers the handheld
+  off a minute after omega-zero would have, unloading the Wi-Fi driver and syncing first.
 - The speaker no longer buzzes while nothing plays: omega-zero lets go of the audio device after
   3 seconds of silence and takes it back when sound starts, retrying a device the BaseOS startup
   sound still holds.

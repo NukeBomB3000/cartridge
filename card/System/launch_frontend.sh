@@ -15,6 +15,12 @@ if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
 	echo $! > "$RUN/omega-led.pid"
 fi
 
+pid="$(cat "$RUN/omega-lid.pid" 2>/dev/null)"
+if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
+	sh "$SYS/lid.sh" loop > /dev/null 2>&1 &
+	echo $! > "$RUN/omega-lid.pid"
+fi
+
 echo "|/bin/sh $SYS/coresave.sh %p %s %e %t" > /proc/sys/kernel/core_pattern 2>/dev/null
 
 if [ -f "$SD/RUN_PROBE" ]; then
