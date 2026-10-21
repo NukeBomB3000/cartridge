@@ -1,5 +1,9 @@
 version: '3'
 
+# A local .env, kept out of git, can hold OMEGA_SS_DEVID and OMEGA_SS_DEVPASSWORD, ScreenScraper's
+# key, so every local build carries it; .env.example shows the shape. The environment wins.
+dotenv: ['.env']
+
 vars:
   CORE: vendor/mgba_libretro.dylib
   GPSP_HOST: vendor/gpsp_libretro.dylib
@@ -509,7 +513,7 @@ tasks:
     cmds:
       - |
         set -eu
-        docker run --rm --platform linux/amd64 \
+        docker run --rm --platform linux/amd64 -e OMEGA_SS_DEVID -e OMEGA_SS_DEVPASSWORD \
           -v omega-zero-rustup-amd64:/usr/local/rustup -v omega-zero-cargo-amd64:/usr/local/cargo/registry \
           -e CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
           -v "$PWD":/src -w /src rust:1-bullseye sh -c '
