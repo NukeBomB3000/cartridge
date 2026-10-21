@@ -412,3 +412,29 @@ fn a_stand_in_core_refusing_a_resume_leaves_it_alone() {
         "a stand-in's refusal filed the state away"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn a_flush_of_the_same_state_leaves_the_file_alone() {
+    use std::os::unix::fs::MetadataExt;
+    let d = common::tmp_root_with_carts(&["Emerald"]);
+    let flush = |state: &[u8]| {
+        persist::flush(
+            d.path(),
+            Platform::Gba,
+            omega_store::Core::Mgba,
+            "Emerald",
+            Some(state),
+            None,
+        )
+        .unwrap()
+    };
+    let file = d.path().join("States/GBA/mgba/Emerald/resume.state");
+    let inode = || std::fs::metadata(&file).unwrap().ino();
+    flush(&[7u8; 64]);
+    let first = inode();
+    flush(&[7u8; 64]);
+    assert_eq!(inode(), first, "an unchanged state was written again");
+    flush(&[8u8; 64]);
+    assert_ne!(inode(), first, "a changed state was not written");
+}

@@ -1,4 +1,6 @@
-use omega_zero::bootlogo::{choose, dims, face, install, panel_size, shown, valid, Outcome};
+use omega_zero::bootlogo::{
+    choose, dims, face, install, panel_size, pending, shown, valid, Outcome,
+};
 
 fn bmp(w: u32, h: u32, fill: u8) -> Vec<u8> {
     let stride = (w as usize * 3).next_multiple_of(4);
@@ -192,4 +194,18 @@ fn the_logo_shown_is_the_cards_for_the_panel_at_its_size() {
         "a logo named for a panel it is not the size of is shown"
     );
     assert!(shown(s, (720, 480)).is_none());
+}
+
+#[test]
+fn only_a_logo_that_differs_asks_for_the_partition_to_be_written() {
+    let d = partition_with(&wide(1));
+    assert_eq!(pending(&wide(2), d.path()), None);
+    assert_eq!(pending(&wide(1), d.path()), Some(Outcome::Same));
+    assert_eq!(pending(b"not a bmp", d.path()), Some(Outcome::Invalid));
+    assert_eq!(
+        pending(&bmp(640, 480, 2), d.path()),
+        Some(Outcome::WrongSize)
+    );
+    install(&wide(2), d.path()).unwrap();
+    assert_eq!(pending(&wide(2), d.path()), Some(Outcome::Same));
 }

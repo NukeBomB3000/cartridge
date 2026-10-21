@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The card is written less: the resume state only when it changed, the boot partition only when
+  the boot logo changes, and temporary files a power cut left half-written are cleared at boot.
 - Game sound is resampled to 48 kHz through a windowed sinc instead of linearly to 32768 Hz, so
   high frequencies no longer fold back as grit; mGBA benefits most.
 - A Game Boy cart's clock is kept in its .sav after the save RAM, as other emulators write it,

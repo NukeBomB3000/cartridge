@@ -25,8 +25,12 @@ pub fn flush(
     state: Option<&[u8]>,
     sav: Option<&[u8]>,
 ) -> std::io::Result<()> {
+    // the resume state is only written again when it changed, sparing the card
     if let Some(state) = state {
-        StateRing::new(root, platform, core, stem).write_resume(state)?;
+        let ring = StateRing::new(root, platform, core, stem);
+        if !matches!(ring.read_resume(), Ok(Some(old)) if old == state) {
+            ring.write_resume(state)?;
+        }
     }
     if let Some(sav) = sav {
         write_sav(root, platform, stem, sav)?;

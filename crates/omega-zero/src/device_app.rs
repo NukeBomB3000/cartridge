@@ -155,7 +155,10 @@ pub fn run() {
     let card = root.clone();
     let _ = std::thread::Builder::new()
         .name("omega-bootlogo".into())
-        .spawn(move || omega_zero::bootlogo::refresh(&card));
+        .spawn(move || {
+            omega_zero::bootlogo::refresh(&card);
+            omega_zero::root::sweep_temps(&card);
+        });
     let mut drawn = false;
     frontend.drive_emulator();
     let mut pacer = Pacer::new();

@@ -87,17 +87,26 @@ pub fn panel_size(dir: &Path) -> Option<(u32, u32)> {
         .find_map(|name| fs::read(dir.join(name)).ok().and_then(|b| dims(&b)))
 }
 
-pub fn install(logo: &[u8], dir: &Path) -> io::Result<Outcome> {
+/// What installing `logo` into `dir` would come to without writing anything, or `None` where it
+/// would write: so the boot partition is only made writable when the logo changes.
+pub fn pending(logo: &[u8], dir: &Path) -> Option<Outcome> {
     let Some(size) = dims(logo) else {
-        return Ok(Outcome::Invalid);
+        return Some(Outcome::Invalid);
     };
     if panel_size(dir) != Some(size) {
-        return Ok(Outcome::WrongSize);
+        return Some(Outcome::WrongSize);
+    }
+    if fs::read(dir.join(LOGO)).ok().as_deref() == Some(logo) {
+        return Some(Outcome::Same);
+    }
+    None
+}
+
+pub fn install(logo: &[u8], dir: &Path) -> io::Result<Outcome> {
+    if let Some(outcome) = pending(logo, dir) {
+        return Ok(outcome);
     }
     let current = fs::read(dir.join(LOGO)).ok();
-    if current.as_deref() == Some(logo) {
-        return Ok(Outcome::Same);
-    }
     if let Some(current) = &current {
         if !dir.join(ORIGINAL).exists() {
             replace(dir, ORIGINAL, current)?;
@@ -137,7 +146,7 @@ pub fn refresh(card: &Path) {
         return;
     };
     if fs::create_dir_all(MOUNT).is_err()
-        || !run("mount", &["-t", "vfat", "-o", "rw,noatime", &device, MOUNT])
+        || !run("mount", &["-t", "vfat", "-o", "ro,noatime", &device, MOUNT])
     {
         eprintln!("omega-zero: bootlogo: could not mount {device}");
         return;
@@ -153,13 +162,20 @@ pub fn refresh(card: &Path) {
                 size.0, size.1
             ),
             Some((Err(e), p)) => eprintln!("omega-zero: bootlogo: {}: {e}", p.display()),
-            Some((Ok(logo), p)) => match install(&logo, mount) {
-                Ok(Outcome::Installed) => {
-                    eprintln!("omega-zero: bootlogo: installed {}", p.display())
+            // the partition is mounted read-only, and only made writable for a logo that changes
+            Some((Ok(logo), p)) => match pending(&logo, mount) {
+                Some(Outcome::Same) => {}
+                Some(other) => eprintln!("omega-zero: bootlogo: {}: {other:?}", p.display()),
+                None if !run("mount", &["-o", "remount,rw,noatime", MOUNT]) => {
+                    eprintln!("omega-zero: bootlogo: could not remount {device} to write the logo")
                 }
-                Ok(Outcome::Same) => {}
-                Ok(other) => eprintln!("omega-zero: bootlogo: {}: {other:?}", p.display()),
-                Err(e) => eprintln!("omega-zero: bootlogo: {e}"),
+                None => match install(&logo, mount) {
+                    Ok(Outcome::Installed) => {
+                        eprintln!("omega-zero: bootlogo: installed {}", p.display())
+                    }
+                    Ok(other) => eprintln!("omega-zero: bootlogo: {}: {other:?}", p.display()),
+                    Err(e) => eprintln!("omega-zero: bootlogo: {e}"),
+                },
             },
         },
     }

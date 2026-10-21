@@ -81,6 +81,13 @@ pub fn has_real_bios(root: &Path) -> bool {
     std::io::Read::read_exact(&mut f, &mut first).is_ok() && first[0] == BIOS_FIRST_BYTE
 }
 
+/// Clears what a power cut left half-written in the folders omega-zero writes to.
+pub fn sweep_temps(root: &Path) {
+    for sub in ["Config", "Saves", "States", "Labels"] {
+        omega_store::sweep_temps(&root.join(sub));
+    }
+}
+
 pub fn saves_dir(root: &Path) -> PathBuf {
     root.join("Saves")
 }
