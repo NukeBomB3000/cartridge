@@ -56,7 +56,7 @@ pub enum Action {
 
 /// What the buttons the systems disagree about do for the game being played. The handhelds'
 /// layout is the default: L2 rewinds, R2 fast-forwards (pressed twice quickly, it keeps going),
-/// and SELECT+Y toggles the colour correction. A game with L2 and R2 of its own, as the
+/// SELECT+Y toggles the colour correction and SELECT+X the LCD's ghosting. A game with L2 and R2 of its own, as the
 /// PlayStation's have, is handed them, and fast forward moves to SELECT+R2: the same hold, and
 /// the same double press, with SELECT held.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
