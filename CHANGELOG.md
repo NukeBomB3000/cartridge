@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- PlayStation labels whose discs ScreenScraper numbers are fetched again. Their names carry the
+  disc's number in brackets, `support-texture(us)[1]`, which curl read as a range and refused, so
+  the sync counted them as having no scan.
 - Mega Drive and Genesis games play from `Games/MD`, as `.md`, `.gen` or `.bin` images, on
   Genesis Plus GX (free for non-commercial use only), which ships with its source in
   `System/licenses/`. A, B and C are on Y, B and A, as on most handhelds, and the core picks a
