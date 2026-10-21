@@ -25,6 +25,7 @@ mod label;
 mod label_shrink;
 mod letters;
 mod link_art;
+mod nes_cart;
 mod network;
 mod opening;
 mod palette;

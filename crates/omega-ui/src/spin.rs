@@ -1,6 +1,7 @@
 use omega_gfx::{out_h, spun_x, Draw, MeshId, MeshVertex, TexId};
 
 use crate::models::disc::StackMeshes;
+use crate::models::nes::{self, NesShell};
 use crate::models::{disc, hucard, snes, snes::SnesShell};
 use crate::silhouette::GbShell;
 
@@ -54,10 +55,11 @@ pub enum CartModel {
     Snes(SnesShell),
     Disc,
     HuCard,
+    Nes(NesShell),
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 7] = [
+    pub const ALL: [CartModel; 9] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -65,6 +67,8 @@ impl CartModel {
         CartModel::Snes(SnesShell::Famicom),
         CartModel::Disc,
         CartModel::HuCard,
+        CartModel::Nes(NesShell::Nes),
+        CartModel::Nes(NesShell::Famicom),
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -77,6 +81,8 @@ impl CartModel {
             CartModel::Snes(SnesShell::Famicom) => 4,
             CartModel::Disc => 5,
             CartModel::HuCard => 6,
+            CartModel::Nes(NesShell::Nes) => 7,
+            CartModel::Nes(NesShell::Famicom) => 8,
         }
     }
 
@@ -87,6 +93,7 @@ impl CartModel {
             CartModel::Snes(_) => snes::THICK,
             CartModel::Disc => disc::THICK,
             CartModel::HuCard => hucard::THICK,
+            CartModel::Nes(shell) => nes::thick(shell),
         }
     }
 }
@@ -216,6 +223,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::Snes(shell) => snes::outline(shell),
         CartModel::Disc => disc::outline(),
         CartModel::HuCard => hucard::outline(),
+        CartModel::Nes(shell) => nes::outline(shell),
     }
 }
 
@@ -461,14 +469,16 @@ mod tests {
         );
     }
 
-    /// Only the Super Famicom cart's label and the HuCard's are round at their corners: every
-    /// other shape's goes through the square label's drawing untouched.
+    /// Only the Super Famicom, HuCard and Famicom labels are round at their corners: every other
+    /// shape's goes through the square label's drawing untouched.
     #[test]
-    fn only_the_super_famicom_and_hucard_labels_are_round() {
+    fn only_the_super_famicom_hucard_and_famicom_labels_are_round() {
         for model in CartModel::ALL {
             let round = crate::cart::spec(model).label_round;
             match model {
-                CartModel::Snes(SnesShell::Famicom) | CartModel::HuCard => assert!(round > 0),
+                CartModel::Snes(SnesShell::Famicom)
+                | CartModel::HuCard
+                | CartModel::Nes(NesShell::Famicom) => assert!(round > 0),
                 _ => assert_eq!(round, 0, "the {model:?} label is round"),
             }
         }

@@ -3,4 +3,5 @@
 
 pub mod disc;
 pub mod hucard;
+pub mod nes;
 pub mod snes;
