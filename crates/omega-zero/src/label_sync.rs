@@ -695,22 +695,28 @@ fn pick<'a>(
 /// scan of its label (`support-2D` being a cart ScreenScraper draws around that label). A
 /// disc's is the scan of its printed face, round and seen square-on, which ScreenScraper keeps
 /// as `support-texture` and draws `support-2D` from, so the drawn one is taken only when there
-/// is no scan.
+/// is no scan. A game with neither wears its box's front, `box-2D`, cut to its label as a scan
+/// is: not its label, but its own art rather than its name.
 pub fn label_kinds(platform: Platform) -> &'static [&'static str] {
     match platform {
-        Platform::Ps1 => &["support-texture", "support-2D"],
-        _ => &["support-texture"],
+        Platform::Ps1 => &["support-texture", "support-2D", BOX],
+        _ => &["support-texture", BOX],
     }
 }
+
+/// The box's front, which a game on several discs has one of for all of them.
+const BOX: &str = "box-2D";
 
 /// The media `want`'s label is taken from: of the best of [`label_kinds`] there is, the one
 /// from the best of [`label_regions`]. A disc takes only the media of its own disc, as the
 /// reply numbers it or else as its game's playlist does, media the reply does not number
-/// counting as the first disc's.
+/// counting as the first disc's, but for the box, which is every disc's.
 pub fn pick_media<'a>(found: &'a Found, want: &Want) -> Option<&'a Media> {
     let regions = label_regions(want);
     let disc = found.disc.unwrap_or(want.disc as u64 + 1);
-    let own_disc = |m: &Media| want.platform != Platform::Ps1 || m.support.unwrap_or(1) == disc;
+    let own_disc = |m: &Media| {
+        want.platform != Platform::Ps1 || m.kind == BOX || m.support.unwrap_or(1) == disc
+    };
     label_kinds(want.platform)
         .iter()
         .find_map(|kind| pick(&found.medias, |m| m.kind == *kind && own_disc(m), &regions))

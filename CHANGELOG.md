@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- A game ScreenScraper knows but has no scan of the label for wears its box's front instead, cut
+  to its label, rather than its name; a PlayStation disc tries the face ScreenScraper draws of it
+  first.
+- SELECT+X in a game steps through screen looks for its system, kept per system in
+  `Config/shader.ini`: off, LCD, grid and dot for the Game Boys and the GBA, ported from slot's
+  ports of the libretro shaders, and off, scanlines and CRT for the television's consoles.
+- The picture size SELECT+Y (or L1 and R1 on the Game Boys) picks is kept per system in
+  `Config/video_mode.ini`, not per game.
 - PlayStation labels whose discs ScreenScraper numbers are fetched again. Their names carry the
   disc's number in brackets, `support-texture(us)[1]`, which curl read as a range and refused, so
   the sync counted them as having no scan.
@@ -31,12 +39,7 @@
 - A PC Engine game stands on the shelf as a HuCard, 54 by 85 mm, its label across most of its
   face: pale grey for a Japanese game, a black TurboChip for an American one, its label from
   ScreenScraper taken from the same region as the card.
-- SELECT+X in a game steps through screen looks for its system, kept per system in
-  `Config/shader.ini`: off, LCD, grid and dot for the Game Boys and the GBA, ported from slot's
-  ports of the libretro shaders, and off, scanlines and CRT for the SNES and the PlayStation.
-- The picture size SELECT+Y (or L1 and R1 on the Game Boys) picks is kept per system in
-  `Config/video_mode.ini`, not per game.
-- SELECT+Y goes round a SNES or PlayStation game's picture sizes, and its system keeps the one
+- SELECT+Y goes round a television's console's picture sizes, and its system keeps the one
   it was left in: integer, its actual size at the largest whole scale; keep aspect, a television's
   4:3 rather than the SNES pixels' 8:7, filling a 640x480 screen; and stretch, over the whole
   screen. A PlayStation game starts in 4:3, as it always has, its picture changing size between

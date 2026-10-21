@@ -293,13 +293,18 @@ fn a_found_label_is_saved_where_the_shelf_looks_and_the_rest_are_counted() {
     let wants = [
         want(root.path(), "Metroid Fusion (USA)"),
         want(root.path(), "Box Only (USA)"),
+        want(root.path(), "Wheel Only (USA)"),
         want(root.path(), "Mother 3 v1.2"),
     ];
-    let bare = r#"{"response": {"jeu": {"medias": [
+    let boxed = r#"{"response": {"jeu": {"medias": [
         {"type": "box-2D", "region": "us", "url": "https://ss/box"}]}}}"#;
+    let bare = r#"{"response": {"jeu": {"medias": [
+        {"type": "wheel", "region": "us", "url": "https://ss/wheel"}]}}}"#;
     let mut server = Server::new(vec![
         ok(GAME),
         Some((200, png(600, 310))),
+        ok(boxed),
+        Some((200, png(400, 400))),
         ok(bare),
         Some((404, b"Erreur : Rom/Iso/Dossier non trouvee !".to_vec())),
     ]);
@@ -312,24 +317,29 @@ fn a_found_label_is_saved_where_the_shelf_looks_and_the_rest_are_counted() {
         server.asked[1],
         "https://ss/tex-us&maxwidth=399&outputformat=png"
     );
+    assert_eq!(
+        std::fs::read(root.path().join("Labels/GBA/Box Only (USA).png")).unwrap(),
+        png(400, 400),
+        "a game with no label scan did not wear its box"
+    );
     assert!(news.contains(&LabelNews::Saved {
         platform: Platform::Gba,
         stem: "Metroid Fusion (USA)".into()
     }));
     assert!(news.contains(&LabelNews::Working {
-        done: 2,
-        total: 3,
+        done: 3,
+        total: 4,
         title: "Mother 3 v1.2".into()
     }));
     assert_eq!(
         news.last(),
         Some(&LabelNews::Finished(Tally {
-            saved: 1,
+            saved: 2,
             bare: 1,
             unknown: 1
         }))
     );
-    assert!(!root.path().join("Labels/GBA/Box Only (USA).png").exists());
+    assert!(!root.path().join("Labels/GBA/Wheel Only (USA).png").exists());
 }
 
 #[test]
@@ -1106,6 +1116,64 @@ fn a_mega_drive_label_suits_the_cart_it_is_drawn_on() {
         None,
     )));
     assert!(asked.is_empty());
+}
+
+#[test]
+fn a_game_with_no_label_scan_wears_its_box_front() {
+    let snes = Want::cart(&cart(
+        Platform::Snes,
+        "Rare Game (USA)",
+        PathBuf::from("/nowhere/Rare Game (USA).sfc"),
+        None,
+    ));
+    let boxed = found(
+        r#"{"response": {"jeu": {"medias": [
+        {"type": "box-2D", "region": "jp", "url": "https://ss/box-jp"},
+        {"type": "box-2D", "region": "us", "url": "https://ss/box-us"},
+        {"type": "support-2D", "region": "us", "url": "https://ss/2d-us"},
+        {"type": "wheel", "region": "us", "url": "https://ss/wheel"}]}}}"#,
+    );
+    assert_eq!(
+        pick_media(&boxed, &snes).map(|m| m.url.as_str()),
+        Some("https://ss/box-us"),
+        "the box of the cart's own region is next best, and a drawn cart is not taken"
+    );
+    let scanned = found(
+        r#"{"response": {"jeu": {"medias": [
+        {"type": "box-2D", "region": "us", "url": "https://ss/box-us"},
+        {"type": "support-texture", "region": "jp", "url": "https://ss/tex-jp"}]}}}"#,
+    );
+    assert_eq!(
+        pick_media(&scanned, &snes).map(|m| m.url.as_str()),
+        Some("https://ss/tex-jp"),
+        "a box went before a scan of the label, whatever its region"
+    );
+    let bare = found(
+        r#"{"response": {"jeu": {"medias": [
+        {"type": "wheel", "region": "us", "url": "https://ss/wheel"}]}}}"#,
+    );
+    assert!(pick_media(&bare, &snes).is_none());
+}
+
+#[test]
+fn a_later_disc_with_no_face_of_its_own_wears_its_game_s_box() {
+    let root = tempfile::tempdir().unwrap();
+    let (game, discs) = three_discs(root.path());
+    let second = Want {
+        rom: discs[1].clone(),
+        disc: 1,
+        discs: 3,
+        ..Want::cart(&game)
+    };
+    let boxed = found(
+        r#"{"response": {"jeu": {"medias": [
+        {"type": "support-texture", "region": "us", "support": "1", "url": "https://ss/tex-us-1"},
+        {"type": "box-2D", "region": "us", "url": "https://ss/box-us"}]}}}"#,
+    );
+    assert_eq!(
+        pick_media(&boxed, &second).map(|m| m.url.as_str()),
+        Some("https://ss/box-us")
+    );
 }
 
 /// Serves one request on a port of its own, answering it 200 with `body`, and hands back the
