@@ -846,29 +846,16 @@ impl App {
         self.look = look;
     }
 
-    /// The colour correction a handheld's system was last left in, taken up as its game starts.
-    pub fn set_colour_correction(&mut self, on: bool) {
-        if self.state.colour_correction != on {
-            self.state.colour_correction = on;
-            self.persist();
-        }
-    }
-
-    /// SELECT+X: the next look for the game's system, on a handheld each look without the colour
-    /// correction and then with it, kept for every game of the system.
+    /// SELECT+X: the next look for the game's system, kept for every game of it.
     fn next_look(&mut self) {
-        let cc = self.platform.colour_correction() && self.state.colour_correction;
-        let (look, to) = crate::shader::next_look(self.platform, self.look, cc);
+        let look = crate::shader::next_look(self.platform, self.look);
         self.look = look;
-        if to != cc {
-            self.change_setting(SettingsRow::ColourCorrection, true);
-        }
         if let Some(root) = self.root.clone() {
-            if let Err(e) = crate::shader::write_shader(&root, self.platform, look, to) {
+            if let Err(e) = crate::shader::write_shader(&root, self.platform, look) {
                 eprintln!("omega-zero: video: could not write shader.ini: {e}");
             }
         }
-        self.hud.toast(Toast::Shader(look, to), self.now());
+        self.hud.toast(Toast::Shader(look), self.now());
     }
 
     pub fn source_rect(&self) -> [f32; 4] {
@@ -890,12 +877,14 @@ impl App {
 
     /// What the buttons the systems disagree about do, for the game in the handheld or the last
     /// one there: a PlayStation game has L2 and R2 and nothing rewinds it. SELECT+Y steps every
-    /// system's picture size; a handheld's colour correction goes round with its shaders.
+    /// system's picture size; only a handheld has a colour correction for SELECT+A and a
+    /// ghosting for SELECT+B.
     pub fn keys(&self) -> Keys {
         Keys {
             game_l2_r2: self.platform.game_owns_l2_r2(),
             rewind: self.platform.rewinds(),
-            colour: false,
+            colour: self.platform.colour_correction(),
+            ghosting: self.platform.lcd_ghosting(),
             picture: true,
         }
     }
@@ -1514,6 +1503,15 @@ impl App {
             let said = match self.state.colour_correction {
                 true => Toast::ColourOn,
                 false => Toast::ColourOff,
+            };
+            self.hud.toast(said, self.now());
+            return true;
+        }
+        if action == Action::LcdGhostingToggle {
+            self.change_setting(SettingsRow::LcdGhosting, true);
+            let said = match self.state.lcd_ghosting {
+                true => Toast::GhostingOn,
+                false => Toast::GhostingOff,
             };
             self.hud.toast(said, self.now());
             return true;

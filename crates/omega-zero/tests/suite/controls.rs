@@ -133,6 +133,8 @@ fn controls_says_what_the_shelf_and_a_gba_game_do_with_each_button() {
             ("SELECT+◀▶", "BLUE LIGHT"),
             ("SELECT+L1", "LOAD STATE"),
             ("SELECT+R1", "SAVE STATE"),
+            ("SELECT+A", "COLOUR"),
+            ("SELECT+B", "GHOSTING"),
             ("SELECT+Y", "PICTURE SIZE"),
             ("SELECT+X", "SHADER"),
             ("VOL+ VOL-", "MUTE"),

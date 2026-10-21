@@ -43,8 +43,11 @@ fn a_select_held_past_the_window_reaches_the_game_then() {
 fn a_game_button_under_select_hands_select_over_first() {
     let mut g = Gestures::new();
     assert!(g.feed(Down(Select), 0).is_empty());
-    assert_eq!(g.feed(Down(A), 100), vec![GbaDown(Select), GbaDown(A)]);
-    assert_eq!(g.feed(Up(A), 200), vec![GbaUp(A)]);
+    assert_eq!(
+        g.feed(Down(Start), 100),
+        vec![GbaDown(Select), GbaDown(Start)]
+    );
+    assert_eq!(g.feed(Up(Start), 200), vec![GbaUp(Start)]);
     assert!(
         g.tick(SELECT_CHORD_MS).is_empty(),
         "SELECT was pressed twice"
@@ -503,14 +506,36 @@ fn select_and_y_steps_a_handhelds_picture_and_costs_the_game_nothing() {
 }
 
 #[test]
-fn where_the_colour_correction_has_select_and_y_it_toggles_it() {
-    let mut g = with_keys(Keys {
-        colour: true,
-        picture: false,
-        ..Keys::HANDHELD
-    });
+fn select_and_a_toggles_the_colour_correction_and_select_and_b_the_ghosting() {
+    let mut g = Gestures::new();
     assert!(g.feed(Down(Select), 0).is_empty());
-    assert_eq!(g.feed(Down(Y), 10), vec![ColourCorrectionToggle]);
+    assert_eq!(g.feed(Down(A), 10), vec![ColourCorrectionToggle]);
+    assert_eq!(g.feed(Down(B), 20), vec![LcdGhostingToggle]);
+    assert!(
+        g.feed(Up(A), 30).is_empty(),
+        "the chord's A reached the game"
+    );
+    assert!(
+        g.feed(Up(B), 40).is_empty(),
+        "the chord's B reached the game"
+    );
+    assert!(g.feed(Up(Select), 200).is_empty());
+}
+
+#[test]
+fn select_and_a_or_b_are_the_games_where_there_is_no_lcd() {
+    let mut g = with_keys(SNES);
+    assert!(g.feed(Down(Select), 0).is_empty());
+    let out = g.feed(Down(A), 10);
+    assert!(
+        !out.contains(&ColourCorrectionToggle),
+        "a SNES game's SELECT+A toggled a colour correction"
+    );
+    assert!(out.contains(&GbaDown(A)), "a SNES game lost its A");
+    assert!(
+        g.feed(Down(B), 20).contains(&GbaDown(B)),
+        "a SNES game lost its B"
+    );
 }
 
 #[test]
@@ -545,6 +570,7 @@ const PS1: Keys = Keys {
     game_l2_r2: true,
     rewind: false,
     colour: false,
+    ghosting: false,
     picture: true,
 };
 
@@ -554,6 +580,7 @@ const SNES: Keys = Keys {
     game_l2_r2: false,
     rewind: true,
     colour: false,
+    ghosting: false,
     picture: true,
 };
 

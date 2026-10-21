@@ -13,7 +13,7 @@ use omega_store::{write_app_state, AppState, Platform};
 use omega_ui::{CornerBadge, HudKind};
 use omega_zero::app::Phase;
 use omega_zero::session::Session;
-use omega_zero::shader::{colour_for, looks_for, shader_for, SHADER_FILE};
+use omega_zero::shader::{looks_for, shader_for, SHADER_FILE};
 use omega_zero::video_mode::{video_mode_for, VideoMode};
 use tempfile::TempDir;
 
@@ -94,6 +94,7 @@ fn each_system_says_what_its_buttons_do() {
             game_l2_r2: false,
             rewind: true,
             colour: false,
+            ghosting: false,
             picture: true,
         }
     );
@@ -103,6 +104,7 @@ fn each_system_says_what_its_buttons_do() {
             game_l2_r2: true,
             rewind: false,
             colour: false,
+            ghosting: false,
             picture: true,
         }
     );
@@ -232,10 +234,9 @@ fn select_and_x_goes_round_a_system_s_looks_and_keeps_them_for_the_system() {
 }
 
 #[test]
-fn select_and_x_goes_round_a_handheld_s_looks_each_without_and_with_the_colour_correction() {
-    let d = root_with(Platform::Gbc, "Pokemon Crystal");
-    let (mut s, mut now) = playing(&d, Platform::Gbc, "Pokemon Crystal");
-    assert!(!s.app().colour_correction());
+fn select_and_x_goes_round_a_game_boy_s_looks_to_its_greens() {
+    let d = root_with(Platform::Gb, "Tetris");
+    let (mut s, mut now) = playing(&d, Platform::Gb, "Tetris");
     let chord = |s: &mut Session, now: &mut Millis| {
         step(s, now, Some(RawEvent::Down(Btn::Select)));
         step(s, now, Some(RawEvent::Down(Btn::X)));
@@ -243,53 +244,45 @@ fn select_and_x_goes_round_a_handheld_s_looks_each_without_and_with_the_colour_c
         step(s, now, Some(RawEvent::Up(Btn::Select)));
     };
     for want in [
-        (Look::Off, true),
-        (Look::Lcd, false),
-        (Look::Lcd, true),
-        (Look::Grid, false),
-        (Look::Grid, true),
-        (Look::Dot, false),
-        (Look::Dot, true),
-        (Look::Simpletex, false),
-        (Look::Simpletex, true),
-        (Look::Transparent, false),
-        (Look::Transparent, true),
-        (Look::Off, false),
-        (Look::Off, true),
+        Look::Lcd,
+        Look::Grid,
+        Look::Dot,
+        Look::Simpletex,
+        Look::Transparent,
+        Look::Dmg,
+        Look::Off,
     ] {
         chord(&mut s, &mut now);
-        assert_eq!((s.app().look(), s.app().colour_correction()), want);
-        assert_eq!(shader_for(d.path(), Platform::Gbc), want.0);
-        assert_eq!(colour_for(d.path(), Platform::Gbc), Some(want.1));
+        assert_eq!(s.app().look(), want);
+        assert_eq!(shader_for(d.path(), Platform::Gb), want);
     }
-    assert!(std::fs::read_to_string(d.path().join(SHADER_FILE))
-        .unwrap()
-        .contains("GBC = off_cc"));
-    assert_eq!(colour_for(d.path(), Platform::Gba), None);
 }
 
 #[test]
-fn the_game_boy_s_greens_come_once_without_the_colour_correction() {
-    use omega_zero::shader::next_look;
-    assert_eq!(
-        next_look(Platform::Gb, Look::Transparent, true),
-        (Look::Dmg, false)
-    );
-    assert_eq!(
-        next_look(Platform::Gb, Look::Dmg, false),
-        (Look::Off, false)
-    );
-}
-
-#[test]
-fn a_handheld_s_game_starts_in_the_colour_correction_its_system_was_left_in() {
+fn select_and_a_and_select_and_b_toggle_a_handheld_s_colour_correction_and_ghosting() {
     let d = root_with(Platform::Gba, "Metroid Fusion");
-    std::fs::create_dir_all(d.path().join("Config")).unwrap();
-    std::fs::write(d.path().join(SHADER_FILE), "GBA = grid_cc\n").unwrap();
-    let (s, _) = playing(&d, Platform::Gba, "Metroid Fusion");
+    let (mut s, mut now) = playing(&d, Platform::Gba, "Metroid Fusion");
+    let (colour, ghosting) = (s.app().colour_correction(), s.app().lcd_ghosting());
+    let chord = |s: &mut Session, now: &mut Millis, b: Btn| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(b)));
+        assert_eq!(
+            held(s) & (ButtonMask::A | ButtonMask::B),
+            0,
+            "the chord reached the game"
+        );
+        step(s, now, Some(RawEvent::Up(b)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    chord(&mut s, &mut now, Btn::A);
     assert_eq!(
-        (s.app().look(), s.app().colour_correction()),
-        (Look::Grid, true)
+        (s.app().colour_correction(), s.app().lcd_ghosting()),
+        (!colour, ghosting)
+    );
+    chord(&mut s, &mut now, Btn::B);
+    assert_eq!(
+        (s.app().colour_correction(), s.app().lcd_ghosting()),
+        (!colour, !ghosting)
     );
 }
 

@@ -5,7 +5,8 @@
 - The GBA and Game Boy games blend each frame with the last, as the LCDs they were drawn for
   blurred them, so a game that flickers a sprite to draw it see-through, as F-Zero and the Boktai
   games do, shows it as it was meant to be seen. mGBA mixes the two frames and gpSP its frame
-  mixing. It is on by default: LCD Ghosting, under Colour Correction in CONFIGS, turns it off.
+  mixing. It is on by default: LCD Ghosting, under Colour Correction in CONFIGS, turns it off, as
+  does SELECT+B in a game.
 - The RG SP and the RG34XX SP calibrate their panels as omega-zero starts: the display engine
   takes a measured table of each panel's colours, its black and white points among them, and
   applies it after everything is drawn, to the games and the menus alike, at no cost a frame.
@@ -22,8 +23,8 @@
   systems, kept per system: as it was always drawn, its own shape as large as the screen holds (a
   GBA game 640x427 on a 640x480 screen, a Game Boy game 533x480), and stretched over the whole
   screen. L1 and R1 on the Game Boys still stretch and unstretch.
-- The colour correction goes round with the handhelds' looks on SELECT+X, each look without it
-  and then with it (Off, Off CC, LCD, LCD CC, Grid, Grid CC, Dot, Dot CC), kept per system.
+- A handheld game has four hotkeys under SELECT: A the colour correction, B the LCD's ghosting,
+  X the screen look and Y the picture size.
 - Three more handheld looks on SELECT+X, each one pass: Simpletex, pixels printed over grained
   paper; Transparent, light pixels letting a pale LCD background through with dark ones casting
   a shadow on it; and, on the Game Boy only, DMG, its four greens over a faint grid.

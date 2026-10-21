@@ -16,18 +16,21 @@ pub enum Toast {
     BiosMismatch,
     ColourOn,
     ColourOff,
+    /// SELECT+B switched the LCD's ghosting on, or off.
+    GhostingOn,
+    GhostingOff,
     /// SELECT+Y on a television's console: the picture at its actual size, a whole scale.
     PictureActual,
     /// SELECT+Y on a television's console: the picture a television's 4:3.
     PictureAspect,
     /// SELECT+Y on a television's console: the picture stretched over the screen.
     PictureStretch,
-    /// SELECT+L2 on a handheld: the picture as it was always drawn.
+    /// SELECT+Y on a handheld: the picture as it was always drawn.
     PictureOriginal,
-    /// SELECT+L2 on a handheld: the picture its own shape, as large as the screen holds.
+    /// SELECT+Y on a handheld: the picture its own shape, as large as the screen holds.
     PictureFit,
     /// SELECT+X in a game: the screen look now chosen for its system.
-    Shader(omega_gfx::Look, bool),
+    Shader(omega_gfx::Look),
     /// SELECT + MENU on a PlayStation game on one disc: there is no other to swap in.
     OneDisc,
     /// The DISC screen swapped disc `n`, counting from 1, into the drive.
@@ -49,7 +52,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 17] = [
+    pub const ALL: [Toast; 19] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -59,12 +62,14 @@ impl Toast {
         Toast::BiosMismatch,
         Toast::ColourOn,
         Toast::ColourOff,
+        Toast::GhostingOn,
+        Toast::GhostingOff,
         Toast::PictureActual,
         Toast::PictureAspect,
         Toast::PictureStretch,
         Toast::PictureOriginal,
         Toast::PictureFit,
-        Toast::Shader(omega_gfx::Look::Off, false),
+        Toast::Shader(omega_gfx::Look::Off),
         Toast::OneDisc,
         Toast::Disc(1),
     ];
@@ -81,14 +86,16 @@ impl Toast {
             Toast::BiosMismatch => 6,
             Toast::ColourOn => 7,
             Toast::ColourOff => 8,
-            Toast::PictureActual => 9,
-            Toast::PictureAspect => 10,
-            Toast::PictureStretch => 11,
-            Toast::PictureOriginal => 12,
-            Toast::PictureFit => 13,
-            Toast::Shader(..) => 14,
-            Toast::OneDisc => 15,
-            Toast::Disc(_) => 16,
+            Toast::GhostingOn => 9,
+            Toast::GhostingOff => 10,
+            Toast::PictureActual => 11,
+            Toast::PictureAspect => 12,
+            Toast::PictureStretch => 13,
+            Toast::PictureOriginal => 14,
+            Toast::PictureFit => 15,
+            Toast::Shader(..) => 16,
+            Toast::OneDisc => 17,
+            Toast::Disc(_) => 18,
         }
     }
 
@@ -102,6 +109,7 @@ impl Toast {
             | Toast::PeerEnded
             | Toast::BiosMismatch => "LINK",
             Toast::ColourOn | Toast::ColourOff => "COLOUR",
+            Toast::GhostingOn | Toast::GhostingOff => "GHOSTING",
             Toast::PictureActual
             | Toast::PictureAspect
             | Toast::PictureStretch
@@ -124,27 +132,23 @@ impl Toast {
             Toast::BiosMismatch => "BIOS does not match",
             Toast::ColourOn => "Correction on",
             Toast::ColourOff => "Correction off",
+            Toast::GhostingOn => "Ghosting on",
+            Toast::GhostingOff => "Ghosting off",
             Toast::PictureActual => "Integer scale",
             Toast::PictureAspect => "Keep aspect 4:3",
             Toast::PictureStretch => "Stretch",
             Toast::PictureOriginal => "Original",
             Toast::PictureFit => "Keep aspect",
-            Toast::Shader(look, cc) => match (look, cc) {
-                (omega_gfx::Look::Off, false) => "Off",
-                (omega_gfx::Look::Off, true) => "Off CC",
-                (omega_gfx::Look::Lcd, false) => "LCD",
-                (omega_gfx::Look::Lcd, true) => "LCD CC",
-                (omega_gfx::Look::Grid, false) => "Grid",
-                (omega_gfx::Look::Grid, true) => "Grid CC",
-                (omega_gfx::Look::Dot, false) => "Dot",
-                (omega_gfx::Look::Dot, true) => "Dot CC",
-                (omega_gfx::Look::Simpletex, false) => "Simpletex",
-                (omega_gfx::Look::Simpletex, true) => "Simpletex CC",
-                (omega_gfx::Look::Transparent, false) => "Transparent",
-                (omega_gfx::Look::Transparent, true) => "Transparent CC",
-                (omega_gfx::Look::Dmg, _) => "DMG",
-                (omega_gfx::Look::Scanlines, _) => "Scanlines",
-                (omega_gfx::Look::Crt, _) => "CRT",
+            Toast::Shader(look) => match look {
+                omega_gfx::Look::Off => "Off",
+                omega_gfx::Look::Lcd => "LCD",
+                omega_gfx::Look::Grid => "Grid",
+                omega_gfx::Look::Dot => "Dot",
+                omega_gfx::Look::Simpletex => "Simpletex",
+                omega_gfx::Look::Transparent => "Transparent",
+                omega_gfx::Look::Dmg => "DMG",
+                omega_gfx::Look::Scanlines => "Scanlines",
+                omega_gfx::Look::Crt => "CRT",
             },
             Toast::OneDisc => "Only one disc",
             Toast::Disc(n) => DISC_IN
