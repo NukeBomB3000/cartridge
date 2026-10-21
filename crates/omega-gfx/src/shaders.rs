@@ -198,7 +198,9 @@ void main() {
 
 /// The sharp view with a screen look over it, chosen by `u_mode`: 1 an LCD's subpixel stripes,
 /// 2 its pixel grid, 3 the GBA's round dots, 4 a television's scanlines and 5 a CRT's scanlines
-/// through an aperture grille. The LCD, grid and dot looks are slot's ports from the libretro
+/// through an aperture grille. The LCD looks follow the game's pixels, which they are drawn
+/// over at whole scales; the scanlines and the CRT follow the screen's own rows and columns,
+/// laid over the picture once it is scaled, so they stay even at 4:3 and stretched. The LCD, grid and dot looks are slot's ports from the libretro
 /// shader collection (licenses/shaders.txt): LCD3x by Gigaherz and Dot by Themaister, both
 /// public domain, and the grid of zfast_lcd_standard by Greg Hogan, GPL-2.0-or-later.
 pub const GAME_LOOK_FRAG: &str = r#"
@@ -229,15 +231,14 @@ void main() {
     vec2 s = (from_centre - clamp(from_centre, -region, region)) * u_scale + 0.5;
     vec3 c = texture2D(u_game, (floor(texel) + s) / u_src).rgb;
     vec2 f = fract(texel);
+    float row = mod(floor(gl_FragCoord.y), 2.0);
     if (u_mode > 4.5) {
-        float line = smoothstep(0.35, 0.85, f.y);
-        c *= 1.0 - 0.4 * line;
+        c *= 1.0 - 0.35 * row;
         float m = mod(floor(gl_FragCoord.x), 3.0);
         vec3 mask = m < 0.5 ? vec3(1.0, 0.7, 0.7) : (m < 1.5 ? vec3(0.7, 1.0, 0.7) : vec3(0.7, 0.7, 1.0));
         c = min(c * mask * 1.3, vec3(1.0));
     } else if (u_mode > 3.5) {
-        float line = smoothstep(0.35, 0.85, f.y);
-        c = min(c * (1.0 - 0.5 * line) * 1.12, vec3(1.0));
+        c = min(c * (1.0 - 0.45 * row) * 1.12, vec3(1.0));
     } else if (u_mode > 2.5) {
         float bloom = mix(1.05, 0.95, dot(c, vec3(0.30, 0.59, 0.11)));
         float mid = dot_weight(f, vec2(0.0), bloom);
