@@ -9,8 +9,8 @@ pub use baseos::{
     baseos_release, parse_baseos_release, read_baseos_release, BaseosRelease, BASEOS_RELEASE,
 };
 pub use device::{
-    has_bit, motor_change, motor_pin, record_first_frame, rumble_node, trace_first_frame,
-    uptime_seconds, DevicePlatform,
+    card_mount_in, has_bit, motor_change, motor_pin, read_only_in, record_first_frame, rumble_node,
+    stage_repair, take_repair_result, trace_first_frame, uptime_seconds, CardMount, DevicePlatform,
 };
 pub use motor::Motor;
 pub use power::Power;
@@ -31,6 +31,14 @@ pub enum Charge {
 pub struct Battery {
     pub percent: u8,
     pub charge: Charge,
+}
+
+/// How the last card repair ended, as `repair.sh` left it for the boot after.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum RepairResult {
+    Repaired,
+    Clean,
+    Failed,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -77,6 +85,22 @@ pub trait Platform: Send {
 
     fn headphones(&self) -> bool {
         false
+    }
+
+    /// Whether the card omega-zero runs from is mounted read-only, as the kernel leaves a FAT
+    /// card it found damaged.
+    fn card_read_only(&self) -> bool {
+        false
+    }
+
+    /// Hands the handheld to `repair.sh`, which unmounts the card, checks it and reboots.
+    fn repair_card(&mut self) -> ! {
+        self.restart()
+    }
+
+    /// How the repair before this boot ended, once.
+    fn take_repair_result(&mut self) -> Option<RepairResult> {
+        None
     }
 }
 

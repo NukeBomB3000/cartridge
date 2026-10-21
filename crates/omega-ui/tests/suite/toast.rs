@@ -106,6 +106,10 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::Shader(omega_gfx::Look::Off),
             Toast::OneDisc,
             Toast::Disc(1),
+            Toast::CardReadOnly,
+            Toast::CardRepaired,
+            Toast::CardRepairFailed,
+            Toast::CardRepairLowBattery,
         ],
         "a banner was added or dropped"
     );
@@ -234,4 +238,20 @@ fn a_toast_takes_the_gauges_place() {
             .any(|d| matches!(*d, Draw::Tex { tex, .. } if tex == GAUGE_TEX)),
         "the gauge is still drawn underneath the toast"
     );
+}
+
+#[test]
+fn the_card_toasts_say_what_to_do() {
+    assert_eq!(Toast::CardReadOnly.text(), "Read-only: SELECT+START");
+    assert_eq!(Toast::CardRepaired.text(), "Card repaired");
+    assert_eq!(Toast::CardRepairFailed.text(), "Repair failed");
+    assert_eq!(Toast::CardRepairLowBattery.text(), "Charge to 20% first");
+    for t in [
+        Toast::CardReadOnly,
+        Toast::CardRepaired,
+        Toast::CardRepairFailed,
+        Toast::CardRepairLowBattery,
+    ] {
+        assert_eq!(t.label(), "SD CARD");
+    }
 }

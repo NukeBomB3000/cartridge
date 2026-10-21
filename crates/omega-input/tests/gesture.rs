@@ -572,6 +572,7 @@ const PS1: Keys = Keys {
     colour: false,
     ghosting: false,
     picture: true,
+    repair: false,
 };
 
 /// The SNES's keys: L2 rewinds and R2 fast-forwards as on the handhelds, and a television's
@@ -582,6 +583,7 @@ const SNES: Keys = Keys {
     colour: false,
     ghosting: false,
     picture: true,
+    repair: false,
 };
 
 fn with_keys(keys: Keys) -> Gestures {
@@ -779,5 +781,26 @@ fn select_and_x_steps_the_screen_look_on_every_system() {
         g.feed(Down(X), 0),
         vec![GbaDown(X)],
         "X alone is the game's"
+    );
+}
+
+#[test]
+fn select_and_start_repairs_the_card_only_while_it_is_read_only() {
+    let mut g = Gestures::new();
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert_eq!(
+        g.feed(Down(Start), 10),
+        vec![GbaDown(Select), GbaDown(Start)],
+        "a game's SELECT+START was taken from it"
+    );
+    let mut g = with_keys(Keys {
+        repair: true,
+        ..Keys::HANDHELD
+    });
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert_eq!(g.feed(Down(Start), 10), vec![RepairCard]);
+    assert!(
+        g.feed(Up(Start), 20).is_empty(),
+        "the chord's START reached the game"
     );
 }

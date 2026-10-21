@@ -96,6 +96,7 @@ fn each_system_says_what_its_buttons_do() {
             colour: false,
             ghosting: false,
             picture: true,
+            repair: false,
         }
     );
     assert_eq!(
@@ -106,6 +107,7 @@ fn each_system_says_what_its_buttons_do() {
             colour: false,
             ghosting: false,
             picture: true,
+            repair: false,
         }
     );
 }

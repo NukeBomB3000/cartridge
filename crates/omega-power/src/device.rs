@@ -7,13 +7,20 @@ use std::process::Command;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::refresh::PanelRefresh;
-use crate::{Battery, Charge, LedState, Platform};
+use crate::{Battery, Charge, LedState, Platform, RepairResult};
 
 const TOP_STEP: u32 = 9;
 
 const DEV_INPUT: &str = "/dev/input";
 
 const RUN_DIR: &str = "/run";
+
+/// The card repair: its script and the exFAT checker on the card, where they are copied to run
+/// from with the card unmounted, and where the script leaves how it went.
+const REPAIR_SCRIPT: &str = "repair.sh";
+const FSCK_EXFAT: &str = "fsck.exfat";
+const REPAIR_STAGE: &str = "/tmp/omega-repair";
+const REPAIR_RESULT: &str = "/data/omega-repair.result";
 
 pub fn uptime_seconds(s: &str) -> Option<String> {
     let first = s.split_whitespace().next()?;
@@ -629,6 +636,39 @@ impl Platform for DevicePlatform {
         std::process::exit(0)
     }
 
+    fn card_read_only(&self) -> bool {
+        fs::read_to_string("/proc/mounts").is_ok_and(|m| read_only_in(&m, &self.root))
+    }
+
+    fn repair_card(&mut self) -> ! {
+        let mount = fs::read_to_string("/proc/mounts")
+            .ok()
+            .and_then(|m| card_mount_in(&m, &self.root));
+        match (mount, stage_repair(&self.root, Path::new(REPAIR_STAGE))) {
+            (Some(m), Ok(script)) => {
+                self.breadcrumb("repair: handing the card to repair.sh");
+                use std::os::unix::process::CommandExt;
+                let e = Command::new("/bin/sh")
+                    .arg(&script)
+                    .arg(&m.device)
+                    .arg(&m.point)
+                    .arg(&m.fs)
+                    .exec();
+                eprintln!("omega-zero: repair: {e}");
+            }
+            (None, _) => eprintln!(
+                "omega-zero: repair: no block device under {}",
+                self.root.display()
+            ),
+            (_, Err(e)) => eprintln!("omega-zero: repair: {e}"),
+        }
+        self.restart()
+    }
+
+    fn take_repair_result(&mut self) -> Option<RepairResult> {
+        take_repair_result(Path::new(REPAIR_RESULT))
+    }
+
     fn poweroff(&mut self) -> ! {
         self.breadcrumb("poweroff: reached omega-zero, about to sync");
         quiet_radios();
@@ -691,4 +731,81 @@ impl Platform for DevicePlatform {
             motor.play(on);
         }
     }
+}
+
+struct MountLine<'a> {
+    device: &'a str,
+    point: &'a Path,
+    fs: &'a str,
+    options: &'a str,
+}
+
+/// The mount `path` lies under in `mounts`, as /proc/mounts lists them: the deepest.
+fn closest_mount<'a>(mounts: &'a str, path: &Path) -> Option<MountLine<'a>> {
+    mounts
+        .lines()
+        .filter_map(|l| {
+            let mut f = l.split_whitespace();
+            let device = f.next()?;
+            let point = Path::new(f.next()?);
+            let fs = f.next()?;
+            let options = f.next()?;
+            path.starts_with(point).then_some(MountLine {
+                device,
+                point,
+                fs,
+                options,
+            })
+        })
+        .max_by_key(|m| m.point.as_os_str().len())
+}
+
+/// Whether `path` lies on a read-only mount in `mounts`.
+pub fn read_only_in(mounts: &str, path: &Path) -> bool {
+    closest_mount(mounts, path).is_some_and(|m| m.options.split(',').any(|o| o == "ro"))
+}
+
+/// The block device, mount point and filesystem of the card `path` lies on.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CardMount {
+    pub device: String,
+    pub point: PathBuf,
+    pub fs: String,
+}
+
+pub fn card_mount_in(mounts: &str, path: &Path) -> Option<CardMount> {
+    let m = closest_mount(mounts, path)?;
+    m.device.starts_with("/dev/").then(|| CardMount {
+        device: m.device.to_owned(),
+        point: m.point.to_path_buf(),
+        fs: m.fs.to_owned(),
+    })
+}
+
+/// Copies the repair script, and the exFAT checker where the card has one, off the card into
+/// `stage`, so they still run once the card is unmounted.
+pub fn stage_repair(root: &Path, stage: &Path) -> std::io::Result<PathBuf> {
+    let system = root.join("System");
+    fs::create_dir_all(stage)?;
+    let script = stage.join(REPAIR_SCRIPT);
+    fs::copy(system.join(REPAIR_SCRIPT), &script)?;
+    let fsck = system.join(FSCK_EXFAT);
+    if fsck.exists() {
+        use std::os::unix::fs::PermissionsExt;
+        let staged = stage.join(FSCK_EXFAT);
+        fs::copy(&fsck, &staged)?;
+        fs::set_permissions(&staged, fs::Permissions::from_mode(0o755))?;
+    }
+    Ok(script)
+}
+
+/// How the last repair went, from the file `repair.sh` left, which is taken so it is told once.
+pub fn take_repair_result(file: &Path) -> Option<RepairResult> {
+    let text = fs::read_to_string(file).ok()?;
+    let _ = fs::remove_file(file);
+    Some(match text.trim() {
+        "repaired" => RepairResult::Repaired,
+        "clean" => RepairResult::Clean,
+        _ => RepairResult::Failed,
+    })
 }

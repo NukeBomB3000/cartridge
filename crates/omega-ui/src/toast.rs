@@ -35,6 +35,13 @@ pub enum Toast {
     OneDisc,
     /// The DISC screen swapped disc `n`, counting from 1, into the drive.
     Disc(u8),
+    /// The card is mounted read-only, so nothing saves: SELECT+START repairs it.
+    CardReadOnly,
+    /// The repair before this boot left the card sound, or did not.
+    CardRepaired,
+    CardRepairFailed,
+    /// SELECT+START on a read-only card with too little charge for the repair.
+    CardRepairLowBattery,
 }
 
 /// What the toast says once disc `n` is in, for every disc a PlayStation game can have.
@@ -52,7 +59,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 19] = [
+    pub const ALL: [Toast; 23] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -72,6 +79,10 @@ impl Toast {
         Toast::Shader(omega_gfx::Look::Off),
         Toast::OneDisc,
         Toast::Disc(1),
+        Toast::CardReadOnly,
+        Toast::CardRepaired,
+        Toast::CardRepairFailed,
+        Toast::CardRepairLowBattery,
     ];
 
     /// Its place in `ALL`: every disc's toast is the one place.
@@ -96,6 +107,10 @@ impl Toast {
             Toast::Shader(..) => 16,
             Toast::OneDisc => 17,
             Toast::Disc(_) => 18,
+            Toast::CardReadOnly => 19,
+            Toast::CardRepaired => 20,
+            Toast::CardRepairFailed => 21,
+            Toast::CardRepairLowBattery => 22,
         }
     }
 
@@ -117,6 +132,10 @@ impl Toast {
             | Toast::PictureFit => "PICTURE",
             Toast::Shader(..) => "SHADER",
             Toast::OneDisc | Toast::Disc(_) => "DISC",
+            Toast::CardReadOnly
+            | Toast::CardRepaired
+            | Toast::CardRepairFailed
+            | Toast::CardRepairLowBattery => "SD CARD",
         }
     }
 
@@ -151,6 +170,10 @@ impl Toast {
                 omega_gfx::Look::Crt => "CRT",
             },
             Toast::OneDisc => "Only one disc",
+            Toast::CardReadOnly => "Read-only: SELECT+START",
+            Toast::CardRepaired => "Card repaired",
+            Toast::CardRepairFailed => "Repair failed",
+            Toast::CardRepairLowBattery => "Charge to 20% first",
             Toast::Disc(n) => DISC_IN
                 .get(usize::from(n).wrapping_sub(1))
                 .copied()

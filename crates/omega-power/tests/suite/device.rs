@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use omega_power::{
     motor_change, motor_pin, rumble_node, Battery, Charge, DevicePlatform, LedState, Platform,
@@ -368,4 +368,74 @@ fn headphones_follow_the_detection_pin() {
     assert!(platform(&d).headphones());
     with_jack(&d, "lo");
     assert!(!platform(&d).headphones());
+}
+
+const MOUNTS: &str = "\
+/dev/root / ext4 rw,relatime 0 0
+tmpfs /tmp tmpfs rw,nosuid 0 0
+/dev/mmcblk0p7 /mnt/sdcard vfat ro,noatime,errors=remount-ro 0 0
+/dev/mmcblk1p1 /mnt/sdcard/sub exfat rw,noatime 0 0
+";
+
+#[test]
+fn the_card_reads_read_only_by_the_deepest_mount_it_lies_under() {
+    use omega_power::read_only_in;
+    assert!(read_only_in(MOUNTS, Path::new("/mnt/sdcard")));
+    assert!(read_only_in(MOUNTS, Path::new("/mnt/sdcard/Saves")));
+    assert!(!read_only_in(MOUNTS, Path::new("/mnt/sdcard/sub/Saves")));
+    assert!(!read_only_in(MOUNTS, Path::new("/tmp")));
+}
+
+#[test]
+fn the_card_to_repair_is_the_block_device_it_lies_on() {
+    use omega_power::{card_mount_in, CardMount};
+    assert_eq!(
+        card_mount_in(MOUNTS, Path::new("/mnt/sdcard")),
+        Some(CardMount {
+            device: "/dev/mmcblk0p7".into(),
+            point: "/mnt/sdcard".into(),
+            fs: "vfat".into(),
+        })
+    );
+    assert_eq!(
+        card_mount_in(MOUNTS, Path::new("/tmp")),
+        None,
+        "tmpfs is no card"
+    );
+}
+
+#[test]
+fn a_repair_result_is_told_once() {
+    use omega_power::{take_repair_result, RepairResult};
+    let d = tempfile::tempdir().unwrap();
+    let file = d.path().join("omega-repair.result");
+    for (text, want) in [
+        ("repaired\n", RepairResult::Repaired),
+        ("clean\n", RepairResult::Clean),
+        ("busy\n", RepairResult::Failed),
+    ] {
+        std::fs::write(&file, text).unwrap();
+        assert_eq!(take_repair_result(&file), Some(want));
+        assert_eq!(take_repair_result(&file), None, "told twice");
+    }
+}
+
+#[test]
+fn the_repair_is_staged_off_the_card_with_its_exfat_checker() {
+    use omega_power::stage_repair;
+    let d = tempfile::tempdir().unwrap();
+    let system = d.path().join("card/System");
+    std::fs::create_dir_all(&system).unwrap();
+    std::fs::write(system.join("repair.sh"), "#!/bin/sh\n").unwrap();
+    std::fs::write(system.join("fsck.exfat"), "bin").unwrap();
+    let stage = d.path().join("stage");
+    let script = stage_repair(&d.path().join("card"), &stage).unwrap();
+    assert_eq!(script, stage.join("repair.sh"));
+    assert!(script.is_file());
+    use std::os::unix::fs::PermissionsExt;
+    let mode = std::fs::metadata(stage.join("fsck.exfat"))
+        .unwrap()
+        .permissions()
+        .mode();
+    assert_eq!(mode & 0o111, 0o111, "the staged checker cannot run");
 }

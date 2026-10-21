@@ -142,6 +142,8 @@ omega-zero is made by **Otávio ([@oauramos](https://github.com/oauramos))**.
   (free for non-commercial use only) for the Mega Drive; and
   [PCSX ReARMed](https://github.com/libretro/pcsx_rearmed) (GPL-2.0) for the PlayStation. Their
   licences and patches, and the source of all but mGBA, ship in `System/licenses/`.
+- The card repair checks exFAT cards with fsck.exfat from
+  [exfatprogs](https://github.com/exfatprogs/exfatprogs) (GPL-2.0), its source shipped beside it.
 - Type is [Pixel Code](https://github.com/qwerasd205/PixelCode) by Qwerasd (SIL OFL 1.1); every
   icon is drawn as pixel art. The LCD mask is derived from GigaHerz's LCD3x.
 - Cart labels come from [ScreenScraper](https://www.screenscraper.fr), fetched with your own

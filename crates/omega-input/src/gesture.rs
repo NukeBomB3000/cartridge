@@ -55,6 +55,8 @@ pub enum Action {
     PowerOff,
     LidClose,
     LidOpen,
+    /// SELECT+START with the card mounted read-only: check and repair it.
+    RepairCard,
 }
 
 /// What the buttons the systems disagree about do for the game being played. The handhelds'
@@ -74,6 +76,9 @@ pub struct Keys {
     pub ghosting: bool,
     /// SELECT+Y steps the picture size. Off, a Y under SELECT is the game's.
     pub picture: bool,
+    /// SELECT+START repairs the card: only while it is mounted read-only, so a game's own
+    /// SELECT+START reaches it otherwise.
+    pub repair: bool,
 }
 
 impl Keys {
@@ -85,6 +90,7 @@ impl Keys {
         colour: true,
         ghosting: true,
         picture: true,
+        repair: false,
     };
 }
 
@@ -298,6 +304,7 @@ impl Gestures {
             Btn::A if self.keys.colour => (COLOUR_CHORD, Action::ColourCorrectionToggle),
             Btn::B if self.keys.ghosting => (GHOSTING_CHORD, Action::LcdGhostingToggle),
             Btn::X => (SHADER_CHORD, Action::ShaderNext),
+            Btn::Start if self.keys.repair => (REPAIR_CHORD, Action::RepairCard),
             Btn::L2 if self.keys.game_l2_r2 && self.keys.rewind => (L2_CHORD, Action::RewindStart),
             Btn::R2 if self.keys.game_l2_r2 => (R2_CHORD, Action::FfStart),
             _ => return None,
@@ -515,3 +522,6 @@ const SHADER_CHORD: u16 = 512;
 /// The chord bits of SELECT+A, the colour correction, and SELECT+B, the LCD's ghosting.
 const COLOUR_CHORD: u16 = 1024;
 const GHOSTING_CHORD: u16 = 2048;
+
+/// The chord bit of SELECT+START, the card repair.
+const REPAIR_CHORD: u16 = 4096;

@@ -70,6 +70,18 @@ impl Power {
         self.platform.restart()
     }
 
+    pub fn card_read_only(&self) -> bool {
+        self.platform.card_read_only()
+    }
+
+    pub fn repair_card(&mut self) -> ! {
+        self.platform.repair_card()
+    }
+
+    pub fn take_repair_result(&mut self) -> Option<crate::RepairResult> {
+        self.platform.take_repair_result()
+    }
+
     pub fn now(&self) -> i64 {
         self.platform.now()
     }

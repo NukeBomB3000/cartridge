@@ -612,6 +612,14 @@ impl Frontend {
         self.session.app_mut().restart();
     }
 
+    pub fn repairing(&self) -> bool {
+        self.session.app().ready_to_repair()
+    }
+
+    pub fn repair(&mut self) {
+        self.session.app_mut().repair();
+    }
+
     pub fn poweroff(&mut self) {
         self.session.app_mut().poweroff();
     }

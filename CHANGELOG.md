@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- When the card turns read-only, a toast says so every 10 seconds, and SELECT+START repairs it:
+  omega-zero hands the card to repair.sh, which unmounts it, runs fsck.fat or fsck.exfat until
+  it comes back clean and reboots; the next boot says whether it worked. It waits for 20 %
+  battery unless the handheld is charging. SELECT+START is only taken while the card is
+  read-only. fsck.exfat is built from exfatprogs, its source shipped beside it.
 - If omega-zero stops responding with the lid closed, a watcher apart from it powers the handheld
   off a minute after omega-zero would have, unloading the Wi-Fi driver and syncing first.
 - The speaker no longer buzzes while nothing plays: omega-zero lets go of the audio device after

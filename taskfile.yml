@@ -21,6 +21,8 @@ vars:
   PCE_FAST_COMMIT: 3f946f277aef3aa99a95551618bbcd1dd2bda0d9
   FCEUMM_COMMIT: ac0d00a7fc01166f84c7bac01d1084ebfd2b865e
   GPGX_COMMIT: aa74d79634cd230f65cce4180e92688e53883d2f
+  EXFATPROGS_VERSION: 1.4.3
+  EXFATPROGS_SHA256: 4b5052cba6ff9f6dcb1c63eeeac328620472c5b0b3caf3d38e4ada50e75469d3
   # The libretro names of the cores the device bundle ships, <name>_libretro.so in System/
   DEVICE_CORES: mgba gpsp snes9x mednafen_supafaust pcsx_rearmed mednafen_pce_fast fceumm
     genesis_plus_gx
@@ -110,6 +112,7 @@ tasks:
       - sh card/test-link.sh
       - sh card/test-led.sh
       - sh card/test-lid.sh
+      - sh card/test-repair.sh
       - sh card/test-coresave.sh
       - sh card/test-probe.sh
       - sh card/test-wifi.sh
@@ -681,6 +684,41 @@ tasks:
         vendor/genesis_plus_gx-src.sha
       - task: core:genesis_plus_gx
 
+  fsck:exfat:
+    desc: >-
+      Build a static aarch64 fsck.exfat for the card repair from the pinned exfatprogs release,
+      whose archive ships beside it as its GPL-2.0 corresponding source; cross-compiled in an
+      amd64 container, only its library and fsck
+    status:
+      - test -f vendor/fsck.exfat
+      - test -f vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz
+    cmds:
+      - |
+        set -eu
+        mkdir -p vendor
+        rm -f vendor/fsck.exfat vendor/exfatprogs-*.tar.gz
+        curl -fsSL -o vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz \
+          "https://github.com/exfatprogs/exfatprogs/releases/download/{{.EXFATPROGS_VERSION}}/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz"
+        echo "{{.EXFATPROGS_SHA256}}  vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz" | sha256sum -c -
+      - |
+        set -eu
+        docker run --rm --platform linux/amd64 -v "$PWD":/src -w /src rust:1-bullseye sh -c '
+          set -e
+          sed -i "/bullseye-security/d" /etc/apt/sources.list
+          apt-get -o Acquire::Check-Valid-Until=false update -qq
+          apt-get install -y -qq gcc-aarch64-linux-gnu libc6-dev-arm64-cross >/dev/null
+          rm -rf target-device/exfatprogs
+          mkdir -p target-device/exfatprogs
+          tar -xzf vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz -C target-device/exfatprogs
+          cd target-device/exfatprogs/exfatprogs-{{.EXFATPROGS_VERSION}}
+          ./configure --quiet --host=aarch64-linux-gnu
+          make -s -C lib
+          make -s -C fsck LDFLAGS=-all-static
+          aarch64-linux-gnu-strip fsck/fsck.exfat
+          cp fsck/fsck.exfat /src/vendor/fsck.exfat
+          chown -R '"$(id -u):$(id -g)"' /src/vendor /src/target-device'
+      - file vendor/fsck.exfat | grep -q 'aarch64.*statically linked'
+
   cores:device:
     desc: >-
       Build every core the device bundle ships, mGBA, gpSP, Snes9x, Supafaust, pcsx_rearmed,
@@ -694,6 +732,7 @@ tasks:
       - core:pce_fast
       - core:fceumm
       - core:genesis_plus_gx
+      - fsck:exfat
 
   device:sh:
     desc: >-
@@ -784,7 +823,9 @@ tasks:
           file "vendor/${lib}_libretro.so" | grep -q aarch64
           cp "vendor/${lib}_libretro.so" {{.OUT}}/System/
         done
+      - cp vendor/fsck.exfat {{.OUT}}/System/
       - cp -r licenses {{.OUT}}/System/licenses
+      - cp vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz {{.OUT}}/System/licenses/
       - |
         set -euo pipefail
         sha="$(cat vendor/gpsp-src.sha)"
@@ -835,7 +876,9 @@ tasks:
         for lib in {{.DEVICE_CORES}}; do
           adb push "vendor/${lib}_libretro.so" "{{.SD}}/System/${lib}_libretro.so"
         done
+      - adb push vendor/fsck.exfat '{{.SD}}/System/fsck.exfat'
       - adb push licenses '{{.SD}}/System/'
+      - adb push vendor/exfatprogs-{{.EXFATPROGS_VERSION}}.tar.gz '{{.SD}}/System/licenses/'
       - |
         set -euo pipefail
         sha="$(cat vendor/gpsp-src.sha)"

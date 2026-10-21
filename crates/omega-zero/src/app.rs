@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use omega_gfx::{out_h, out_w};
 use omega_input::{Action, Btn, Keys, MUTE_CHORD_MS};
-use omega_power::{Battery, Charge, LedState, LidPolicy, Power};
+use omega_power::{Battery, Charge, LedState, LidPolicy, Power, RepairResult};
 use omega_retro::LinkChannel;
 use omega_store::{
     format_stamp, read_app_state, scan, write_app_state, AppState, BackdropStyle, Cart, Core,
@@ -67,6 +67,10 @@ const VOLUME_STEP: u8 = 5;
 const AUTOSAVE_MS: Millis = 60_000;
 
 const BATTERY_CRITICAL: u8 = 5;
+
+/// The least charge a card repair starts on unplugged: a repair cut off by a flat battery could
+/// leave the card worse.
+const REPAIR_BATTERY_MIN: u8 = 20;
 
 const BATTERY_POLL_MS: Millis = 10_000;
 
@@ -361,6 +365,11 @@ pub struct App {
     pub(crate) autosave_at: Millis,
     pub(crate) pending_save: Option<std::thread::JoinHandle<()>>,
     pub(crate) battery_at: Millis,
+    /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
+    /// offers to repair it.
+    card_read_only: bool,
+    /// The card is being handed to the repair once the screen has said so.
+    repairing: bool,
     pub(crate) charge_at: Millis,
     pub(crate) headphones: bool,
     pub(crate) headphones_at: Millis,
@@ -518,6 +527,8 @@ impl App {
             autosave_at: AUTOSAVE_MS,
             pending_save: None,
             battery_at: BATTERY_POLL_MS,
+            card_read_only: false,
+            repairing: false,
             charge_at: CHARGE_POLL_MS,
             headphones: false,
             headphones_at: 0,
@@ -886,6 +897,7 @@ impl App {
             colour: self.platform.colour_correction(),
             ghosting: self.platform.lcd_ghosting(),
             picture: true,
+            repair: self.card_read_only,
         }
     }
 
@@ -1033,6 +1045,13 @@ impl App {
             self.phase = clock_screen(secs, 0, false);
             self.slide = None;
         }
+        if let Some(result) = power.take_repair_result() {
+            let said = match result {
+                RepairResult::Repaired | RepairResult::Clean => Toast::CardRepaired,
+                RepairResult::Failed => Toast::CardRepairFailed,
+            };
+            self.hud.toast(said, self.now());
+        }
         self.power = Some(power);
         self.battery_at = self.now();
         self.charge_at = self.now();
@@ -1082,8 +1101,34 @@ impl App {
         self.restarting && self.now() >= self.act_at
     }
 
+    pub fn ready_to_repair(&self) -> bool {
+        self.repairing && self.now() >= self.act_at
+    }
+
     pub fn shutting_down(&self) -> bool {
-        self.powering_off || self.restarting
+        self.powering_off || self.restarting || self.repairing
+    }
+
+    /// Hands the handheld to the card repair, which reboots it; nothing comes back.
+    pub fn repair(&mut self) {
+        self.settle_saves();
+        if let Some(power) = &mut self.power {
+            power.repair_card();
+        }
+    }
+
+    /// Whether the card is mounted read-only, as found at the last look.
+    pub fn card_read_only(&self) -> bool {
+        self.card_read_only
+    }
+
+    /// Looks whether the card has turned read-only, and while it is, says so and how to repair
+    /// it, at every look.
+    fn look_at_the_card(&mut self) {
+        self.card_read_only = self.power.as_ref().is_some_and(|p| p.card_read_only());
+        if self.card_read_only && !self.shutting_down() {
+            self.hud.toast(Toast::CardReadOnly, self.now());
+        }
     }
 
     pub fn restarting(&self) -> bool {
@@ -1507,6 +1552,10 @@ impl App {
             self.hud.toast(said, self.now());
             return true;
         }
+        if action == Action::RepairCard {
+            self.begin_repair();
+            return true;
+        }
         if action == Action::LcdGhostingToggle {
             self.change_setting(SettingsRow::LcdGhosting, true);
             let said = match self.state.lcd_ghosting {
@@ -1837,6 +1886,7 @@ impl App {
         if self.now() >= self.battery_at {
             self.battery_at = self.now() + BATTERY_POLL_MS;
             self.battery = self.power.as_ref().and_then(|p| p.battery());
+            self.look_at_the_card();
             if let Some(b) = self.battery {
                 self.on_battery(b);
             }
@@ -2946,6 +2996,25 @@ impl App {
     }
 
     /// Restarts once the screen saying so has slid in.
+    /// SELECT+START on a read-only card: the repair, once the battery holds enough for it.
+    fn begin_repair(&mut self) {
+        if !self.card_read_only || self.shutting_down() {
+            return;
+        }
+        let low = self.battery.is_some_and(|b| {
+            b.percent < REPAIR_BATTERY_MIN && !matches!(b.charge, Charge::Charging | Charge::Full)
+        });
+        if low {
+            self.hud.toast(Toast::CardRepairLowBattery, self.now());
+            return;
+        }
+        self.close_game_menu();
+        self.repairing = true;
+        self.act_at = self.now() + SHUTDOWN_SHOW_MS;
+        self.set_led(LedState::Off);
+        self.show_going(PowerChoice::Restart);
+    }
+
     pub(crate) fn begin_restart(&mut self) {
         if self.shutting_down() {
             return;
