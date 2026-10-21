@@ -16,6 +16,10 @@ pub enum Toast {
     BiosMismatch,
     ColourOn,
     ColourOff,
+    /// SELECT+Y on a SNES or PlayStation game: the picture at its actual size again.
+    PictureActual,
+    /// SELECT+Y on a SNES or PlayStation game: the picture stretched.
+    PictureStretch,
     /// SELECT + MENU on a PlayStation game on one disc: there is no other to swap in.
     OneDisc,
     /// The DISC screen swapped disc `n`, counting from 1, into the drive.
@@ -37,7 +41,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1.
-    pub const ALL: [Toast; 11] = [
+    pub const ALL: [Toast; 13] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -47,6 +51,8 @@ impl Toast {
         Toast::BiosMismatch,
         Toast::ColourOn,
         Toast::ColourOff,
+        Toast::PictureActual,
+        Toast::PictureStretch,
         Toast::OneDisc,
         Toast::Disc(1),
     ];
@@ -63,8 +69,10 @@ impl Toast {
             Toast::BiosMismatch => 6,
             Toast::ColourOn => 7,
             Toast::ColourOff => 8,
-            Toast::OneDisc => 9,
-            Toast::Disc(_) => 10,
+            Toast::PictureActual => 9,
+            Toast::PictureStretch => 10,
+            Toast::OneDisc => 11,
+            Toast::Disc(_) => 12,
         }
     }
 
@@ -78,6 +86,7 @@ impl Toast {
             | Toast::PeerEnded
             | Toast::BiosMismatch => "LINK",
             Toast::ColourOn | Toast::ColourOff => "COLOUR",
+            Toast::PictureActual | Toast::PictureStretch => "PICTURE",
             Toast::OneDisc | Toast::Disc(_) => "DISC",
         }
     }
@@ -94,6 +103,8 @@ impl Toast {
             Toast::BiosMismatch => "BIOS does not match",
             Toast::ColourOn => "Correction on",
             Toast::ColourOff => "Correction off",
+            Toast::PictureActual => "Actual size",
+            Toast::PictureStretch => "Stretched",
             Toast::OneDisc => "Only one disc",
             Toast::Disc(n) => DISC_IN
                 .get(usize::from(n).wrapping_sub(1))

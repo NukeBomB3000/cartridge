@@ -857,6 +857,7 @@ impl App {
             game_l2_r2: self.platform.game_owns_l2_r2(),
             rewind: self.platform.rewinds(),
             colour: self.platform.colour_correction(),
+            picture: self.platform.picture_toggle(),
         }
     }
 
@@ -1459,6 +1460,18 @@ impl App {
                 true => Toast::ColourOn,
                 false => Toast::ColourOff,
             };
+            self.hud.toast(said, self.now());
+            return true;
+        }
+        if action == Action::PictureToggle {
+            if !matches!(self.phase, Phase::Playing { .. }) {
+                return false;
+            }
+            let (mode, said) = match self.video_mode {
+                VideoMode::Actual => (VideoMode::Stretch, Toast::PictureStretch),
+                VideoMode::Stretch => (VideoMode::Actual, Toast::PictureActual),
+            };
+            self.set_picture(mode);
             self.hud.toast(said, self.now());
             return true;
         }

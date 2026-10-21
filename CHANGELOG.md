@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- SELECT+Y switches a SNES or PlayStation game's picture between its actual size and stretched,
+  and the game keeps the choice. Stretched, the SNES takes a television's 4:3 rather than its
+  pixels' 8:7, filling a 640x480 screen. The handhelds' SELECT+Y is still the colour correction.
+
 ## omega-zero 1.2.0
 
 Supafaust runs SNES games, a game that takes the console down can no longer trap it at boot, and

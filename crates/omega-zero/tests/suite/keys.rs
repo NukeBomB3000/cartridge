@@ -12,6 +12,7 @@ use omega_store::{write_app_state, AppState, Platform};
 use omega_ui::{CornerBadge, HudKind};
 use omega_zero::app::Phase;
 use omega_zero::session::Session;
+use omega_zero::video_mode::{video_mode_for, VideoMode};
 use tempfile::TempDir;
 
 /// A card with one game of `platform` on it, `stem`, its file as the shelf finds it.
@@ -91,6 +92,7 @@ fn each_system_says_what_its_buttons_do() {
             game_l2_r2: false,
             rewind: true,
             colour: false,
+            picture: true,
         }
     );
     assert_eq!(
@@ -99,6 +101,7 @@ fn each_system_says_what_its_buttons_do() {
             game_l2_r2: true,
             rewind: false,
             colour: false,
+            picture: true,
         }
     );
 }
@@ -177,5 +180,33 @@ fn a_gba_game_keeps_l2_and_r2_from_the_game() {
         held(&s) & (ButtonMask::L2 | ButtonMask::R2),
         0,
         "a GBA game was handed a shoulder it does not have"
+    );
+}
+
+#[test]
+fn select_and_y_stretches_a_snes_picture_to_four_three_and_back() {
+    let d = root_with(Platform::Snes, "Chrono Trigger");
+    let (mut s, mut now) = playing(&d, Platform::Snes, "Chrono Trigger");
+    assert_eq!(
+        video_mode_for(d.path(), "Chrono Trigger"),
+        VideoMode::Actual
+    );
+
+    let chord = |s: &mut Session, now: &mut Millis| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(Btn::Y)));
+        assert_eq!(held(s) & ButtonMask::Y, 0, "the chord's Y reached the game");
+        step(s, now, Some(RawEvent::Up(Btn::Y)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    chord(&mut s, &mut now);
+    assert_eq!(
+        video_mode_for(d.path(), "Chrono Trigger"),
+        VideoMode::Stretch
+    );
+    chord(&mut s, &mut now);
+    assert_eq!(
+        video_mode_for(d.path(), "Chrono Trigger"),
+        VideoMode::Actual
     );
 }

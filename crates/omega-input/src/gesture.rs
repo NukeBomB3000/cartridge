@@ -42,6 +42,8 @@ pub enum Action {
     GameMenu,
     MuteToggle,
     ColourCorrectionToggle,
+    /// SELECT+Y on a television's console: the picture between its actual size and stretched.
+    PictureToggle,
     PowerPress,
     PowerTap,
     PowerHold,
@@ -63,6 +65,9 @@ pub struct Keys {
     pub rewind: bool,
     /// SELECT+Y toggles the colour correction. Off, a Y under SELECT is the game's.
     pub colour: bool,
+    /// SELECT+Y toggles the picture between its actual size and stretched, where there is no
+    /// colour correction to toggle.
+    pub picture: bool,
 }
 
 impl Keys {
@@ -71,6 +76,7 @@ impl Keys {
         game_l2_r2: false,
         rewind: true,
         colour: true,
+        picture: false,
     };
 }
 
@@ -281,6 +287,7 @@ impl Gestures {
             Btn::L1 => (16, Action::LoadState),
             Btn::R1 => (32, Action::SaveState),
             Btn::Y if self.keys.colour => (64, Action::ColourCorrectionToggle),
+            Btn::Y if self.keys.picture => (64, Action::PictureToggle),
             Btn::L2 if self.keys.game_l2_r2 && self.keys.rewind => (L2_CHORD, Action::RewindStart),
             Btn::R2 if self.keys.game_l2_r2 => (R2_CHORD, Action::FfStart),
             _ => return None,

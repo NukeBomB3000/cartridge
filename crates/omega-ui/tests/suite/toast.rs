@@ -88,6 +88,8 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::BiosMismatch,
             Toast::ColourOn,
             Toast::ColourOff,
+            Toast::PictureActual,
+            Toast::PictureStretch,
             Toast::OneDisc,
             Toast::Disc(1),
         ],
