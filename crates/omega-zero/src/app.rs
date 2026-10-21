@@ -881,6 +881,7 @@ impl App {
             rewind: self.platform.rewinds(),
             colour: self.platform.colour_correction(),
             picture: self.platform.picture_toggle(),
+            picture_l2: self.platform.colour_correction(),
         }
     }
 
@@ -1498,10 +1499,13 @@ impl App {
                 return false;
             }
             let mode = self.video_mode.next();
-            let said = match mode {
-                VideoMode::Actual => Toast::PictureActual,
-                VideoMode::Aspect => Toast::PictureAspect,
-                VideoMode::Stretch => Toast::PictureStretch,
+            let handheld = self.platform.colour_correction();
+            let said = match (mode, handheld) {
+                (VideoMode::Actual, false) => Toast::PictureActual,
+                (VideoMode::Aspect, false) => Toast::PictureAspect,
+                (VideoMode::Actual, true) => Toast::PictureOriginal,
+                (VideoMode::Aspect, true) => Toast::PictureFit,
+                (VideoMode::Stretch, _) => Toast::PictureStretch,
             };
             self.set_picture(mode);
             self.hud.toast(said, self.now());

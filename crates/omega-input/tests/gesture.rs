@@ -516,6 +516,7 @@ const PS1: Keys = Keys {
     rewind: false,
     colour: false,
     picture: true,
+    picture_l2: false,
 };
 
 /// The SNES's keys: L2 rewinds and R2 fast-forwards as on the handhelds, and a television's
@@ -525,6 +526,7 @@ const SNES: Keys = Keys {
     rewind: true,
     colour: false,
     picture: true,
+    picture_l2: false,
 };
 
 fn with_keys(keys: Keys) -> Gestures {
@@ -722,5 +724,34 @@ fn select_and_x_steps_the_screen_look_on_every_system() {
         g.feed(Down(X), 0),
         vec![GbaDown(X)],
         "X alone is the game's"
+    );
+}
+
+#[test]
+fn select_and_l2_steps_a_handheld_s_picture_size_and_rewinds_nothing() {
+    let mut g = Gestures::new();
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert_eq!(g.feed(Down(L2), 10), vec![PictureToggle]);
+    assert!(
+        g.feed(Up(L2), 40).is_empty(),
+        "letting go of the chord stopped a rewind"
+    );
+    assert!(g.feed(Up(Select), 60).is_empty());
+    assert_eq!(
+        g.feed(Down(L2), 1_000),
+        vec![RewindStart],
+        "L2 alone no longer rewinds"
+    );
+    assert_eq!(g.feed(Up(L2), 1_100), vec![RewindStop]);
+}
+
+#[test]
+fn select_and_l2_is_left_alone_on_a_television_s_console() {
+    let mut g = with_keys(SNES);
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert_ne!(
+        g.feed(Down(L2), 10),
+        vec![PictureToggle],
+        "SELECT+Y is the SNES's picture key"
     );
 }

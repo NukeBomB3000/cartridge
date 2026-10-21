@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- SELECT+L2 goes round a Game Boy, Game Boy Color or GBA game's picture sizes, kept per system:
+  as it was always drawn, its own shape as large as the screen holds (a GBA game 640x427 on a
+  640x480 screen, a Game Boy game 533x480), and stretched over the whole screen. L2 alone still
+  rewinds, and L1 and R1 on the Game Boys still stretch and unstretch.
 - A game ScreenScraper knows but has no scan of the label for wears its box's front instead, cut
   to its label, rather than its name; a PlayStation disc tries the face ScreenScraper draws of it
   first.

@@ -80,6 +80,8 @@ impl ControlsView {
         }
         if platform.picture_toggle() {
             game.push(("SELECT+Y", "PICTURE SIZE"));
+        } else {
+            game.push(("SELECT+L2", "PICTURE SIZE"));
         }
         game.push(("SELECT+X", "SHADER"));
         if platform.owns_shoulders() {

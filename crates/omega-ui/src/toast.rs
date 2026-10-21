@@ -22,6 +22,10 @@ pub enum Toast {
     PictureAspect,
     /// SELECT+Y on a television's console: the picture stretched over the screen.
     PictureStretch,
+    /// SELECT+L2 on a handheld: the picture as it was always drawn.
+    PictureOriginal,
+    /// SELECT+L2 on a handheld: the picture its own shape, as large as the screen holds.
+    PictureFit,
     /// SELECT+X in a game: the screen look now chosen for its system.
     Shader(omega_gfx::Look),
     /// SELECT + MENU on a PlayStation game on one disc: there is no other to swap in.
@@ -45,7 +49,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 15] = [
+    pub const ALL: [Toast; 17] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -58,6 +62,8 @@ impl Toast {
         Toast::PictureActual,
         Toast::PictureAspect,
         Toast::PictureStretch,
+        Toast::PictureOriginal,
+        Toast::PictureFit,
         Toast::Shader(omega_gfx::Look::Off),
         Toast::OneDisc,
         Toast::Disc(1),
@@ -78,9 +84,11 @@ impl Toast {
             Toast::PictureActual => 9,
             Toast::PictureAspect => 10,
             Toast::PictureStretch => 11,
-            Toast::Shader(_) => 12,
-            Toast::OneDisc => 13,
-            Toast::Disc(_) => 14,
+            Toast::PictureOriginal => 12,
+            Toast::PictureFit => 13,
+            Toast::Shader(_) => 14,
+            Toast::OneDisc => 15,
+            Toast::Disc(_) => 16,
         }
     }
 
@@ -94,7 +102,11 @@ impl Toast {
             | Toast::PeerEnded
             | Toast::BiosMismatch => "LINK",
             Toast::ColourOn | Toast::ColourOff => "COLOUR",
-            Toast::PictureActual | Toast::PictureAspect | Toast::PictureStretch => "PICTURE",
+            Toast::PictureActual
+            | Toast::PictureAspect
+            | Toast::PictureStretch
+            | Toast::PictureOriginal
+            | Toast::PictureFit => "PICTURE",
             Toast::Shader(_) => "SHADER",
             Toast::OneDisc | Toast::Disc(_) => "DISC",
         }
@@ -115,6 +127,8 @@ impl Toast {
             Toast::PictureActual => "Integer scale",
             Toast::PictureAspect => "Keep aspect 4:3",
             Toast::PictureStretch => "Stretch",
+            Toast::PictureOriginal => "Original",
+            Toast::PictureFit => "Keep aspect",
             Toast::Shader(look) => match look {
                 omega_gfx::Look::Off => "Off",
                 omega_gfx::Look::Lcd => "LCD",

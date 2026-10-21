@@ -95,6 +95,7 @@ fn each_system_says_what_its_buttons_do() {
             rewind: true,
             colour: false,
             picture: true,
+            picture_l2: false,
         }
     );
     assert_eq!(
@@ -104,6 +105,7 @@ fn each_system_says_what_its_buttons_do() {
             rewind: false,
             colour: false,
             picture: true,
+            picture_l2: false,
         }
     );
 }
@@ -262,4 +264,22 @@ fn each_system_offers_its_own_screen_s_looks() {
         "a look the GBA lacks was used"
     );
     assert_eq!(shader_for(d.path(), Platform::Ps1), Look::Scanlines);
+}
+
+#[test]
+fn select_and_l2_goes_round_a_gba_picture_s_sizes_and_keeps_them_for_the_system() {
+    let d = root_with(Platform::Gba, "Metroid Fusion");
+    let (mut s, mut now) = playing(&d, Platform::Gba, "Metroid Fusion");
+    assert_eq!(video_mode_for(d.path(), Platform::Gba), VideoMode::Actual);
+    let chord = |s: &mut Session, now: &mut Millis| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(Btn::L2)));
+        step(s, now, Some(RawEvent::Up(Btn::L2)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    for want in [VideoMode::Aspect, VideoMode::Stretch, VideoMode::Actual] {
+        chord(&mut s, &mut now);
+        assert_eq!(video_mode_for(d.path(), Platform::Gba), want);
+        assert!(!rewinding(&s), "the chord rewound the game");
+    }
 }

@@ -49,8 +49,8 @@ impl VideoMode {
         }
     }
 
-    /// The mode SELECT+Y goes to from this one on a television's console: actual size, 4:3,
-    /// stretched and round again.
+    /// The mode SELECT+Y goes to from this one on a television's console, or SELECT+L2 on a
+    /// handheld: actual size, 4:3 or the handheld's own shape, stretched and round again.
     pub fn next(self) -> VideoMode {
         match self {
             VideoMode::Actual => VideoMode::Aspect,
@@ -81,7 +81,7 @@ pub fn source_rect(platform: Platform, mode: VideoMode) -> [f32; 4] {
         return WHOLE_TEXTURE;
     }
     let (w, h) = platform.picture();
-    if mode != VideoMode::Stretch || (w, h) == (SRC_W, SRC_H) || w > SRC_W || h > SRC_H {
+    if mode == VideoMode::Actual || (w, h) == (SRC_W, SRC_H) || w > SRC_W || h > SRC_H {
         return WHOLE_TEXTURE;
     }
     let x = SRC_W.saturating_sub(w) / 2;
@@ -146,7 +146,9 @@ pub fn screen_on_frame(
     if is_console(platform) {
         return console_screen(c, platform, mode, frame);
     }
-    let uv = source_rect(platform, mode);
+    if mode != VideoMode::Actual {
+        return handheld_scaled(c, platform, mode);
+    }
     let actual = source_rect(platform, VideoMode::Actual);
     let (cw, ch) = (c.w as f32, c.h as f32);
     if cw >= FRAME.0 && ch >= FRAME.1 {
@@ -158,7 +160,7 @@ pub fn screen_on_frame(
         };
         let rect = [(cw - FRAME.0) / 2.0, top, FRAME.0, FRAME.1];
         return Screen {
-            view: lcd(rect, uv),
+            view: lcd(rect, actual),
             still: lcd(rect, actual),
             bands: around(c, rect),
         };
@@ -184,16 +186,46 @@ pub fn screen_on_frame(
         }
         Platform::Gb | Platform::Gbc => {
             let whole = [(cw - FRAME.0) / 2.0, (ch - FRAME.1) / 2.0, FRAME.0, FRAME.1];
-            let view = match mode {
-                VideoMode::Actual | VideoMode::Aspect => lcd(whole, actual),
-                VideoMode::Stretch => lcd([0.0, 0.0, cw, ch], uv),
-            };
             Screen {
-                view,
+                view: lcd(whole, actual),
                 still: lcd(whole, actual),
-                bands: around(c, view.rect),
+                bands: around(c, whole),
             }
         }
+    }
+}
+
+/// A handheld's own picture, the GBA's whole screen or a Game Boy's 160x144 window without the
+/// border around it, kept to its shape as large as the canvas holds, or stretched over all of
+/// it. Drawn through the sharp filter, or the LCD mask where it comes out at exactly three panel
+/// pixels to a game pixel, as the GBA does across 720x480. A save state's screenshot is shown as
+/// it is at the actual size, whatever the picture's.
+fn handheld_scaled(c: Canvas, platform: Platform, mode: VideoMode) -> Screen {
+    let (cw, ch) = (c.w as f32, c.h as f32);
+    let (pw, ph) = platform.picture();
+    let (pw, ph) = (pw as f32, ph as f32);
+    let (w, h) = match mode {
+        VideoMode::Stretch => (cw, ch),
+        _ => {
+            let scale = (cw / pw).min(ch / ph);
+            ((pw * scale).round(), (ph * scale).round())
+        }
+    };
+    let rect = [((cw - w) / 2.0).round(), ((ch - h) / 2.0).round(), w, h];
+    let uv = source_rect(platform, mode);
+    let view = if (w, h) == (pw * SCALE as f32, ph * SCALE as f32) && uv == WHOLE_TEXTURE {
+        lcd(rect, uv)
+    } else {
+        GameView {
+            rect,
+            uv,
+            filter: Filter::Sharp,
+        }
+    };
+    Screen {
+        view,
+        still: screen_on(c, platform, VideoMode::Actual).still,
+        bands: around(c, rect),
     }
 }
 

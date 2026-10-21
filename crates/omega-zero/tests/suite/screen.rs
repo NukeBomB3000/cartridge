@@ -12,41 +12,37 @@ fn area(r: [f32; 4], c: Canvas) -> f32 {
 }
 
 #[test]
-fn on_720x480_every_picture_is_the_whole_canvas_as_it_always_was() {
+fn on_720x480_a_handheld_at_its_actual_size_is_the_whole_canvas_as_it_always_was() {
     for platform in PLATFORMS {
-        for mode in MODES {
-            let s = screen_on(Canvas::WIDE, platform, mode);
-            assert_eq!(
-                s.view.rect,
-                [0.0, 0.0, 720.0, 480.0],
-                "{platform:?} {mode:?}"
-            );
-            assert_eq!(s.view.uv, source_rect(platform, mode));
-            assert_eq!(s.view.filter, Filter::Lcd3x);
-            assert_eq!(s.still.uv, WHOLE_TEXTURE);
-            assert!(
-                s.bands.is_empty(),
-                "{platform:?} {mode:?} left {:?}",
-                s.bands
-            );
-        }
+        let s = screen_on(Canvas::WIDE, platform, VideoMode::Actual);
+        assert_eq!(s.view.rect, [0.0, 0.0, 720.0, 480.0], "{platform:?}");
+        assert_eq!(s.view.uv, WHOLE_TEXTURE);
+        assert_eq!(s.view.filter, Filter::Lcd3x);
+        assert_eq!(s.still.uv, WHOLE_TEXTURE);
+        assert!(s.bands.is_empty(), "{platform:?} left {:?}", s.bands);
+    }
+    for mode in [VideoMode::Aspect, VideoMode::Stretch] {
+        let s = screen_on(Canvas::WIDE, Platform::Gba, mode);
+        assert_eq!(
+            (s.view.rect, s.view.filter),
+            ([0.0, 0.0, 720.0, 480.0], Filter::Lcd3x),
+            "the GBA's 3:2 is 720x480's: {mode:?} is its actual size, mask and all"
+        );
     }
 }
 
 #[test]
 fn on_640x480_a_gba_game_fills_the_width_from_the_top_over_a_bezel() {
-    for mode in MODES {
-        let s = screen_on(Canvas::FOUR_THREE, Platform::Gba, mode);
-        assert_eq!(s.view.rect, [0.0, 0.0, 640.0, 427.0]);
-        assert_eq!(s.view.uv, WHOLE_TEXTURE);
-        assert_eq!(
-            s.view.filter,
-            Filter::Sharp,
-            "8/3 is no scale for the 3x mask"
-        );
-        assert_eq!(s.still, s.view);
-        assert_eq!(s.bands, vec![[0.0, 427.0, 640.0, 53.0]]);
-    }
+    let s = screen_on(Canvas::FOUR_THREE, Platform::Gba, VideoMode::Actual);
+    assert_eq!(s.view.rect, [0.0, 0.0, 640.0, 427.0]);
+    assert_eq!(s.view.uv, WHOLE_TEXTURE);
+    assert_eq!(
+        s.view.filter,
+        Filter::Sharp,
+        "8/3 is no scale for the 3x mask"
+    );
+    assert_eq!(s.still, s.view);
+    assert_eq!(s.bands, vec![[0.0, 427.0, 640.0, 53.0]]);
 }
 
 #[test]
@@ -63,15 +59,59 @@ fn on_640x480_a_game_boy_game_stays_at_3x_through_the_mask() {
             s.bands.is_empty(),
             "the frame's own border covers the canvas"
         );
+    }
+}
 
-        let stretched = screen_on(Canvas::FOUR_THREE, platform, VideoMode::Stretch);
-        assert_eq!(stretched.view.rect, [0.0, 0.0, 640.0, 480.0]);
-        assert_eq!(stretched.view.uv, source_rect(platform, VideoMode::Stretch));
+#[test]
+fn a_handheld_kept_to_its_shape_fills_the_screen_as_far_as_its_shape_allows() {
+    for (c, platform, rect) in [
+        (Canvas::FOUR_THREE, Platform::Gba, [0.0, 27.0, 640.0, 427.0]),
+        (Canvas::FOUR_THREE, Platform::Gb, [54.0, 0.0, 533.0, 480.0]),
+        (Canvas::FOUR_THREE, Platform::Gbc, [54.0, 0.0, 533.0, 480.0]),
+        (Canvas::WIDE, Platform::Gb, [94.0, 0.0, 533.0, 480.0]),
+        (Canvas::SQUARE, Platform::Gba, [0.0, 120.0, 720.0, 480.0]),
+    ] {
+        let s = screen_on(c, platform, VideoMode::Aspect);
+        assert_eq!(s.view.rect, rect, "{c:?} {platform:?}");
         assert_eq!(
-            stretched.still, s.view,
-            "a screenshot is shown at its own size"
+            s.view.uv,
+            source_rect(platform, VideoMode::Aspect),
+            "a Game Boy's border was kept"
+        );
+        assert_eq!(
+            s.still,
+            screen_on(c, platform, VideoMode::Actual).still,
+            "a screenshot is not shown at its own size"
         );
     }
+    assert_eq!(
+        screen_on(Canvas::FOUR_THREE, Platform::Gb, VideoMode::Aspect)
+            .view
+            .filter,
+        Filter::Sharp,
+        "10/3 is no scale for the 3x mask"
+    );
+}
+
+#[test]
+fn a_stretched_handheld_fills_every_canvas_without_its_border() {
+    for c in Canvas::ALL {
+        for platform in PLATFORMS {
+            let s = screen_on(c, platform, VideoMode::Stretch);
+            assert_eq!(
+                s.view.rect,
+                [0.0, 0.0, c.w as f32, c.h as f32],
+                "{c:?} {platform:?}"
+            );
+            assert_eq!(s.view.uv, source_rect(platform, VideoMode::Stretch));
+            assert!(s.bands.is_empty());
+        }
+    }
+    assert_ne!(
+        source_rect(Platform::Gb, VideoMode::Stretch),
+        WHOLE_TEXTURE,
+        "a stretched Game Boy picture kept the GBA frame around its window"
+    );
 }
 
 #[test]
