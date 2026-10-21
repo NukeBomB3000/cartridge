@@ -27,7 +27,7 @@ pub enum Toast {
     /// SELECT+L2 on a handheld: the picture its own shape, as large as the screen holds.
     PictureFit,
     /// SELECT+X in a game: the screen look now chosen for its system.
-    Shader(omega_gfx::Look),
+    Shader(omega_gfx::Look, bool),
     /// SELECT + MENU on a PlayStation game on one disc: there is no other to swap in.
     OneDisc,
     /// The DISC screen swapped disc `n`, counting from 1, into the drive.
@@ -64,7 +64,7 @@ impl Toast {
         Toast::PictureStretch,
         Toast::PictureOriginal,
         Toast::PictureFit,
-        Toast::Shader(omega_gfx::Look::Off),
+        Toast::Shader(omega_gfx::Look::Off, false),
         Toast::OneDisc,
         Toast::Disc(1),
     ];
@@ -86,7 +86,7 @@ impl Toast {
             Toast::PictureStretch => 11,
             Toast::PictureOriginal => 12,
             Toast::PictureFit => 13,
-            Toast::Shader(_) => 14,
+            Toast::Shader(..) => 14,
             Toast::OneDisc => 15,
             Toast::Disc(_) => 16,
         }
@@ -107,7 +107,7 @@ impl Toast {
             | Toast::PictureStretch
             | Toast::PictureOriginal
             | Toast::PictureFit => "PICTURE",
-            Toast::Shader(_) => "SHADER",
+            Toast::Shader(..) => "SHADER",
             Toast::OneDisc | Toast::Disc(_) => "DISC",
         }
     }
@@ -129,13 +129,17 @@ impl Toast {
             Toast::PictureStretch => "Stretch",
             Toast::PictureOriginal => "Original",
             Toast::PictureFit => "Keep aspect",
-            Toast::Shader(look) => match look {
-                omega_gfx::Look::Off => "Off",
-                omega_gfx::Look::Lcd => "LCD",
-                omega_gfx::Look::Grid => "Grid",
-                omega_gfx::Look::Dot => "Dot",
-                omega_gfx::Look::Scanlines => "Scanlines",
-                omega_gfx::Look::Crt => "CRT",
+            Toast::Shader(look, cc) => match (look, cc) {
+                (omega_gfx::Look::Off, false) => "Off",
+                (omega_gfx::Look::Off, true) => "Off CC",
+                (omega_gfx::Look::Lcd, false) => "LCD",
+                (omega_gfx::Look::Lcd, true) => "LCD CC",
+                (omega_gfx::Look::Grid, false) => "Grid",
+                (omega_gfx::Look::Grid, true) => "Grid CC",
+                (omega_gfx::Look::Dot, false) => "Dot",
+                (omega_gfx::Look::Dot, true) => "Dot CC",
+                (omega_gfx::Look::Scanlines, _) => "Scanlines",
+                (omega_gfx::Look::Crt, _) => "CRT",
             },
             Toast::OneDisc => "Only one disc",
             Toast::Disc(n) => DISC_IN

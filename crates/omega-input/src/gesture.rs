@@ -70,19 +70,16 @@ pub struct Keys {
     /// SELECT+Y toggles the picture between its actual size and stretched, where there is no
     /// colour correction to toggle.
     pub picture: bool,
-    /// SELECT+L2 steps the picture size, where SELECT+Y is the colour correction: on the
-    /// handhelds, whose L2 alone still rewinds.
-    pub picture_l2: bool,
 }
 
 impl Keys {
-    /// The handhelds': L2 rewinds, R2 fast-forwards and SELECT+Y is the colour correction.
+    /// The handhelds': L2 rewinds, R2 fast-forwards and SELECT+Y steps the picture size, the
+    /// colour correction going round with the shaders on SELECT+X.
     pub const HANDHELD: Keys = Keys {
         game_l2_r2: false,
         rewind: true,
-        colour: true,
-        picture: false,
-        picture_l2: true,
+        colour: false,
+        picture: true,
     };
 }
 
@@ -234,11 +231,6 @@ impl Gestures {
             }
             Btn::Lid => vec![Action::LidClose],
             Btn::VolUp | Btn::VolDown => self.volume_press(b, now),
-            Btn::L2 if !self.keys.game_l2_r2 && self.keys.picture_l2 && self.chording(now) => {
-                self.mark_chorded();
-                self.chord_held |= PICTURE_L2_CHORD;
-                vec![Action::PictureToggle]
-            }
             Btn::L2 if !self.keys.game_l2_r2 => match self.keys.rewind {
                 true => self.rewind_start(),
                 false => Vec::new(),
@@ -268,10 +260,6 @@ impl Gestures {
             Btn::Power => self.power_up(),
             Btn::Lid => vec![Action::LidOpen],
             Btn::VolUp | Btn::VolDown => self.volume_release(b),
-            Btn::L2 if self.chord_held & PICTURE_L2_CHORD != 0 => {
-                self.chord_held &= !PICTURE_L2_CHORD;
-                Vec::new()
-            }
             Btn::L2 if !self.keys.game_l2_r2 => self.rewind_stop(),
             Btn::R2 if !self.keys.game_l2_r2 => self.ff_up(now),
             _ => {
@@ -517,6 +505,3 @@ const R2_CHORD: u16 = 256;
 
 /// The chord bit of SELECT+X, the screen look.
 const SHADER_CHORD: u16 = 512;
-
-/// The chord bit of SELECT+L2 on the handhelds, the picture size.
-const PICTURE_L2_CHORD: u16 = 1024;

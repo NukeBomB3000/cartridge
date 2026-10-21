@@ -843,16 +843,29 @@ impl App {
         self.look = look;
     }
 
-    /// SELECT+X: the next look for the game's system, kept for every game of it.
+    /// The colour correction a handheld's system was last left in, taken up as its game starts.
+    pub fn set_colour_correction(&mut self, on: bool) {
+        if self.state.colour_correction != on {
+            self.state.colour_correction = on;
+            self.persist();
+        }
+    }
+
+    /// SELECT+X: the next look for the game's system, on a handheld each look without the colour
+    /// correction and then with it, kept for every game of the system.
     fn next_look(&mut self) {
-        let look = crate::shader::next_look(self.platform, self.look);
+        let cc = self.platform.colour_correction() && self.state.colour_correction;
+        let (look, to) = crate::shader::next_look(self.platform, self.look, cc);
         self.look = look;
+        if to != cc {
+            self.change_setting(SettingsRow::ColourCorrection, true);
+        }
         if let Some(root) = self.root.clone() {
-            if let Err(e) = crate::shader::write_shader(&root, self.platform, look) {
+            if let Err(e) = crate::shader::write_shader(&root, self.platform, look, to) {
                 eprintln!("omega-zero: video: could not write shader.ini: {e}");
             }
         }
-        self.hud.toast(Toast::Shader(look), self.now());
+        self.hud.toast(Toast::Shader(look, to), self.now());
     }
 
     pub fn source_rect(&self) -> [f32; 4] {
@@ -873,15 +886,14 @@ impl App {
     }
 
     /// What the buttons the systems disagree about do, for the game in the handheld or the last
-    /// one there: a PlayStation game has L2 and R2 and nothing rewinds it, and only a handheld's
-    /// screen has a colour correction for SELECT+Y to toggle.
+    /// one there: a PlayStation game has L2 and R2 and nothing rewinds it. SELECT+Y steps every
+    /// system's picture size; a handheld's colour correction goes round with its shaders.
     pub fn keys(&self) -> Keys {
         Keys {
             game_l2_r2: self.platform.game_owns_l2_r2(),
             rewind: self.platform.rewinds(),
-            colour: self.platform.colour_correction(),
-            picture: self.platform.picture_toggle(),
-            picture_l2: self.platform.colour_correction(),
+            colour: false,
+            picture: true,
         }
     }
 

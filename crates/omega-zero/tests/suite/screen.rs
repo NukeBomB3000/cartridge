@@ -17,7 +17,7 @@ fn on_720x480_a_handheld_at_its_actual_size_is_the_whole_canvas_as_it_always_was
         let s = screen_on(Canvas::WIDE, platform, VideoMode::Actual);
         assert_eq!(s.view.rect, [0.0, 0.0, 720.0, 480.0], "{platform:?}");
         assert_eq!(s.view.uv, WHOLE_TEXTURE);
-        assert_eq!(s.view.filter, Filter::Lcd3x);
+        assert_eq!(s.view.filter, Filter::Sharp);
         assert_eq!(s.still.uv, WHOLE_TEXTURE);
         assert!(s.bands.is_empty(), "{platform:?} left {:?}", s.bands);
     }
@@ -25,8 +25,8 @@ fn on_720x480_a_handheld_at_its_actual_size_is_the_whole_canvas_as_it_always_was
         let s = screen_on(Canvas::WIDE, Platform::Gba, mode);
         assert_eq!(
             (s.view.rect, s.view.filter),
-            ([0.0, 0.0, 720.0, 480.0], Filter::Lcd3x),
-            "the GBA's 3:2 is 720x480's: {mode:?} is its actual size, mask and all"
+            ([0.0, 0.0, 720.0, 480.0], Filter::Sharp),
+            "the GBA's 3:2 is 720x480's: {mode:?} is its actual size, sharp all the same"
         );
     }
 }
@@ -49,7 +49,7 @@ fn on_640x480_a_gba_game_fills_the_width_from_the_top_over_a_bezel() {
 fn on_640x480_a_game_boy_game_stays_at_3x_through_the_mask() {
     for platform in [Platform::Gb, Platform::Gbc] {
         let s = screen_on(Canvas::FOUR_THREE, platform, VideoMode::Actual);
-        assert_eq!(s.view.filter, Filter::Lcd3x);
+        assert_eq!(s.view.filter, Filter::Sharp);
         assert_eq!(s.view.uv, WHOLE_TEXTURE);
         let [x, y, w, h] = s.view.rect;
         assert_eq!((w, h), (720.0, 480.0), "not 3x");
@@ -119,7 +119,7 @@ fn on_720x720_the_3x_frame_stands_above_the_middle_between_two_bands() {
     for platform in PLATFORMS {
         let s = screen_on(Canvas::SQUARE, platform, VideoMode::Actual);
         assert_eq!(s.view.rect, [0.0, 90.0, 720.0, 480.0]);
-        assert_eq!(s.view.filter, Filter::Lcd3x);
+        assert_eq!(s.view.filter, Filter::Sharp);
         assert_eq!(
             s.bands,
             vec![[0.0, 0.0, 720.0, 90.0], [0.0, 570.0, 720.0, 150.0]]

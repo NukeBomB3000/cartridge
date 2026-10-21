@@ -13,7 +13,7 @@ use omega_store::{write_app_state, AppState, Platform};
 use omega_ui::{CornerBadge, HudKind};
 use omega_zero::app::Phase;
 use omega_zero::session::Session;
-use omega_zero::shader::{looks_for, shader_for, SHADER_FILE};
+use omega_zero::shader::{colour_for, looks_for, shader_for, SHADER_FILE};
 use omega_zero::video_mode::{video_mode_for, VideoMode};
 use tempfile::TempDir;
 
@@ -95,7 +95,6 @@ fn each_system_says_what_its_buttons_do() {
             rewind: true,
             colour: false,
             picture: true,
-            picture_l2: false,
         }
     );
     assert_eq!(
@@ -105,7 +104,6 @@ fn each_system_says_what_its_buttons_do() {
             rewind: false,
             colour: false,
             picture: true,
-            picture_l2: false,
         }
     );
 }
@@ -234,6 +232,51 @@ fn select_and_x_goes_round_a_system_s_looks_and_keeps_them_for_the_system() {
 }
 
 #[test]
+fn select_and_x_goes_round_a_handheld_s_looks_each_without_and_with_the_colour_correction() {
+    let d = root_with(Platform::Gbc, "Pokemon Crystal");
+    let (mut s, mut now) = playing(&d, Platform::Gbc, "Pokemon Crystal");
+    assert!(!s.app().colour_correction());
+    let chord = |s: &mut Session, now: &mut Millis| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(Btn::X)));
+        step(s, now, Some(RawEvent::Up(Btn::X)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    for want in [
+        (Look::Off, true),
+        (Look::Lcd, false),
+        (Look::Lcd, true),
+        (Look::Grid, false),
+        (Look::Grid, true),
+        (Look::Dot, false),
+        (Look::Dot, true),
+        (Look::Off, false),
+        (Look::Off, true),
+    ] {
+        chord(&mut s, &mut now);
+        assert_eq!((s.app().look(), s.app().colour_correction()), want);
+        assert_eq!(shader_for(d.path(), Platform::Gbc), want.0);
+        assert_eq!(colour_for(d.path(), Platform::Gbc), Some(want.1));
+    }
+    assert!(std::fs::read_to_string(d.path().join(SHADER_FILE))
+        .unwrap()
+        .contains("GBC = off_cc"));
+    assert_eq!(colour_for(d.path(), Platform::Gba), None);
+}
+
+#[test]
+fn a_handheld_s_game_starts_in_the_colour_correction_its_system_was_left_in() {
+    let d = root_with(Platform::Gba, "Metroid Fusion");
+    std::fs::create_dir_all(d.path().join("Config")).unwrap();
+    std::fs::write(d.path().join(SHADER_FILE), "GBA = grid_cc\n").unwrap();
+    let (s, _) = playing(&d, Platform::Gba, "Metroid Fusion");
+    assert_eq!(
+        (s.app().look(), s.app().colour_correction()),
+        (Look::Grid, true)
+    );
+}
+
+#[test]
 fn each_system_offers_its_own_screen_s_looks() {
     for p in [Platform::Gba, Platform::Gb, Platform::Gbc] {
         assert_eq!(
@@ -267,19 +310,23 @@ fn each_system_offers_its_own_screen_s_looks() {
 }
 
 #[test]
-fn select_and_l2_goes_round_a_gba_picture_s_sizes_and_keeps_them_for_the_system() {
+fn select_and_y_goes_round_a_gba_picture_s_sizes_and_keeps_them_for_the_system() {
     let d = root_with(Platform::Gba, "Metroid Fusion");
     let (mut s, mut now) = playing(&d, Platform::Gba, "Metroid Fusion");
     assert_eq!(video_mode_for(d.path(), Platform::Gba), VideoMode::Actual);
     let chord = |s: &mut Session, now: &mut Millis| {
         step(s, now, Some(RawEvent::Down(Btn::Select)));
-        step(s, now, Some(RawEvent::Down(Btn::L2)));
-        step(s, now, Some(RawEvent::Up(Btn::L2)));
+        step(s, now, Some(RawEvent::Down(Btn::Y)));
+        assert_eq!(held(s) & ButtonMask::Y, 0, "the chord's Y reached the game");
+        step(s, now, Some(RawEvent::Up(Btn::Y)));
         step(s, now, Some(RawEvent::Up(Btn::Select)));
     };
     for want in [VideoMode::Aspect, VideoMode::Stretch, VideoMode::Actual] {
         chord(&mut s, &mut now);
         assert_eq!(video_mode_for(d.path(), Platform::Gba), want);
-        assert!(!rewinding(&s), "the chord rewound the game");
     }
+    assert!(
+        !s.app().colour_correction(),
+        "SELECT+Y still toggled the colour correction"
+    );
 }

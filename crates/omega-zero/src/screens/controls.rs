@@ -75,15 +75,7 @@ impl ControlsView {
             ("SELECT+L1", "LOAD STATE"),
             ("SELECT+R1", "SAVE STATE"),
         ]);
-        if platform.colour_correction() {
-            game.push(("SELECT+Y", "COLOUR"));
-        }
-        if platform.picture_toggle() {
-            game.push(("SELECT+Y", "PICTURE SIZE"));
-        } else {
-            game.push(("SELECT+L2", "PICTURE SIZE"));
-        }
-        game.push(("SELECT+X", "SHADER"));
+        game.extend([("SELECT+Y", "PICTURE SIZE"), ("SELECT+X", "SHADER")]);
         if platform.owns_shoulders() {
             game.push(("L1 R1", "PICTURE SIZE"));
         }

@@ -49,8 +49,7 @@ impl VideoMode {
         }
     }
 
-    /// The mode SELECT+Y goes to from this one on a television's console, or SELECT+L2 on a
-    /// handheld: actual size, 4:3 or the handheld's own shape, stretched and round again.
+    /// The mode SELECT+Y goes to from this one: actual size, 4:3 or the handheld's own shape, stretched and round again.
     pub fn next(self) -> VideoMode {
         match self {
             VideoMode::Actual => VideoMode::Aspect,
@@ -160,8 +159,8 @@ pub fn screen_on_frame(
         };
         let rect = [(cw - FRAME.0) / 2.0, top, FRAME.0, FRAME.1];
         return Screen {
-            view: lcd(rect, actual),
-            still: lcd(rect, actual),
+            view: sharp(rect, actual),
+            still: sharp(rect, actual),
             bands: around(c, rect),
         };
     }
@@ -187,8 +186,8 @@ pub fn screen_on_frame(
         Platform::Gb | Platform::Gbc => {
             let whole = [(cw - FRAME.0) / 2.0, (ch - FRAME.1) / 2.0, FRAME.0, FRAME.1];
             Screen {
-                view: lcd(whole, actual),
-                still: lcd(whole, actual),
+                view: sharp(whole, actual),
+                still: sharp(whole, actual),
                 bands: around(c, whole),
             }
         }
@@ -197,9 +196,7 @@ pub fn screen_on_frame(
 
 /// A handheld's own picture, the GBA's whole screen or a Game Boy's 160x144 window without the
 /// border around it, kept to its shape as large as the canvas holds, or stretched over all of
-/// it. Drawn through the sharp filter, or the LCD mask where it comes out at exactly three panel
-/// pixels to a game pixel, as the GBA does across 720x480. A save state's screenshot is shown as
-/// it is at the actual size, whatever the picture's.
+/// it. A save state's screenshot is shown as it is at the actual size, whatever the picture's.
 fn handheld_scaled(c: Canvas, platform: Platform, mode: VideoMode) -> Screen {
     let (cw, ch) = (c.w as f32, c.h as f32);
     let (pw, ph) = platform.picture();
@@ -212,28 +209,20 @@ fn handheld_scaled(c: Canvas, platform: Platform, mode: VideoMode) -> Screen {
         }
     };
     let rect = [((cw - w) / 2.0).round(), ((ch - h) / 2.0).round(), w, h];
-    let uv = source_rect(platform, mode);
-    let view = if (w, h) == (pw * SCALE as f32, ph * SCALE as f32) && uv == WHOLE_TEXTURE {
-        lcd(rect, uv)
-    } else {
-        GameView {
-            rect,
-            uv,
-            filter: Filter::Sharp,
-        }
-    };
     Screen {
-        view,
+        view: sharp(rect, source_rect(platform, mode)),
         still: screen_on(c, platform, VideoMode::Actual).still,
         bands: around(c, rect),
     }
 }
 
-fn lcd(rect: [f32; 4], uv: [f32; 4]) -> GameView {
+/// A handheld's picture with each game pixel kept square and nothing over it: the LCD's grid is
+/// one of the looks on SELECT+X, not part of the picture, so the look none is none.
+fn sharp(rect: [f32; 4], uv: [f32; 4]) -> GameView {
     GameView {
         rect,
         uv,
-        filter: Filter::Lcd3x,
+        filter: Filter::Sharp,
     }
 }
 
