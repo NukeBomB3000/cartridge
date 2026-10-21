@@ -50,12 +50,18 @@ build() {
 		git -C "$src" apply "$p"
 	done
 
-	cflags=""
+	# CROSS, a toolchain prefix such as aarch64-linux-gnu-, builds the device's core on another
+	# host
+	cflags="" cross=""
 	if [ "$(uname -s)-$(uname -m)" = "Linux-aarch64" ]; then
 		cflags="$device_cflags"
+	elif [ -n "${CROSS:-}" ]; then
+		cflags="$device_cflags"
+		cross="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 -DCMAKE_C_COMPILER=${CROSS}gcc -DCMAKE_CXX_COMPILER=${CROSS}g++ -DCMAKE_AR=$(command -v "${CROSS}gcc-ar") -DCMAKE_RANLIB=$(command -v "${CROSS}gcc-ranlib")"
 	fi
+	# shellcheck disable=SC2086
 	cmake -S "$src" -B "$obj" -DLIBMGBA_ONLY=ON -DBUILD_LIBRETRO=ON -DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_C_FLAGS="$cflags" >/dev/null
+		-DCMAKE_C_FLAGS="$cflags" $cross >/dev/null
 	cmake --build "$obj" --target mgba_libretro --parallel "$(getconf _NPROCESSORS_ONLN)" >/dev/null
 
 	for ext in dylib so; do

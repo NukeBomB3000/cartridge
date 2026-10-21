@@ -370,6 +370,24 @@ tasks:
       - file vendor/mgba_libretro.so | grep -q aarch64
       - 'echo "built vendor/mgba_libretro.so"'
 
+  core:device:cross:
+    desc: >-
+      core:device on an x86_64 host without arm64 emulation: mGBA cross-compiled in an amd64
+      container with the aarch64 toolchain
+    cmds:
+      - |
+        set -eu
+        docker run --rm --platform linux/amd64 -v "$PWD":/src -w /src rust:1-bullseye sh -c '
+          set -e
+          sed -i "/bullseye-security/d" /etc/apt/sources.list
+          apt-get -o Acquire::Check-Valid-Until=false update -qq
+          apt-get install -y -qq g++-aarch64-linux-gnu cmake >/dev/null
+          CROSS=aarch64-linux-gnu- sh cores/mgba/build.sh build {{.MGBA_COMMIT}} \
+            target-device/mgba vendor/mgba_libretro.so
+          chown -R '"$(id -u):$(id -g)"' vendor target-device'
+      - file vendor/mgba_libretro.so | grep -q aarch64
+      - 'echo "built vendor/mgba_libretro.so"'
+
   core:gpsp:
     desc: >-
       Build the aarch64 linux gpSP core from its pinned source archive, which ships beside it

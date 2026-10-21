@@ -264,6 +264,8 @@ pub fn core_options(
         Core::Mgba => {
             put("mgba_frameskip", "auto");
             put("mgba_sgb_borders", "OFF");
+            // answers the Game Boy Player logo, so Pokemon Pinball R/S rumbles
+            put("mgba_force_gbp", "ON");
             put("mgba_gb_colors_preset", "1");
             put("mgba_gb_colors", "GBC Dark Green →A");
         }

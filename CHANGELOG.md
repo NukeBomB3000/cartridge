@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Loading a state while a GBA game is saving to a 128 KB flash chip, as Pokemon Ruby, Sapphire
+  and Emerald and Super Mario Advance 4 have, no longer writes the save into the wrong half of the
+  chip: mGBA keeps the chip's bank through the load (slot's patch).
+- Pokemon Pinball: Ruby & Sapphire rumbles: mGBA answers the game's Game Boy Player check.
 - The boot goes from the bootloader's logo straight to the shelf: the NOM ENGINEER terminal and
   its fades, some twelve seconds, are no longer played. A start that failed still says so.
 - The GBA and Game Boy games blend each frame with the last, as the LCDs they were drawn for
