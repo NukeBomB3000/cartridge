@@ -85,9 +85,17 @@ fn each_system_says_what_its_buttons_do() {
         a.set_platform(p);
         a.keys()
     };
-    for p in [Platform::Gba, Platform::Gb, Platform::Gbc] {
+    for p in [Platform::Gba, Platform::Gbc] {
         assert_eq!(keys(&mut a, p), Keys::HANDHELD, "{p:?}");
     }
+    assert_eq!(
+        keys(&mut a, Platform::Gb),
+        Keys {
+            palette: true,
+            ..Keys::HANDHELD
+        },
+        "only the Game Boy steps palettes"
+    );
     assert_eq!(
         keys(&mut a, Platform::Snes),
         Keys {
@@ -97,6 +105,7 @@ fn each_system_says_what_its_buttons_do() {
             ghosting: false,
             picture: true,
             repair: false,
+            palette: false,
         }
     );
     assert_eq!(
@@ -108,6 +117,7 @@ fn each_system_says_what_its_buttons_do() {
             ghosting: false,
             picture: true,
             repair: false,
+            palette: false,
         }
     );
 }
@@ -350,4 +360,25 @@ fn select_and_y_goes_round_a_gba_picture_s_sizes_and_keeps_them_for_the_system()
         !s.app().colour_correction(),
         "SELECT+Y still toggled the colour correction"
     );
+}
+
+#[test]
+fn select_and_r2_steps_a_game_boy_palette_and_keeps_it() {
+    use omega_store::{read_app_state, GbColors};
+    let d = root_with(Platform::Gb, "Tetris");
+    let (mut s, mut now) = playing(&d, Platform::Gb, "Tetris");
+    assert_eq!(s.app().gb_palette(), GbColors::Auto);
+    let chord = |s: &mut Session, now: &mut Millis, b: Btn| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(b)));
+        step(s, now, Some(RawEvent::Up(b)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    chord(&mut s, &mut now, Btn::R2);
+    assert_eq!(s.app().gb_palette().label(), "Grayscale");
+    assert_eq!(read_app_state(d.path()).gb_palette.label(), "Grayscale");
+    assert!(!rewinding(&s), "the chord rewound the game");
+    chord(&mut s, &mut now, Btn::L2);
+    chord(&mut s, &mut now, Btn::L2);
+    assert_eq!(s.app().gb_palette().label(), "SGB 4-H");
 }

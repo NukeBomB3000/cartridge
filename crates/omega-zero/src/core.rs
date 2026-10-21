@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use omega_retro::{LibretroCore, MockCore, RetroCore};
-use omega_store::Core;
+use omega_store::{Core, GbColors, GbPalette, Platform};
 
 use crate::root;
 
@@ -47,6 +47,9 @@ pub enum Setup<'a> {
         colour: bool,
         ghosting: bool,
         link: Option<u8>,
+        /// The named palette a Game Boy only game is drawn in; none, the Game Boy Color's own
+        /// colouring of it.
+        palette: Option<GbPalette>,
     },
     Console,
 }
@@ -61,8 +64,16 @@ impl<'a> Setup<'a> {
                 colour,
                 ghosting,
                 link,
+                ..
             } => (serial, colour, ghosting, link),
             Setup::Console => ("auto", false, false, None),
+        }
+    }
+
+    fn palette(self) -> Option<GbPalette> {
+        match self {
+            Setup::Handheld { palette, .. } => palette,
+            Setup::Console => None,
         }
     }
 }
@@ -106,6 +117,7 @@ pub fn open_core(root: &Path, core: Core, serial: &str, colour: bool, link: Opti
             colour,
             ghosting: false,
             link,
+            palette: None,
         },
     )
 }
@@ -122,6 +134,7 @@ pub fn open_core_for(
         colour,
         ghosting: false,
         link: None,
+        palette: None,
     };
     open_named(root, core, setup, paths).unwrap_or_else(|| {
         report_missing(core, paths);
@@ -143,7 +156,8 @@ fn open_named(
             continue;
         }
         // the options are there before the core starts, for one that reads them as it does
-        let options = core_options(core, serial, root::has_real_bios(root), colour, ghosting);
+        let mut options = core_options(core, serial, root::has_real_bios(root), colour, ghosting);
+        options.extend(palette_options(core, setup.palette()));
         let early: Vec<(&str, &str)> = options.iter().map(|(k, v)| (*k, v.as_str())).collect();
         match LibretroCore::open_with_options(path, &bios, &saves, &early) {
             Ok(mut opened) => {
@@ -155,6 +169,9 @@ fn open_named(
                     colour,
                     ghosting,
                 );
+                for (key, value) in palette_options(core, setup.palette()) {
+                    opened.set_option(key, &value);
+                }
                 if let Some(player) = link {
                     apply_link_options(&mut opened, core, player);
                 }
@@ -208,6 +225,36 @@ pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static 
         | Core::Fceumm
         | Core::GenesisPlusGx => None,
     }
+}
+
+/// The options that draw a Game Boy only game in `palette` on mGBA: as the original Game Boy,
+/// in that palette. Set after `core_options`, whose Game Boy Color colouring they replace.
+pub fn palette_options(which: Core, palette: Option<GbPalette>) -> Vec<(&'static str, String)> {
+    match (which, palette) {
+        (Core::Mgba, Some(p)) => vec![
+            ("mgba_gb_model", "Game Boy".to_string()),
+            ("mgba_gb_colors_preset", "0".to_string()),
+            ("mgba_gb_colors", p.core_name().to_string()),
+        ],
+        _ => Vec::new(),
+    }
+}
+
+/// The palette a game is opened in: the one chosen, for a Game Boy only game played alone; none,
+/// its Game Boy Color colouring, for any other or for Auto.
+pub fn palette_for(
+    chosen: GbColors,
+    platform: Platform,
+    rom: &Path,
+    link: Option<u8>,
+) -> Option<GbPalette> {
+    let GbColors::Palette(p) = chosen else {
+        return None;
+    };
+    (link.is_none()
+        && platform == Platform::Gb
+        && omega_store::gb::class(rom) == omega_store::gb::Class::Original)
+        .then_some(p)
 }
 
 pub fn apply_link_options(core: &mut LibretroCore, which: Core, player: u8) {

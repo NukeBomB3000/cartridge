@@ -42,6 +42,9 @@ pub enum Toast {
     CardRepairFailed,
     /// SELECT+START on a read-only card with too little charge for the repair.
     CardRepairLowBattery,
+    /// SELECT+L2/R2 in a Game Boy game: the palette now chosen, and whether the game took it at
+    /// once or takes it at its next start.
+    Palette(omega_store::GbColors, bool),
 }
 
 /// What the toast says once disc `n` is in, for every disc a PlayStation game can have.
@@ -59,7 +62,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 23] = [
+    pub const ALL: [Toast; 24] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -83,6 +86,7 @@ impl Toast {
         Toast::CardRepaired,
         Toast::CardRepairFailed,
         Toast::CardRepairLowBattery,
+        Toast::Palette(omega_store::GbColors::Auto, false),
     ];
 
     /// Its place in `ALL`: every disc's toast is the one place.
@@ -111,6 +115,7 @@ impl Toast {
             Toast::CardRepaired => 20,
             Toast::CardRepairFailed => 21,
             Toast::CardRepairLowBattery => 22,
+            Toast::Palette(..) => 23,
         }
     }
 
@@ -136,6 +141,8 @@ impl Toast {
             | Toast::CardRepaired
             | Toast::CardRepairFailed
             | Toast::CardRepairLowBattery => "SD CARD",
+            Toast::Palette(_, true) => "PALETTE",
+            Toast::Palette(_, false) => "PALETTE NEXT START",
         }
     }
 
@@ -174,6 +181,7 @@ impl Toast {
             Toast::CardRepaired => "Card repaired",
             Toast::CardRepairFailed => "Repair failed",
             Toast::CardRepairLowBattery => "Charge to 20% first",
+            Toast::Palette(colors, _) => colors.label(),
             Toast::Disc(n) => DISC_IN
                 .get(usize::from(n).wrapping_sub(1))
                 .copied()

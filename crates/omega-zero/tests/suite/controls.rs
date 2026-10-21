@@ -157,11 +157,16 @@ fn a_game_boy_has_no_core_to_pick_and_leaves_l1_and_r1_to_the_picture() {
             ("L2", "REWIND"),
             ("SELECT+MENU", "LINK"),
             ("SELECT+Y", "PICTURE SIZE"),
-            ("L1 R1", "PICTURE SIZE"),
         ] {
             assert!(game.contains(&line), "{platform:?} has no {line:?}");
         }
     }
+    let line = |p| ControlsView::new(p).groups[1].lines.clone();
+    assert!(line(Platform::Gbc).contains(&("L1 R1", "PICTURE SIZE")));
+    assert!(
+        line(Platform::Gb).contains(&("SELECT+L2 R2", "PALETTE")),
+        "the Game Boy's palette is not on its page"
+    );
 }
 
 #[test]

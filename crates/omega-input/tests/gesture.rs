@@ -573,6 +573,7 @@ const PS1: Keys = Keys {
     ghosting: false,
     picture: true,
     repair: false,
+    palette: false,
 };
 
 /// The SNES's keys: L2 rewinds and R2 fast-forwards as on the handhelds, and a television's
@@ -584,6 +585,7 @@ const SNES: Keys = Keys {
     ghosting: false,
     picture: true,
     repair: false,
+    palette: false,
 };
 
 fn with_keys(keys: Keys) -> Gestures {
@@ -802,5 +804,34 @@ fn select_and_start_repairs_the_card_only_while_it_is_read_only() {
     assert!(
         g.feed(Up(Start), 20).is_empty(),
         "the chord's START reached the game"
+    );
+}
+
+#[test]
+fn select_and_l2_or_r2_step_a_game_boy_palette_and_neither_rewinds_nor_fast_forwards() {
+    let mut g = with_keys(Keys {
+        palette: true,
+        ..Keys::HANDHELD
+    });
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert_eq!(g.feed(Down(R2), 10), vec![PaletteNext]);
+    assert!(g.feed(Up(R2), 20).is_empty());
+    assert_eq!(g.feed(Down(L2), 30), vec![PalettePrev]);
+    assert!(g.feed(Up(L2), 40).is_empty());
+    assert!(g.feed(Up(Select), 50).is_empty());
+    assert_eq!(
+        g.feed(Down(L2), 2_000),
+        vec![RewindStart],
+        "L2 alone did not rewind"
+    );
+}
+
+#[test]
+fn select_and_l2_still_rewinds_outside_a_game_boy_game() {
+    let mut g = Gestures::new();
+    assert!(g.feed(Down(Select), 0).is_empty());
+    assert!(
+        !g.feed(Down(L2), 10).contains(&PalettePrev),
+        "a GBA game stepped a palette"
     );
 }

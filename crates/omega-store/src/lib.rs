@@ -6,6 +6,7 @@ mod config;
 mod core;
 mod font;
 pub mod gb;
+mod gb_palette;
 mod gba;
 pub mod ini;
 pub mod md;
@@ -30,6 +31,7 @@ pub use core::{
     core_for, core_for_platform, read_selected_cores, write_selected_core, Core, SELECTED_CORE_FILE,
 };
 pub use font::Font;
+pub use gb_palette::{GbColors, GbPalette};
 pub use gba::{header_clean, header_code, header_title};
 pub use platform::Platform;
 pub use region::Region;

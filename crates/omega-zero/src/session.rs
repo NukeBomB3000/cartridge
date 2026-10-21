@@ -267,6 +267,11 @@ impl Session {
                 }
             }
         }
+        if let Some(palette) = self.app.take_palette() {
+            if let Some(emu) = &self.emu {
+                emu.set_option("mgba_gb_colors", palette.core_name());
+            }
+        }
         if let Some(disc) = self.app.take_disc_swap() {
             if let Some(emu) = &self.emu {
                 emu.set_disc(disc);
@@ -449,6 +454,8 @@ impl Session {
             .then(|| persist::read_resume(&self.root, platform, core, stem))
             .flatten();
         let player = self.app.link_player();
+        let palette = crate::core::palette_for(self.app.gb_palette(), platform, &rom, player);
+        self.app.set_palette_live(palette.is_some());
         let setup = match platform {
             Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md => {
                 Setup::Console
@@ -458,6 +465,7 @@ impl Session {
                 colour: self.app.colour_correction(),
                 ghosting: self.app.lcd_ghosting(),
                 link: player,
+                palette,
             },
         };
         let opened = open(&self.root, core, setup);

@@ -200,6 +200,7 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
             ff_sound: false,
             colour_correction: false,
             lcd_ghosting: true,
+            gb_palette: omega_store::GbColors::Auto,
             high_refresh: true,
             wifi: false,
             ssh: true,
@@ -245,6 +246,7 @@ fn lcd_ghosting_round_trips_as_its_own_line_and_is_on_when_absent() {
         let s = AppState {
             clock_set: true,
             lcd_ghosting: on,
+            gb_palette: omega_store::GbColors::Auto,
             ..AppState::default()
         };
         write_app_state(d.path(), &s).unwrap();
@@ -692,4 +694,38 @@ fn a_temp_left_by_an_interrupted_write_is_swept_and_nothing_else() {
     for p in &keep {
         assert!(p.exists(), "swept {}", p.display());
     }
+}
+
+#[test]
+fn the_game_boy_palette_round_trips_and_a_name_mgba_lacks_falls_back_to_auto() {
+    use omega_store::{GbColors, GbPalette};
+    let d = tempdir().unwrap();
+    std::fs::create_dir_all(d.path().join("Config")).unwrap();
+    let pocket = GbColors::Palette(GbPalette::parse("GB Pocket").unwrap());
+    let s = AppState {
+        gb_palette: pocket,
+        ..AppState::default()
+    };
+    write_app_state(d.path(), &s).unwrap();
+    assert_eq!(read_app_state(d.path()).gb_palette, pocket);
+    let path = d.path().join("Config/omega-zero.state");
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(text.contains("gb_palette=GB Pocket\n"));
+    std::fs::write(&path, text.replace("GB Pocket", "Neon Pink")).unwrap();
+    assert_eq!(read_app_state(d.path()).gb_palette, GbColors::Auto);
+}
+
+#[test]
+fn the_palettes_go_round_through_auto() {
+    use omega_store::{GbColors, GbPalette};
+    assert_eq!(GbColors::all().count(), 49);
+    let last = GbColors::Palette(GbPalette::parse("SGB 4-H").unwrap());
+    assert_eq!(last.next(), GbColors::Auto);
+    assert_eq!(GbColors::Auto.prev(), last);
+    assert_eq!(GbColors::Auto.next().label(), "Grayscale");
+    assert_eq!(
+        GbColors::parse("GBC Dark Green →A").map(GbColors::label),
+        Some("GBC Dark Green"),
+        "the arrows of the GBC's button choices show"
+    );
 }

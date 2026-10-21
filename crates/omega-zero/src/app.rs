@@ -7,7 +7,8 @@ use omega_power::{Battery, Charge, LedState, LidPolicy, Power, RepairResult};
 use omega_retro::LinkChannel;
 use omega_store::{
     format_stamp, read_app_state, scan, write_app_state, AppState, BackdropStyle, Cart, Core,
-    Platform, StateEntry, StateRing, Theme, BLUE_LIGHT_MAX, BRIGHTNESS_MAX, VOLUME_MAX,
+    GbColors, GbPalette, Platform, StateEntry, StateRing, Theme, BLUE_LIGHT_MAX, BRIGHTNESS_MAX,
+    VOLUME_MAX,
 };
 use omega_ui::kit::action::Font;
 use omega_ui::kit::fade::stepped;
@@ -331,6 +332,10 @@ pub struct App {
     pub(crate) colour_pending: Option<bool>,
     /// The LCD's ghosting as last changed, for the running core, until the session takes it.
     pub(crate) ghosting_pending: Option<bool>,
+    /// The game was opened in a named palette, so another can be set on the running core.
+    palette_live: bool,
+    /// The palette as last stepped, for the running core, until the session takes it.
+    palette_pending: Option<GbPalette>,
     pub(crate) link_player: Option<u8>,
     pub(crate) platform: Platform,
     pub(crate) named_core: bool,
@@ -499,6 +504,8 @@ impl App {
             core: Core::default(),
             colour_pending: None,
             ghosting_pending: None,
+            palette_live: false,
+            palette_pending: None,
             link_player: None,
             platform: Platform::default(),
             named_core: false,
@@ -907,6 +914,7 @@ impl App {
             ghosting: self.platform.lcd_ghosting(),
             picture: true,
             repair: self.card_read_only,
+            palette: self.platform == Platform::Gb,
         }
     }
 
@@ -1182,6 +1190,42 @@ impl App {
 
     pub fn take_colour_correction(&mut self) -> Option<bool> {
         self.colour_pending.take()
+    }
+
+    /// The colours a Game Boy only game is opened in.
+    pub fn gb_palette(&self) -> GbColors {
+        self.state.gb_palette
+    }
+
+    /// Whether the game was opened in a named palette, which another can then replace live.
+    pub fn set_palette_live(&mut self, live: bool) {
+        self.palette_live = live;
+        self.palette_pending = None;
+    }
+
+    pub fn take_palette(&mut self) -> Option<GbPalette> {
+        self.palette_pending.take()
+    }
+
+    /// SELECT+R2 or SELECT+L2 in a Game Boy game: the next or the last palette, kept. A game
+    /// opened in a named palette takes another at once; Auto, or a palette for a game opened in
+    /// Auto, waits for the next start, as the toast says.
+    fn step_palette(&mut self, next: bool) {
+        if !matches!(self.phase, Phase::Playing { .. }) || self.platform != Platform::Gb {
+            return;
+        }
+        let from = self.state.gb_palette;
+        let to = if next { from.next() } else { from.prev() };
+        self.state.gb_palette = to;
+        self.persist();
+        let now = match to {
+            GbColors::Palette(p) if self.palette_live => {
+                self.palette_pending = Some(p);
+                true
+            }
+            _ => false,
+        };
+        self.hud.toast(Toast::Palette(to, now), self.now());
     }
 
     pub fn take_lcd_ghosting(&mut self) -> Option<bool> {
@@ -1559,6 +1603,10 @@ impl App {
                 false => Toast::ColourOff,
             };
             self.hud.toast(said, self.now());
+            return true;
+        }
+        if let Action::PaletteNext | Action::PalettePrev = action {
+            self.step_palette(action == Action::PaletteNext);
             return true;
         }
         if action == Action::RepairCard {

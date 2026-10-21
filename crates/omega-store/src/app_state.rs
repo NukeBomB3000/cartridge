@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::atomic::atomic_write;
 use crate::backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS};
 use crate::font::Font;
+use crate::gb_palette::GbColors;
 use crate::platform::Platform;
 
 pub const BRIGHTNESS_MAX: u8 = 9;
@@ -35,6 +36,9 @@ pub struct AppState {
     /// The handhelds' cores blend each frame with the last, as the LCD the games were drawn
     /// for blurred them: flicker drawn as transparency shows as it did.
     pub lcd_ghosting: bool,
+    /// The colours a Game Boy only game is drawn in: Auto, the Game Boy Color's own colouring of
+    /// it, or one of mGBA's named palettes.
+    pub gb_palette: GbColors,
     /// The panel runs at 120 Hz where it can. On by default; written off when the panel
     /// refused it or lost it, and a card can set it off by hand to keep the panel at 60 Hz.
     pub high_refresh: bool,
@@ -75,6 +79,7 @@ impl Default for AppState {
             ff_sound: false,
             colour_correction: false,
             lcd_ghosting: true,
+            gb_palette: GbColors::Auto,
             high_refresh: true,
             wifi: false,
             ssh: true,
@@ -101,7 +106,7 @@ pub fn read_app_state(root: &Path) -> AppState {
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbrightness={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\n",
+        "cart={}\ncart_platform={}\nbrightness={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -117,6 +122,7 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         s.ff_sound as u8,
         s.colour_correction as u8,
         s.lcd_ghosting as u8,
+        s.gb_palette.core_name(),
         s.high_refresh as u8,
         s.wifi as u8,
         if s.ssh { "on" } else { "off" },
@@ -145,6 +151,7 @@ fn parse(text: &str) -> Option<AppState> {
     let mut ff_sound = None;
     let mut colour_correction = None;
     let mut lcd_ghosting = None;
+    let mut gb_palette = None;
     let mut high_refresh = None;
     let mut wifi = None;
     let mut ssh = None;
@@ -173,6 +180,7 @@ fn parse(text: &str) -> Option<AppState> {
             "ff_sound" => ff_sound = flag(value),
             "colour_correction" => colour_correction = flag(value),
             "lcd_ghosting" => lcd_ghosting = flag(value),
+            "gb_palette" => gb_palette = GbColors::parse(value),
             // anything but a clear 1 keeps the panel at 60 Hz, the rate it has always run at
             "high_refresh" => high_refresh = Some(flag(value).unwrap_or(false)),
             "wifi" => wifi = flag(value),
@@ -203,6 +211,7 @@ fn parse(text: &str) -> Option<AppState> {
         ff_sound: ff_sound.unwrap_or(fallback.ff_sound),
         colour_correction: colour_correction.unwrap_or(fallback.colour_correction),
         lcd_ghosting: lcd_ghosting.unwrap_or(fallback.lcd_ghosting),
+        gb_palette: gb_palette.unwrap_or(fallback.gb_palette),
         high_refresh: high_refresh.unwrap_or(fallback.high_refresh),
         wifi: wifi.unwrap_or(fallback.wifi),
         ssh: ssh.unwrap_or(fallback.ssh),

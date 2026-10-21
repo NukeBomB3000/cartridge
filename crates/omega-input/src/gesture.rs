@@ -57,6 +57,9 @@ pub enum Action {
     LidOpen,
     /// SELECT+START with the card mounted read-only: check and repair it.
     RepairCard,
+    /// SELECT+R2 and SELECT+L2 in a Game Boy game: the next and the last palette.
+    PaletteNext,
+    PalettePrev,
 }
 
 /// What the buttons the systems disagree about do for the game being played. The handhelds'
@@ -79,6 +82,9 @@ pub struct Keys {
     /// SELECT+START repairs the card: only while it is mounted read-only, so a game's own
     /// SELECT+START reaches it otherwise.
     pub repair: bool,
+    /// SELECT+L2 and SELECT+R2 step the palette, in a Game Boy game, where L2 and R2 alone still
+    /// rewind and fast-forward.
+    pub palette: bool,
 }
 
 impl Keys {
@@ -91,6 +97,7 @@ impl Keys {
         ghosting: true,
         picture: true,
         repair: false,
+        palette: false,
     };
 }
 
@@ -242,6 +249,14 @@ impl Gestures {
             }
             Btn::Lid => vec![Action::LidClose],
             Btn::VolUp | Btn::VolDown => self.volume_press(b, now),
+            Btn::L2 | Btn::R2 if self.palette_chord(now) => {
+                self.mark_chorded();
+                self.chord_held |= PALETTE_CHORD;
+                vec![match b {
+                    Btn::L2 => Action::PalettePrev,
+                    _ => Action::PaletteNext,
+                }]
+            }
             Btn::L2 if !self.keys.game_l2_r2 => match self.keys.rewind {
                 true => self.rewind_start(),
                 false => Vec::new(),
@@ -271,6 +286,10 @@ impl Gestures {
             Btn::Power => self.power_up(),
             Btn::Lid => vec![Action::LidOpen],
             Btn::VolUp | Btn::VolDown => self.volume_release(b),
+            Btn::L2 | Btn::R2 if self.chord_held & PALETTE_CHORD != 0 => {
+                self.chord_held &= !PALETTE_CHORD;
+                Vec::new()
+            }
             Btn::L2 if !self.keys.game_l2_r2 => self.rewind_stop(),
             Btn::R2 if !self.keys.game_l2_r2 => self.ff_up(now),
             _ => {
@@ -309,6 +328,12 @@ impl Gestures {
             Btn::R2 if self.keys.game_l2_r2 => (R2_CHORD, Action::FfStart),
             _ => return None,
         })
+    }
+
+    /// Whether L2 or R2 now is a palette step: under SELECT, in a Game Boy game, where neither
+    /// is the game's.
+    fn palette_chord(&self, now: Millis) -> bool {
+        self.keys.palette && !self.keys.game_l2_r2 && self.chording(now)
     }
 
     fn chording(&self, now: Millis) -> bool {
@@ -525,3 +550,6 @@ const GHOSTING_CHORD: u16 = 2048;
 
 /// The chord bit of SELECT+START, the card repair.
 const REPAIR_CHORD: u16 = 4096;
+
+/// The chord bit of SELECT+L2 and SELECT+R2, the palette steps.
+const PALETTE_CHORD: u16 = 8192;

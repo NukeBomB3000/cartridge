@@ -82,7 +82,11 @@ impl ControlsView {
             game.push(("SELECT+B", "GHOSTING"));
         }
         game.extend([("SELECT+Y", "PICTURE SIZE"), ("SELECT+X", "SHADER")]);
-        if platform.owns_shoulders() {
+        // the Game Boy's palette takes the line of its L1 and R1, which still change the picture
+        // size as SELECT+Y does: the page has room for no more
+        if platform == Platform::Gb {
+            game.push(("SELECT+L2 R2", "PALETTE"));
+        } else if platform.owns_shoulders() {
             game.push(("L1 R1", "PICTURE SIZE"));
         }
         game.extend([("VOL+ VOL-", "MUTE"), ("HOLD POWER", "POWER MENU")]);

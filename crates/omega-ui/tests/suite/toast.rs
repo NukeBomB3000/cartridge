@@ -110,6 +110,7 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::CardRepaired,
             Toast::CardRepairFailed,
             Toast::CardRepairLowBattery,
+            Toast::Palette(omega_store::GbColors::Auto, false),
         ],
         "a banner was added or dropped"
     );
@@ -254,4 +255,17 @@ fn the_card_toasts_say_what_to_do() {
     ] {
         assert_eq!(t.label(), "SD CARD");
     }
+}
+
+#[test]
+fn a_palette_toast_names_the_palette_and_when_it_takes() {
+    use omega_store::{GbColors, GbPalette};
+    let pocket = GbColors::Palette(GbPalette::parse("GB Pocket").unwrap());
+    assert_eq!(Toast::Palette(pocket, true).text(), "GB Pocket");
+    assert_eq!(Toast::Palette(pocket, true).label(), "PALETTE");
+    assert_eq!(Toast::Palette(GbColors::Auto, false).text(), "Auto");
+    assert_eq!(
+        Toast::Palette(GbColors::Auto, false).label(),
+        "PALETTE NEXT START"
+    );
 }

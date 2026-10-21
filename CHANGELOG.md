@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Game Boy only games can be drawn in any of mGBA's 48 palettes: SELECT+R2 and SELECT+L2 step
+  through them in a game, from Auto, the Game Boy Color's own colouring as before, through
+  Grayscale, DMG Green and GB Pocket to the Super Game Boy's. A game opened in a palette takes
+  another at once; the step to or from Auto takes at the next start, as the toast says. The
+  choice is kept. On the Game Boy's controls page it takes the line of L1 R1, which still
+  change the picture size.
 - Games start sooner: resting on a cart on the shelf for half a second reads its ROM ahead into
   memory, so inserting it no longer waits on the card. A PlayStation disc is left alone.
 - When the card turns read-only, a toast says so every 10 seconds, and SELECT+START repairs it:

@@ -166,3 +166,64 @@ fn a_colour_cart_is_untouched() {
         "the Game Boy palette options changed what a Game Boy Color cart draws"
     );
 }
+
+/// A Game Boy only cart that spins with the screen on and nothing drawn: every pixel is the
+/// palette's lightest shade.
+fn blank_dmg_rom(dir: &Path) -> PathBuf {
+    let mut rom = vec![0u8; 0x8000];
+    rom[0x100..0x104].copy_from_slice(&[0x00, 0xc3, 0x50, 0x01]);
+    rom[0x104..0x134].copy_from_slice(&[
+        0xce, 0xed, 0x66, 0x66, 0xcc, 0x0d, 0x00, 0x0b, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0c, 0x00,
+        0x0d, 0x00, 0x08, 0x11, 0x1f, 0x88, 0x89, 0x00, 0x0e, 0xdc, 0xcc, 0x6e, 0xe6, 0xdd, 0xdd,
+        0xd9, 0x99, 0xbb, 0xbb, 0x67, 0x63, 0x6e, 0x0e, 0xec, 0xcc, 0xdd, 0xdc, 0x99, 0x9f, 0xbb,
+        0xb9, 0x33, 0x3e,
+    ]);
+    rom[0x134..0x13d].copy_from_slice(b"OMEGA PAL");
+    rom[0x14d] = rom[0x134..0x14d]
+        .iter()
+        .fold(0u8, |a, b| a.wrapping_sub(*b).wrapping_sub(1));
+    // the screen on, the background in the four shades in order, and a spin
+    rom[0x150..0x15a]
+        .copy_from_slice(&[0x3e, 0x91, 0xe0, 0x40, 0x3e, 0xe4, 0xe0, 0x47, 0x18, 0xfe]);
+    let p = dir.join("omega-palette.gb");
+    std::fs::write(&p, rom).unwrap();
+    p
+}
+
+fn lightest(core: &mut LibretroCore) -> [u8; 3] {
+    for _ in 0..30 {
+        core.run_frame(ButtonMask(0));
+    }
+    // the Game Boy's 160x144 sits in the middle of the 240x160 frame
+    let at = (8 * GBA_W as usize + 40) * 4;
+    let px = &core.video_xrgb8888()[at..at + 4];
+    [px[2], px[1], px[0]]
+}
+
+#[test]
+fn a_named_palette_changes_a_running_game_at_once() {
+    use omega_store::GbPalette;
+    let Some(dylib) = vendored_core() else {
+        eprintln!("no mgba dylib, skipping");
+        return;
+    };
+    let _g = core_lock();
+    let d = common::tmp_root_with_carts(&[]);
+    let rom = blank_dmg_rom(d.path());
+    let pocket = GbPalette::parse("GB Pocket").unwrap();
+    let mut core = LibretroCore::open_with(
+        &dylib,
+        &omega_zero::root::bios_dir(d.path()),
+        &omega_zero::root::saves_dir(d.path()),
+    )
+    .expect("open the core");
+    for (key, value) in omega_zero::core::palette_options(Core::Mgba, Some(pocket)) {
+        core.set_option(key, &value);
+    }
+    core.load(&rom).expect("the core would not take the rom");
+    let first = lightest(&mut core);
+    core.set_option("mgba_gb_colors", "DMG Green");
+    let second = lightest(&mut core);
+    println!("GB Pocket {first:?}, DMG Green {second:?}");
+    assert_ne!(first, second, "the running game kept its palette");
+}

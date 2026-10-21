@@ -190,3 +190,43 @@ fn a_cable_session_sets_nothing_on_gpsp() {
         "a cable session reached into gpSP, which has no cable to offer"
     );
 }
+
+#[test]
+fn a_named_palette_takes_only_a_game_boy_only_game_played_alone() {
+    use omega_store::{GbColors, GbPalette, Platform};
+    use omega_zero::core::{palette_for, palette_options};
+    let d = tempfile::tempdir().unwrap();
+    let rom = |name: &str, cgb: u8| {
+        let mut bytes = vec![0u8; 0x8000];
+        bytes[0x143] = cgb;
+        let p = d.path().join(name);
+        std::fs::write(&p, bytes).unwrap();
+        p
+    };
+    let (dmg, dual) = (rom("tetris.gb", 0x00), rom("dx.gbc", 0x80));
+    let pocket = GbPalette::parse("GB Pocket").unwrap();
+    let chosen = GbColors::Palette(pocket);
+    assert_eq!(palette_for(chosen, Platform::Gb, &dmg, None), Some(pocket));
+    assert_eq!(
+        palette_for(chosen, Platform::Gb, &dmg, Some(1)),
+        None,
+        "linked"
+    );
+    assert_eq!(
+        palette_for(chosen, Platform::Gb, &dual, None),
+        None,
+        "a colour game"
+    );
+    assert_eq!(palette_for(chosen, Platform::Gbc, &dmg, None), None);
+    assert_eq!(palette_for(GbColors::Auto, Platform::Gb, &dmg, None), None);
+    assert_eq!(
+        palette_options(Core::Mgba, Some(pocket)),
+        [
+            ("mgba_gb_model", "Game Boy".to_string()),
+            ("mgba_gb_colors_preset", "0".to_string()),
+            ("mgba_gb_colors", "GB Pocket".to_string()),
+        ]
+    );
+    assert!(palette_options(Core::Gpsp, Some(pocket)).is_empty());
+    assert!(palette_options(Core::Mgba, None).is_empty());
+}
