@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- NES games play from `Games/NES`, as `.nes` iNES images, on FCEUmm (GPL-2.0), which ships with
+  its source in `System/licenses/`. The picture shows the 224 lines a television did and is laid
+  out as the SNES's; held X and Y are turbo A and B, as on the handhelds. Labels come from
+  ScreenScraper, an image asked about with its iNES header and without. Until the NES cart's own
+  models land, an NES game stands on the shelf as a GBA cart.
 - PC Engine games play from `Games/PCE`, HuCards as `.pce` files, on Beetle PCE Fast (Mednafen's
   pce_fast, GPL-2.0), which ships with its source in `System/licenses/`. The picture is laid out
   as the SNES's, twice its size, 4:3 or stretched with SELECT+Y, and labels come from

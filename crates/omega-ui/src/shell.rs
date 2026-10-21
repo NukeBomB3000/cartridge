@@ -105,7 +105,7 @@ pub fn shell_for(cart: &Cart) -> Shell {
             SnesShell::Ntsc => SNES_SHELL,
             SnesShell::Famicom => SFC_SHELL,
         },
-        Platform::Ps1 => DEFAULT_SHELL,
+        Platform::Ps1 | Platform::Nes => DEFAULT_SHELL,
         Platform::Pce => match omega_store::Region::from_tags(&cart.stem) {
             Some(omega_store::Region::Usa) => TURBOCHIP_SHELL,
             _ => HUCARD_SHELL,

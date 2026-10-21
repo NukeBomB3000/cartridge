@@ -3,7 +3,7 @@ use omega_store::Platform;
 #[test]
 fn every_platform_has_a_directory() {
     let names: Vec<&str> = Platform::ALL.iter().map(|p| p.dir_name()).collect();
-    assert_eq!(names, vec!["GBA", "GB", "GBC", "SNES", "PS1", "PCE"]);
+    assert_eq!(names, vec!["GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES"]);
 }
 
 #[test]
@@ -16,7 +16,8 @@ fn every_platform_is_a_shelf_of_its_own() {
             Platform::Gbc,
             Platform::Snes,
             Platform::Ps1,
-            Platform::Pce
+            Platform::Pce,
+            Platform::Nes
         ]
     );
     for (i, p) in Platform::ALL.iter().enumerate() {
@@ -38,4 +39,6 @@ fn each_platform_takes_only_its_own_extensions() {
     assert!(Platform::Pce.accepts(std::path::Path::new("Bonk's Adventure.pce")));
     assert!(!Platform::Pce.accepts(std::path::Path::new("Bonk's Adventure.sgx")));
     assert!(!Platform::Snes.accepts(std::path::Path::new("Bonk's Adventure.pce")));
+    assert!(Platform::Nes.accepts(std::path::Path::new("Super Mario Bros. (World).nes")));
+    assert!(!Platform::Nes.accepts(std::path::Path::new("Zelda no Densetsu.fds")));
 }

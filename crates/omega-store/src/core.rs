@@ -14,16 +14,18 @@ pub enum Core {
     Supafaust,
     PcsxRearmed,
     PceFast,
+    Fceumm,
 }
 
 impl Core {
-    pub const ALL: [Core; 6] = [
+    pub const ALL: [Core; 7] = [
         Core::Mgba,
         Core::Gpsp,
         Core::Snes9x,
         Core::Supafaust,
         Core::PcsxRearmed,
         Core::PceFast,
+        Core::Fceumm,
     ];
 
     pub fn as_str(&self) -> &'static str {
@@ -34,6 +36,7 @@ impl Core {
             Core::Supafaust => "supafaust",
             Core::PcsxRearmed => "pcsx_rearmed",
             Core::PceFast => "pce_fast",
+            Core::Fceumm => "fceumm",
         }
     }
 
@@ -51,7 +54,7 @@ impl Core {
     }
 
     /// The core's name as its chip in the core picker wears it, in its own case: as long as the
-    /// chip has room for, six letters at most, so Supafaust is Faust.
+    /// chip has room for, six letters at most, so Supafaust is Faust and FCEUmm is FCEU.
     pub fn text(self) -> &'static str {
         match self {
             Core::Mgba => "mGBA",
@@ -60,6 +63,7 @@ impl Core {
             Core::Supafaust => "Faust",
             Core::PcsxRearmed => "PCSX",
             Core::PceFast => "PCE",
+            Core::Fceumm => "FCEU",
         }
     }
 
@@ -72,6 +76,7 @@ impl Core {
             Core::Supafaust => "Supafaust",
             Core::PcsxRearmed => "PCSX-ReARMed",
             Core::PceFast => "Beetle PCE Fast",
+            Core::Fceumm => "FCEUmm",
         }
     }
 
@@ -83,6 +88,7 @@ impl Core {
             "supafaust" => Some(Core::Supafaust),
             "pcsx_rearmed" => Some(Core::PcsxRearmed),
             "pce_fast" => Some(Core::PceFast),
+            "fceumm" => Some(Core::Fceumm),
             _ => None,
         }
     }
@@ -100,6 +106,7 @@ impl Core {
             Platform::Snes => &[Core::Snes9x, Core::Supafaust],
             Platform::Ps1 => &[Core::PcsxRearmed],
             Platform::Pce => &[Core::PceFast],
+            Platform::Nes => &[Core::Fceumm],
         }
     }
 

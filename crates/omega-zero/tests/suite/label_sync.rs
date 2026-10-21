@@ -1018,3 +1018,60 @@ fn a_hucard_is_asked_about_as_system_31_and_a_headered_dump_without_its_header_t
         (Some(crc32(&dump[512..])), 2048)
     );
 }
+
+#[test]
+fn an_nes_label_suits_the_cart_it_is_drawn_on() {
+    let nes = |stem: &str| {
+        Want::cart(&cart(
+            Platform::Nes,
+            stem,
+            PathBuf::from(format!("/nowhere/{stem}.nes")),
+            None,
+        ))
+    };
+    assert_eq!(
+        label_regions(&nes("Super Mario Bros. 3 (USA)")),
+        ["us", "wor", "eu", "jp"]
+    );
+    assert_eq!(
+        label_regions(&nes("Super Mario Bros. 3 (Japan)")),
+        ["jp", "wor", "us", "eu"]
+    );
+    assert_eq!(
+        label_regions(&nes("Super Mario Bros. 3 (Europe)")),
+        joined(&[&EUROPEAN, &["wor", "us", "jp"]])
+    );
+    assert_eq!(label_regions(&nes("Tetris"))[0], "us");
+}
+
+#[test]
+fn an_nes_image_is_asked_about_as_system_3_with_its_ines_header_and_without() {
+    let root = tempfile::tempdir().unwrap();
+    let rom = root.path().join("Games/NES/Super Mario Bros. (World).nes");
+    let mut image = b"NES\x1a\x02\x01".to_vec();
+    image.resize(16, 0);
+    image.extend(vec![0x33_u8; 40 * 1024]);
+    touch(&rom, &image);
+    let nes = cart(Platform::Nes, "Super Mario Bros. (World)", rom, None);
+    let asked = lookups(&Want::cart(&nes));
+    assert_eq!(asked.len(), 2);
+    assert_eq!((asked[0].system, asked[0].kind), (3, "rom"));
+    assert_eq!(
+        (asked[0].crc, asked[0].size),
+        (Some(crc32(&image)), image.len() as u64)
+    );
+    assert_eq!(
+        (asked[1].crc, asked[1].size),
+        (Some(crc32(&image[16..])), 40 * 1024),
+        "not the ROM after the iNES header"
+    );
+
+    let bare = root.path().join("Games/NES/Bare.nes");
+    touch(&bare, &vec![0x44_u8; 1024]);
+    let bare = cart(Platform::Nes, "Bare", bare, None);
+    assert_eq!(
+        lookups(&Want::cart(&bare)).len(),
+        1,
+        "a headerless image is asked about once"
+    );
+}

@@ -166,7 +166,7 @@ fn every_credit_is_kept_and_slot_is_not_named() {
         "Snes9x (no commercial use)",
         "Mednafen's\nSupafaust",
         "Beetle PCE Fast",
-        "PCSX-ReARMed\n(all GPL-2.0)",
+        "PCSX-ReARMed,\nFCEUmm (all GPL-2.0)",
         "BaseOS by pvaibhav",
         "Pixel Code by Qwerasd",
         "GigaHerz's LCD3x",

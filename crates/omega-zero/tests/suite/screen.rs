@@ -133,7 +133,7 @@ fn the_picture_is_the_game_s_own_window_inside_its_view() {
 
 use omega_zero::video_mode::{picture_rect, screen_on_frame};
 
-const CONSOLES: [Platform; 3] = [Platform::Snes, Platform::Ps1, Platform::Pce];
+const CONSOLES: [Platform; 4] = [Platform::Snes, Platform::Ps1, Platform::Pce, Platform::Nes];
 
 /// Every picture size the SNES and the PlayStation draw.
 const FRAMES: [(u32, u32); 10] = [

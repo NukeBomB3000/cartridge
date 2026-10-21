@@ -117,7 +117,10 @@ pub fn screen_for(platform: Platform, mode: VideoMode, frame: (u32, u32)) -> Scr
 /// Whether `platform` is a console played on a television, whose pictures come in every size
 /// and are laid out by their own, rather than a handheld drawn for the GBA's screen.
 fn is_console(platform: Platform) -> bool {
-    matches!(platform, Platform::Snes | Platform::Ps1 | Platform::Pce)
+    matches!(
+        platform,
+        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes
+    )
 }
 
 /// The GBA frame at three panel pixels to a game pixel, which every canvas but 640x480 holds.
@@ -161,7 +164,7 @@ pub fn screen_on_frame(
         };
     }
     match platform {
-        Platform::Gba | Platform::Snes | Platform::Ps1 | Platform::Pce => {
+        Platform::Gba | Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes => {
             let h = (cw * SRC_H as f32 / SRC_W as f32).round();
             let view = GameView {
                 rect: [0.0, 0.0, cw, h],
@@ -208,6 +211,8 @@ const SNES_W: f32 = 256.0;
 /// 512 pixels a line, or an interlaced one, twice the lines, fills the same rect. Kept to its
 /// aspect, any console takes a television's 4:3, as large as the canvas holds; stretched, it
 /// fills the canvas.
+///
+/// The NES is too: its lines are 256 pixels, and it shows the 224 of them a television did.
 ///
 /// The PC Engine is laid out as the SNES is: its lines are as wide as the SNES's, 256 pixels,
 /// and its wider modes, up to 512 pixels a line, are finer dots across the same picture.
