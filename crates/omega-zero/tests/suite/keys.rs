@@ -6,12 +6,14 @@ use crate::common;
 
 use std::time::{Duration, Instant};
 
+use omega_gfx::Look;
 use omega_input::{Btn, Keys, Millis, RawEvent};
 use omega_retro::ButtonMask;
 use omega_store::{write_app_state, AppState, Platform};
 use omega_ui::{CornerBadge, HudKind};
 use omega_zero::app::Phase;
 use omega_zero::session::Session;
+use omega_zero::shader::{looks_for, shader_for, SHADER_FILE};
 use omega_zero::video_mode::{video_mode_for, VideoMode};
 use tempfile::TempDir;
 
@@ -200,4 +202,58 @@ fn select_and_y_goes_round_a_snes_picture_s_three_sizes() {
         chord(&mut s, &mut now);
         assert_eq!(video_mode_for(d.path(), Platform::Snes), want);
     }
+}
+
+#[test]
+fn select_and_x_goes_round_a_system_s_looks_and_keeps_them_for_the_system() {
+    let d = root_with(Platform::Snes, "Chrono Trigger");
+    let (mut s, mut now) = playing(&d, Platform::Snes, "Chrono Trigger");
+    assert_eq!(s.app().look(), Look::Off);
+    let chord = |s: &mut Session, now: &mut Millis| {
+        step(s, now, Some(RawEvent::Down(Btn::Select)));
+        step(s, now, Some(RawEvent::Down(Btn::X)));
+        assert_eq!(held(s) & ButtonMask::X, 0, "the chord's X reached the game");
+        step(s, now, Some(RawEvent::Up(Btn::X)));
+        step(s, now, Some(RawEvent::Up(Btn::Select)));
+    };
+    for want in [Look::Scanlines, Look::Crt, Look::Off, Look::Scanlines] {
+        chord(&mut s, &mut now);
+        assert_eq!(s.app().look(), want);
+        assert_eq!(shader_for(d.path(), Platform::Snes), want);
+    }
+    assert_eq!(
+        shader_for(d.path(), Platform::Ps1),
+        Look::Off,
+        "the SNES's look reached another system"
+    );
+    assert!(std::fs::read_to_string(d.path().join(SHADER_FILE))
+        .unwrap()
+        .contains("SNES = scanlines"));
+}
+
+#[test]
+fn each_system_offers_its_own_screen_s_looks() {
+    for p in [Platform::Gba, Platform::Gb, Platform::Gbc] {
+        assert_eq!(
+            looks_for(p),
+            [Look::Off, Look::Lcd, Look::Grid, Look::Dot],
+            "{p:?}"
+        );
+    }
+    for p in [Platform::Snes, Platform::Ps1] {
+        assert_eq!(
+            looks_for(p),
+            [Look::Off, Look::Scanlines, Look::Crt],
+            "{p:?}"
+        );
+    }
+    let d = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(d.path().join("Config")).unwrap();
+    std::fs::write(d.path().join(SHADER_FILE), "GBA = crt\nPS1 = scanlines\n").unwrap();
+    assert_eq!(
+        shader_for(d.path(), Platform::Gba),
+        Look::Off,
+        "a look the GBA lacks was used"
+    );
+    assert_eq!(shader_for(d.path(), Platform::Ps1), Look::Scanlines);
 }

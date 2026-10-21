@@ -134,6 +134,7 @@ fn controls_says_what_the_shelf_and_a_gba_game_do_with_each_button() {
             ("SELECT+L1", "LOAD STATE"),
             ("SELECT+R1", "SAVE STATE"),
             ("SELECT+Y", "COLOUR"),
+            ("SELECT+X", "SHADER"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]
@@ -178,6 +179,7 @@ fn a_snes_game_rewinds_and_fast_forwards_and_stretches_but_neither_links_nor_cor
             ("SELECT+L1", "LOAD STATE"),
             ("SELECT+R1", "SAVE STATE"),
             ("SELECT+Y", "PICTURE SIZE"),
+            ("SELECT+X", "SHADER"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]
@@ -201,6 +203,7 @@ fn a_playstation_game_fast_forwards_on_select_r2_and_swaps_discs() {
             ("SELECT+L1", "LOAD STATE"),
             ("SELECT+R1", "SAVE STATE"),
             ("SELECT+Y", "PICTURE SIZE"),
+            ("SELECT+X", "SHADER"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]

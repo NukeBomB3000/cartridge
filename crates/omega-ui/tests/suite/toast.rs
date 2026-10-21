@@ -91,6 +91,7 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::PictureActual,
             Toast::PictureAspect,
             Toast::PictureStretch,
+            Toast::Shader(omega_gfx::Look::Off),
             Toast::OneDisc,
             Toast::Disc(1),
         ],

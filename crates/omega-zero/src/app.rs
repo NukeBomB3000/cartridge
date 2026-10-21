@@ -329,6 +329,7 @@ pub struct App {
     pub(crate) platform: Platform,
     pub(crate) named_core: bool,
     pub(crate) video_mode: VideoMode,
+    pub(crate) look: omega_gfx::Look,
     link: Option<LinkSession>,
     pub(crate) sfx: Option<Sfx>,
     pub(crate) polaroids: Option<Polaroids>,
@@ -490,6 +491,7 @@ impl App {
             platform: Platform::default(),
             named_core: false,
             video_mode: VideoMode::default(),
+            look: omega_gfx::Look::Off,
             link: None,
             sfx: None,
             polaroids: None,
@@ -830,6 +832,27 @@ impl App {
 
     pub fn set_video_mode(&mut self, mode: VideoMode) {
         self.video_mode = mode;
+    }
+
+    /// The screen look the game in the handheld is drawn through.
+    pub fn look(&self) -> omega_gfx::Look {
+        self.look
+    }
+
+    pub fn set_look(&mut self, look: omega_gfx::Look) {
+        self.look = look;
+    }
+
+    /// SELECT+X: the next look for the game's system, kept for every game of it.
+    fn next_look(&mut self) {
+        let look = crate::shader::next_look(self.platform, self.look);
+        self.look = look;
+        if let Some(root) = self.root.clone() {
+            if let Err(e) = crate::shader::write_shader(&root, self.platform, look) {
+                eprintln!("omega-zero: video: could not write shader.ini: {e}");
+            }
+        }
+        self.hud.toast(Toast::Shader(look), self.now());
     }
 
     pub fn source_rect(&self) -> [f32; 4] {
@@ -1461,6 +1484,13 @@ impl App {
                 false => Toast::ColourOff,
             };
             self.hud.toast(said, self.now());
+            return true;
+        }
+        if action == Action::ShaderNext {
+            if !matches!(self.phase, Phase::Playing { .. }) {
+                return false;
+            }
+            self.next_look();
             return true;
         }
         if action == Action::PictureToggle {

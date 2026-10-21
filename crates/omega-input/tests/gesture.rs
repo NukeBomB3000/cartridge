@@ -704,3 +704,23 @@ fn new_keys_let_go_of_a_rewind_and_a_fast_forward_under_way() {
         "R2 stayed held as the chord it was"
     );
 }
+
+#[test]
+fn select_and_x_steps_the_screen_look_on_every_system() {
+    for keys in [Keys::HANDHELD, PS1, SNES] {
+        let mut g = with_keys(keys);
+        assert!(g.feed(Down(Select), 0).is_empty());
+        assert_eq!(g.feed(Down(X), 10), vec![ShaderNext]);
+        assert!(
+            g.feed(Up(X), 40).is_empty(),
+            "the chord's X reached the game"
+        );
+        assert!(g.feed(Up(Select), 60).is_empty());
+    }
+    let mut g = Gestures::new();
+    assert_eq!(
+        g.feed(Down(X), 0),
+        vec![GbaDown(X)],
+        "X alone is the game's"
+    );
+}
