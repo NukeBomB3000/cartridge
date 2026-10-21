@@ -119,7 +119,7 @@ pub fn screen_for(platform: Platform, mode: VideoMode, frame: (u32, u32)) -> Scr
 fn is_console(platform: Platform) -> bool {
     matches!(
         platform,
-        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes
+        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md
     )
 }
 
@@ -164,7 +164,12 @@ pub fn screen_on_frame(
         };
     }
     match platform {
-        Platform::Gba | Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes => {
+        Platform::Gba
+        | Platform::Snes
+        | Platform::Ps1
+        | Platform::Pce
+        | Platform::Nes
+        | Platform::Md => {
             let h = (cw * SRC_H as f32 / SRC_W as f32).round();
             let view = GameView {
                 rect: [0.0, 0.0, cw, h],
@@ -203,8 +208,12 @@ fn lcd(rect: [f32; 4], uv: [f32; 4]) -> GameView {
 /// The SNES's lines are 256 pixels wide, its hi-res modes' 512 pixels half as wide each.
 const SNES_W: f32 = 256.0;
 
-/// A SNES or PlayStation game on a television's screen, centred with the console's body around
-/// it, every frame size drawn through the sharp filter into the same rect.
+/// The Mega Drive's are 320 pixels wide; its narrower mode's 256 are wider dots across the same
+/// picture, as a television showed them.
+const MD_W: f32 = 320.0;
+
+/// A television's console's game on a television's screen, centred with the console's body
+/// around it, every frame size drawn through the sharp filter into the same rect.
 ///
 /// The SNES at its actual size is twice its 256 pixels and its lines, 512x448 (512x478 for a
 /// game showing its overscan), on every canvas: 3x would not fit any of them. A hi-res frame,
@@ -212,10 +221,12 @@ const SNES_W: f32 = 256.0;
 /// aspect, any console takes a television's 4:3, as large as the canvas holds; stretched, it
 /// fills the canvas.
 ///
-/// The NES is too: its lines are 256 pixels, and it shows the 224 of them a television did.
+/// The NES and the PC Engine are laid out as the SNES is. The NES's lines are 256 pixels, and it
+/// shows the 224 of them a television did; the PC Engine's are as wide, and its wider modes, up
+/// to 512 pixels a line, are finer dots across the same picture.
 ///
-/// The PC Engine is laid out as the SNES is: its lines are as wide as the SNES's, 256 pixels,
-/// and its wider modes, up to 512 pixels a line, are finer dots across the same picture.
+/// The Mega Drive's actual size is its 320 pixel lines at a whole scale, 640x448 at twice, its
+/// narrower mode's 256 pixels filling the same rect.
 ///
 /// The PlayStation at its actual size is its lines at the largest whole scale the canvas holds,
 /// a television's 4:3 across: its usual 320x240 is 640x480 on 640x480 and 720x480, as its 4:3
@@ -224,7 +235,8 @@ fn console_screen(c: Canvas, platform: Platform, mode: VideoMode, frame: (u32, u
     let (cw, ch) = (c.w as f32, c.h as f32);
     let (w, h) = match (platform, mode) {
         (Platform::Ps1, VideoMode::Actual) => ps1_whole(cw, ch, frame.1),
-        (_, VideoMode::Actual) => snes_whole(cw, ch, frame.1),
+        (Platform::Md, VideoMode::Actual) => whole(cw, ch, MD_W, frame.1),
+        (_, VideoMode::Actual) => whole(cw, ch, SNES_W, frame.1),
         (_, VideoMode::Aspect) => four_three(cw, ch),
         (_, VideoMode::Stretch) => (cw, ch),
     };
@@ -241,16 +253,17 @@ fn console_screen(c: Canvas, platform: Platform, mode: VideoMode, frame: (u32, u
     }
 }
 
-/// The SNES picture at the largest whole scale the canvas holds, for a frame `lines` high: an
-/// interlaced frame's lines count as the half they each are of the picture.
-fn snes_whole(cw: f32, ch: f32, lines: u32) -> (f32, f32) {
+/// A picture whose lines are `line_w` pixels wide at the largest whole scale the canvas holds,
+/// for a frame `lines` high: an interlaced frame's lines count as the half they each are of the
+/// picture.
+fn whole(cw: f32, ch: f32, line_w: f32, lines: u32) -> (f32, f32) {
     let lines = match lines {
         0 => 224,
         l if l > 256 => l / 2,
         l => l,
     } as f32;
-    let scale = (cw / SNES_W).min(ch / lines).floor().max(1.0);
-    let (w, h) = (SNES_W * scale, lines * scale);
+    let scale = (cw / line_w).min(ch / lines).floor().max(1.0);
+    let (w, h) = (line_w * scale, lines * scale);
     if w <= cw && h <= ch {
         (w, h)
     } else {

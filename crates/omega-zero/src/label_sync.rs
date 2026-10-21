@@ -206,6 +206,7 @@ pub fn system_id(platform: Platform) -> u32 {
         Platform::Ps1 => 57,
         Platform::Pce => 31,
         Platform::Nes => 3,
+        Platform::Md => 1,
     }
 }
 
@@ -314,8 +315,11 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
     let mut out = tag_regions(&want.stem);
     match want.platform {
         Platform::Gba | Platform::Gb | Platform::Gbc => return regions(&want.stem, &want.code),
-        Platform::Snes => {
-            let region = omega_store::snes::region(&want.rom, &want.stem);
+        Platform::Snes | Platform::Md => {
+            let region = match want.platform {
+                Platform::Md => omega_store::md::region(&want.rom, &want.stem),
+                _ => omega_store::snes::region(&want.rom, &want.stem),
+            };
             out.extend(region.and_then(region_code));
             if region == Some(Region::Usa) {
                 out.retain(|r| AMERICA.contains(r) || *r == "wor");

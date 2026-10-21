@@ -10,10 +10,11 @@ pub enum Platform {
     Ps1,
     Pce,
     Nes,
+    Md,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 7] = [
+    pub const ALL: [Platform; 8] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -21,6 +22,7 @@ impl Platform {
         Platform::Ps1,
         Platform::Pce,
         Platform::Nes,
+        Platform::Md,
     ];
 
     pub fn name(self) -> &'static str {
@@ -32,6 +34,7 @@ impl Platform {
             Platform::Ps1 => "PlayStation",
             Platform::Pce => "PC Engine",
             Platform::Nes => "Nintendo Entertainment System",
+            Platform::Md => "Mega Drive",
         }
     }
 
@@ -44,6 +47,7 @@ impl Platform {
             Platform::Ps1 => "PS1",
             Platform::Pce => "PCE",
             Platform::Nes => "NES",
+            Platform::Md => "MD",
         }
     }
 
@@ -55,6 +59,7 @@ impl Platform {
             Platform::Ps1 => &["cue", "chd", "pbp", "m3u"],
             Platform::Pce => &["pce"],
             Platform::Nes => &["nes"],
+            Platform::Md => &["md", "gen", "bin"],
         }
     }
 
@@ -66,6 +71,7 @@ impl Platform {
             Platform::Ps1 => (320, 240),
             Platform::Pce => (256, 240),
             Platform::Nes => (256, 224),
+            Platform::Md => (320, 224),
         }
     }
 
@@ -93,7 +99,7 @@ impl Platform {
     pub fn picture_toggle(self) -> bool {
         matches!(
             self,
-            Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes
+            Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md
         )
     }
 

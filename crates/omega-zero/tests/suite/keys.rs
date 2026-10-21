@@ -240,7 +240,13 @@ fn each_system_offers_its_own_screen_s_looks() {
             "{p:?}"
         );
     }
-    for p in [Platform::Snes, Platform::Nes, Platform::Pce, Platform::Ps1] {
+    for p in [
+        Platform::Snes,
+        Platform::Nes,
+        Platform::Pce,
+        Platform::Md,
+        Platform::Ps1,
+    ] {
         assert_eq!(
             looks_for(p),
             [Look::Off, Look::Scanlines, Look::Crt],

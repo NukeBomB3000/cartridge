@@ -92,7 +92,12 @@ pub(crate) struct Board {
 
 pub fn gb_shell_of(cart: &Cart) -> Option<GbShell> {
     match cart.platform {
-        Platform::Gba | Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes => None,
+        Platform::Gba
+        | Platform::Snes
+        | Platform::Ps1
+        | Platform::Pce
+        | Platform::Nes
+        | Platform::Md => None,
         Platform::Gb | Platform::Gbc => Some(match cart.shell.map(|c| c.outline) {
             Some(Outline::Notched) => GbShell::Notched,
             Some(Outline::Rounded) => GbShell::Rounded,
@@ -115,6 +120,8 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Ps1 => CartModel::Disc,
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(nes::shell_of(cart)),
+        // drawn as a GBA cart until the Mega Drive cart's own models land
+        Platform::Md => CartModel::Gba,
     }
 }
 
@@ -181,7 +188,7 @@ const GB_SEATED_H: u32 = 259;
 
 pub fn seated_box(platform: Platform) -> (u32, u32) {
     match platform {
-        Platform::Gba => (SEATED_W, SEATED_H),
+        Platform::Gba | Platform::Md => (SEATED_W, SEATED_H),
         Platform::Nes => nes::face_box(NesShell::Nes),
         Platform::Pce => (hucard::W, hucard::H),
         Platform::Gb | Platform::Gbc => (SEATED_W, GB_SEATED_H),
@@ -199,7 +206,7 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
 /// The size of a face for `platform` in pixels: its first model's, where it has several.
 pub fn cart_box(platform: Platform) -> (u32, u32) {
     model_box(match platform {
-        Platform::Gba => CartModel::Gba,
+        Platform::Gba | Platform::Md => CartModel::Gba,
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(NesShell::Nes),
         Platform::Gb | Platform::Gbc => CartModel::Gb(GbShell::Notched),
@@ -240,7 +247,7 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
     CartModel::ALL
         .into_iter()
         .filter(|model| match model {
-            CartModel::Gba => platform == Platform::Gba,
+            CartModel::Gba => matches!(platform, Platform::Gba | Platform::Md),
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),

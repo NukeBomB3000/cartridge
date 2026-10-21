@@ -1075,3 +1075,35 @@ fn an_nes_image_is_asked_about_as_system_3_with_its_ines_header_and_without() {
         "a headerless image is asked about once"
     );
 }
+
+#[test]
+fn a_mega_drive_label_suits_the_cart_it_is_drawn_on() {
+    let md = |stem: &str| {
+        Want::cart(&cart(
+            Platform::Md,
+            stem,
+            PathBuf::from(format!("/nowhere/{stem}.md")),
+            None,
+        ))
+    };
+    assert_eq!(
+        label_regions(&md("Sonic the Hedgehog (USA, Europe)")),
+        joined(&[&AMERICAN, &["wor"], &EUROPEAN, &["jp"]]),
+        "a Genesis cart took a European label first"
+    );
+    assert_eq!(
+        label_regions(&md("Puyo Puyo (Japan)")),
+        joined(&[&["jp"], &EUROPEAN, &["wor"], &AMERICAN])
+    );
+    assert_eq!(
+        label_regions(&md("Probotector (Europe)"))[..2],
+        ["eu", "uk"]
+    );
+    let asked = lookups(&Want::cart(&cart(
+        Platform::Md,
+        "Gone",
+        PathBuf::from("/nowhere/Gone.md"),
+        None,
+    )));
+    assert!(asked.is_empty());
+}

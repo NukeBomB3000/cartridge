@@ -122,7 +122,7 @@ pub fn shell_for(cart: &Cart) -> Shell {
             SnesShell::Ntsc => SNES_SHELL,
             SnesShell::Famicom => SFC_SHELL,
         },
-        Platform::Ps1 => DEFAULT_SHELL,
+        Platform::Ps1 | Platform::Md => DEFAULT_SHELL,
         Platform::Nes => match crate::models::nes::shell_of(cart) {
             NesShell::Nes => NES_SHELL,
             NesShell::Famicom => famicom_shell_for(&cart.stem),

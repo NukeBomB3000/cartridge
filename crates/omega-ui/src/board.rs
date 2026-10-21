@@ -621,7 +621,8 @@ pub fn sockets_for(platform: Platform) -> Sockets {
         | Platform::Gbc
         | Platform::Ps1
         | Platform::Pce
-        | Platform::Nes => GBA_SOCKETS,
+        | Platform::Nes
+        | Platform::Md => GBA_SOCKETS,
     }
 }
 
@@ -629,7 +630,12 @@ pub fn sockets_for(platform: Platform) -> Sockets {
 pub fn sockets_of(core: Core) -> Sockets {
     match core {
         Core::Snes9x | Core::Supafaust => SNES_SOCKETS,
-        Core::Mgba | Core::Gpsp | Core::PcsxRearmed | Core::PceFast | Core::Fceumm => GBA_SOCKETS,
+        Core::Mgba
+        | Core::Gpsp
+        | Core::PcsxRearmed
+        | Core::PceFast
+        | Core::Fceumm
+        | Core::GenesisPlusGx => GBA_SOCKETS,
     }
 }
 

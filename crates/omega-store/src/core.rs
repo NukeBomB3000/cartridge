@@ -15,10 +15,11 @@ pub enum Core {
     PcsxRearmed,
     PceFast,
     Fceumm,
+    GenesisPlusGx,
 }
 
 impl Core {
-    pub const ALL: [Core; 7] = [
+    pub const ALL: [Core; 8] = [
         Core::Mgba,
         Core::Gpsp,
         Core::Snes9x,
@@ -26,6 +27,7 @@ impl Core {
         Core::PcsxRearmed,
         Core::PceFast,
         Core::Fceumm,
+        Core::GenesisPlusGx,
     ];
 
     pub fn as_str(&self) -> &'static str {
@@ -37,6 +39,7 @@ impl Core {
             Core::PcsxRearmed => "pcsx_rearmed",
             Core::PceFast => "pce_fast",
             Core::Fceumm => "fceumm",
+            Core::GenesisPlusGx => "genesis_plus_gx",
         }
     }
 
@@ -54,7 +57,8 @@ impl Core {
     }
 
     /// The core's name as its chip in the core picker wears it, in its own case: as long as the
-    /// chip has room for, six letters at most, so Supafaust is Faust and FCEUmm is FCEU.
+    /// chip has room for, six letters at most, so Supafaust is Faust, FCEUmm is FCEU and Genesis Plus GX
+    /// is GPGX.
     pub fn text(self) -> &'static str {
         match self {
             Core::Mgba => "mGBA",
@@ -64,6 +68,7 @@ impl Core {
             Core::PcsxRearmed => "PCSX",
             Core::PceFast => "PCE",
             Core::Fceumm => "FCEU",
+            Core::GenesisPlusGx => "GPGX",
         }
     }
 
@@ -77,6 +82,7 @@ impl Core {
             Core::PcsxRearmed => "PCSX-ReARMed",
             Core::PceFast => "Beetle PCE Fast",
             Core::Fceumm => "FCEUmm",
+            Core::GenesisPlusGx => "Genesis Plus GX",
         }
     }
 
@@ -89,6 +95,7 @@ impl Core {
             "pcsx_rearmed" => Some(Core::PcsxRearmed),
             "pce_fast" => Some(Core::PceFast),
             "fceumm" => Some(Core::Fceumm),
+            "genesis_plus_gx" => Some(Core::GenesisPlusGx),
             _ => None,
         }
     }
@@ -107,6 +114,7 @@ impl Core {
             Platform::Ps1 => &[Core::PcsxRearmed],
             Platform::Pce => &[Core::PceFast],
             Platform::Nes => &[Core::Fceumm],
+            Platform::Md => &[Core::GenesisPlusGx],
         }
     }
 

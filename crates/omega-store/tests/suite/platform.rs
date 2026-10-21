@@ -3,7 +3,10 @@ use omega_store::Platform;
 #[test]
 fn every_platform_has_a_directory() {
     let names: Vec<&str> = Platform::ALL.iter().map(|p| p.dir_name()).collect();
-    assert_eq!(names, vec!["GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES"]);
+    assert_eq!(
+        names,
+        vec!["GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD"]
+    );
 }
 
 #[test]
@@ -17,7 +20,8 @@ fn every_platform_is_a_shelf_of_its_own() {
             Platform::Snes,
             Platform::Ps1,
             Platform::Pce,
-            Platform::Nes
+            Platform::Nes,
+            Platform::Md
         ]
     );
     for (i, p) in Platform::ALL.iter().enumerate() {

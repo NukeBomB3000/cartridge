@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Mega Drive and Genesis games play from `Games/MD`, as `.md`, `.gen` or `.bin` images, on
+  Genesis Plus GX (free for non-commercial use only), which ships with its source in
+  `System/licenses/`. A, B and C are on Y, B and A, as on most handhelds, and the core picks a
+  three or six button pad for each game; a six button game finds X, Y and Z on L1, X and R1.
+  The picture is twice its 320 pixel lines, 640x448, or 4:3 or stretched on SELECT+Y. Titles
+  and regions come from the cart's header, labels from ScreenScraper. Until the Mega Drive and
+  Genesis carts' own models land, a game stands on the shelf as a GBA cart.
 - NES games play from `Games/NES`, as `.nes` iNES images, on FCEUmm (GPL-2.0), which ships with
   its source in `System/licenses/`. The picture shows the 224 lines a television did and is laid
   out as the SNES's; held X and Y are turbo A and B, as on the handhelds. Labels come from

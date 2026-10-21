@@ -14,7 +14,7 @@ pub fn looks_for(platform: Platform) -> &'static [Look] {
         Platform::Gba | Platform::Gb | Platform::Gbc => {
             &[Look::Off, Look::Lcd, Look::Grid, Look::Dot]
         }
-        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes => {
+        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md => {
             &[Look::Off, Look::Scanlines, Look::Crt]
         }
     }
