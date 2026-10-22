@@ -42,7 +42,10 @@ fn on_640x480_a_gba_game_stays_at_a_whole_2x_so_a_grid_falls_evenly() {
         "8/3 is no scale for the 3x mask"
     );
     assert_eq!(s.still, s.view);
-    assert!(!s.bands.is_empty(), "the canvas around the picture is left to the bezel");
+    assert!(
+        !s.bands.is_empty(),
+        "the canvas around the picture is left to the bezel"
+    );
 }
 
 #[test]
