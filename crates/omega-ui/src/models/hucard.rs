@@ -36,21 +36,24 @@ const HALF: &[(f32, f32)] = &[
 ];
 const UNITS: (f32, f32) = (216.0, 340.0);
 
-/// The size of the face in pixels: about 2.75 pixels to the millimetre, as the SNES carts are
-/// drawn, so the card stands as tall as a SNES cart beside it and a little narrower than half
-/// one. Its half is an even number of pixels across, so it stands on whole art pixels in the
-/// middle of the row.
-pub const W: u32 = 148;
-pub const H: u32 = 234;
+/// The size of the face in pixels: about 3.5 pixels to the millimetre, so its label reads and
+/// it stands about as tall as a Game Boy pak beside it. Its half is an even number of pixels
+/// across, so it stands on whole art pixels in the middle of the row.
+pub const W: u32 = 188;
+pub const H: u32 = 296;
+
+/// How far apart cards stand on the shelf: wider than the card, as a NES cart is, so three
+/// stand on the screen rather than five slivers.
+pub const PITCH: f32 = 220.0;
 
 /// The label, in the face's pixels: the well's inside, 50 mm by 62 from 2 mm in at the sides
 /// and 4 mm down from the top, its corners a little round. It reaches almost to the card's
 /// edges, as a real HuCard's does, which leaves a generated title room for nine letters a line.
-const LABEL: (u32, u32, u32, u32) = (6, 12, 136, 170);
-const LABEL_ROUND: u32 = 3;
+const LABEL: (u32, u32, u32, u32) = (8, 15, 172, 216);
+const LABEL_ROUND: u32 = 4;
 
 /// How far in from the outline a clear card's plastic lightens at its rim, in pixels.
-const RIM: u32 = 4;
+const RIM: u32 = 5;
 
 /// The card's outline in drawing units, all the way round clockwise, and the drawing's size.
 pub(crate) fn outline() -> (Vec<(f32, f32)>, (f32, f32)) {

@@ -53,6 +53,15 @@ pub fn model_shelf_box(model: CartModel) -> (f32, f32) {
     (w as f32 * scale, h as f32 * scale)
 }
 
+/// How far apart `model`'s carts stand on the shelf: their width, but for a HuCard's, which
+/// stands narrower than its place.
+pub fn model_pitch(model: CartModel) -> f32 {
+    match model {
+        CartModel::HuCard => hucard::PITCH,
+        _ => model_shelf_box(model).0,
+    }
+}
+
 /// The size a cart for `platform` stands on the shelf at, and spaces its neighbours by.
 pub fn shelf_box(platform: Platform) -> (f32, f32) {
     let (w, h) = cart_box(platform);
@@ -384,10 +393,11 @@ impl Shelf {
     pub fn selected_at(&self) -> (f32, f32) {
         let model = self.model_at(self.index).unwrap_or(CartModel::Gba);
         let w = model_shelf_box(model).0;
+        let pitch = model_pitch(model);
         let offset = self.scroll_target() - self.scroll;
         let scale = shrink(offset);
         (
-            out_w() as f32 / 2.0 + offset * w - w * scale / 2.0,
+            out_w() as f32 / 2.0 + offset * pitch - w * scale / 2.0,
             scale * model_scale(model),
         )
     }
@@ -478,7 +488,8 @@ impl Shelf {
             let (cw, ch) = model_shelf_box(model);
             let (w, h) = (cw * scale, ch * scale);
             let away = offset.signum() * (1.0 + offset.abs());
-            let x = out_w() as f32 / 2.0 + offset * cw - w / 2.0 + away * PART * recede;
+            let x =
+                out_w() as f32 / 2.0 + offset * model_pitch(model) - w / 2.0 + away * PART * recede;
             if x + w <= 0.0 || x >= out_w() as f32 || alpha <= 0.0 {
                 continue;
             }
