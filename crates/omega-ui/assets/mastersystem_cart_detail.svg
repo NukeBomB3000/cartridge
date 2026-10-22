@@ -1,24 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 536">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 272">
   <!-- the cart's edges roll back: its left and top catch the light, its right and bottom turn away -->
-  <rect x="0" y="16" width="6" height="512" fill="#fff" fill-opacity="0.3"/>
-  <rect x="16" y="0" width="368" height="5" fill="#fff" fill-opacity="0.3"/>
-  <rect x="394" y="16" width="6" height="512" fill="#000" fill-opacity="0.45"/>
-  <rect x="8" y="531" width="384" height="5" fill="#000" fill-opacity="0.35"/>
-  <!-- the label's well over the top of the face: shadow along its top and left, a lit lip under and right of it -->
-  <rect x="32" y="32" width="336" height="4" fill="#000" fill-opacity="0.45"/>
-  <rect x="32" y="36" width="4" height="324" fill="#000" fill-opacity="0.4"/>
-  <rect x="36" y="360" width="332" height="4" fill="#fff" fill-opacity="0.25"/>
-  <rect x="364" y="36" width="4" height="328" fill="#fff" fill-opacity="0.22"/>
-  <!-- the grip ridges across the foot -->
-  <rect x="48" y="400" width="304" height="4" fill="#000" fill-opacity="0.4"/>
-  <rect x="48" y="404" width="304" height="3" fill="#fff" fill-opacity="0.15"/>
-  <rect x="48" y="420" width="304" height="4" fill="#000" fill-opacity="0.4"/>
-  <rect x="48" y="424" width="304" height="3" fill="#fff" fill-opacity="0.15"/>
-  <rect x="48" y="440" width="304" height="4" fill="#000" fill-opacity="0.4"/>
-  <rect x="48" y="444" width="304" height="3" fill="#fff" fill-opacity="0.15"/>
-  <rect x="48" y="460" width="304" height="4" fill="#000" fill-opacity="0.4"/>
-  <rect x="48" y="464" width="304" height="3" fill="#fff" fill-opacity="0.15"/>
+  <rect x="0" y="8" width="5" height="258" fill="#fff" fill-opacity="0.3"/>
+  <rect x="8" y="0" width="384" height="4" fill="#fff" fill-opacity="0.3"/>
+  <rect x="395" y="8" width="5" height="258" fill="#000" fill-opacity="0.45"/>
+  <rect x="6" y="268" width="388" height="4" fill="#000" fill-opacity="0.35"/>
+  <!-- the label's strip across the top of the face, in a shallow well -->
+  <rect x="14" y="10" width="372" height="3" fill="#000" fill-opacity="0.45"/>
+  <rect x="14" y="13" width="3" height="54" fill="#000" fill-opacity="0.4"/>
+  <rect x="17" y="67" width="369" height="3" fill="#fff" fill-opacity="0.25"/>
+  <rect x="383" y="13" width="3" height="54" fill="#fff" fill-opacity="0.22"/>
+  <!-- the step under the strip, and the two grooves across the face below it -->
+  <rect x="6" y="84" width="388" height="4" fill="#000" fill-opacity="0.45"/>
+  <rect x="6" y="88" width="388" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="6" y="100" width="388" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="6" y="103" width="388" height="2" fill="#fff" fill-opacity="0.12"/>
   <!-- the step along the foot, over the contacts -->
-  <rect x="24" y="504" width="352" height="3" fill="#000" fill-opacity="0.4"/>
-  <rect x="24" y="507" width="352" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="20" y="248" width="360" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="20" y="251" width="360" height="2" fill="#fff" fill-opacity="0.15"/>
 </svg>

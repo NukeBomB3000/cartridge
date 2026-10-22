@@ -57,11 +57,21 @@ fn a_game_gear_game_stands_as_a_game_gear_cart_and_a_master_system_game_as_its_o
 }
 
 #[test]
-fn the_game_gear_cart_is_wider_than_tall_and_the_master_system_cart_taller_than_wide() {
-    let (w, h) = model_box(CartModel::Sega8(Sega8Shell::GameGear));
-    assert!(w > h, "{w}x{h}");
+fn the_mega_cartridge_is_wider_than_tall_and_the_mark_iii_cart_taller_than_wide() {
     let (w, h) = model_box(CartModel::Sega8(Sega8Shell::MasterSystem));
+    assert!(w > h, "{w}x{h}");
+    let (w, h) = model_box(CartModel::Sega8(Sega8Shell::MarkIii));
     assert!(h > w, "{w}x{h}");
+}
+
+#[test]
+fn a_japanese_master_system_game_stands_as_a_mark_iii_cart() {
+    let d = root(&[(Platform::Sms, "Alex Kidd no Miracle World (Japan)")]);
+    let carts = scan(d.path()).unwrap();
+    assert_eq!(
+        model_of(cart(&carts, "Alex Kidd no Miracle World (Japan)")),
+        CartModel::Sega8(Sega8Shell::MarkIii)
+    );
 }
 
 #[test]
@@ -82,7 +92,7 @@ fn each_face_wears_its_label_inside_its_outline() {
     let carts = scan(d.path()).unwrap();
     for stem in ["Columns (Japan)", "Wonder Boy (USA)"] {
         let face = cart_face(cart(&carts, stem));
-        assert_eq!(alpha(&face, face.w / 2, face.h / 3), 255, "{stem}");
+        assert_eq!(alpha(&face, face.w / 2, face.h / 2), 255, "{stem}");
         assert_eq!(alpha(&face, 0, 0), 0, "{stem}: its corner is not cut away");
     }
 }
@@ -95,6 +105,7 @@ fn render_sega8_carts() {
     let games = [
         (Platform::Gg, "Sonic Chaos (Europe)"),
         (Platform::Sms, "Alex Kidd in Miracle World (Europe)"),
+        (Platform::Sms, "Alex Kidd no Miracle World (Japan)"),
     ];
     let d = root(&games);
     let carts = scan(d.path()).unwrap();

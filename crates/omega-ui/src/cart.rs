@@ -126,7 +126,7 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Nes => CartModel::Nes(nes::shell_of(cart)),
         Platform::Md => CartModel::Md(md::shell_of(cart)),
         Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
-        Platform::Sms => CartModel::Sega8(Sega8Shell::MasterSystem),
+        Platform::Sms => CartModel::Sega8(sega8::master_system_shell_of(cart)),
     }
 }
 
@@ -263,7 +263,9 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
             CartModel::Gba => platform == Platform::Gba,
             CartModel::Md(_) => platform == Platform::Md,
             CartModel::Sega8(Sega8Shell::GameGear) => platform == Platform::Gg,
-            CartModel::Sega8(Sega8Shell::MasterSystem) => platform == Platform::Sms,
+            CartModel::Sega8(Sega8Shell::MasterSystem | Sega8Shell::MarkIii) => {
+                platform == Platform::Sms
+            }
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),

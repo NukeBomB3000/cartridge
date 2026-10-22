@@ -379,10 +379,24 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
             }
         },
         // Sega's 8-bit games came out in Europe most, then America and Japan
-        Platform::Gg | Platform::Sms => {
+        Platform::Gg => {
             out.extend(EUROPE);
             out.extend(["wor", "us", "jp", "br"]);
         }
+        // the label suits the cart it is drawn on, as the shell does: a Japanese game's Mark III
+        // cart takes a Japanese label, a picture, any other game's Mega Cartridge only the
+        // strip the West's carts wore, never Japan's picture squeezed into it
+        Platform::Sms => match Region::from_tags(&want.stem) {
+            Some(Region::Japan) => {
+                out.retain(|r| *r == "jp");
+                out.push("jp");
+            }
+            _ => {
+                out.retain(|r| *r != "jp");
+                out.extend(EUROPE);
+                out.extend(["wor", "us", "br"]);
+            }
+        },
     }
     once_each(out)
 }
@@ -707,6 +721,8 @@ fn pick<'a>(
 pub fn label_kinds(platform: Platform) -> &'static [&'static str] {
     match platform {
         Platform::Ps1 => &["support-texture", "support-2D", BOX],
+        // a Mega Cartridge's label is a strip, which a box's front would be cut to a sliver of
+        Platform::Sms => &["support-texture"],
         _ => &["support-texture", BOX],
     }
 }

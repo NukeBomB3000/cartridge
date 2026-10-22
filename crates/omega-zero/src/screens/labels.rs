@@ -3,7 +3,7 @@
 //!
 //! It is a lone panel, as flow.html's `#screen=labels`: SCREENSCRAPER (SIGN IN, or the account)
 //! and FETCH LABELS, then two lines saying how the sync stands. The keys it has beyond B and A
-//! (Y SIGN OUT, START FETCH) are hints on the bottom bar, between its actions. Its account is
+//! (Y LOG OUT, START FETCH) are hints on the bottom bar, between its actions. Its account is
 //! typed on the keyboard screen.
 
 use omega_input::Action;
@@ -49,7 +49,7 @@ pub fn labels_hints(legend: &[LegendHint]) -> Vec<Hint<'static>> {
         .filter_map(|hint| match hint {
             LegendHint::SignOut => Some(Hint {
                 key: "Y",
-                word: "SIGN OUT",
+                word: "LOG OUT",
             }),
             LegendHint::Start => Some(Hint {
                 key: "START",

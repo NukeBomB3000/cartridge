@@ -249,7 +249,7 @@ impl App {
     /// The keys `phase` has beyond its two actions, for between them: on Network X SCAN while
     /// Wi-Fi is on and Y FORGET on a saved network (`network_hints`), on Bluetooth X SCAN while
     /// the radio is on and Y FORGET on a paired device (`bluetooth_hints`), on Labels START FETCH
-    /// or START STOP and Y SIGN OUT (`labels_bar_hints`'), and on the shelf, while the core
+    /// or START STOP and Y LOG OUT (`labels_bar_hints`'), and on the shelf, while the core
     /// picker over it shows RETURN and CONFIRM, ◀▶ SWAP. They are asked of `phase` rather than
     /// the screen on show so a slide can show the hints of the screen it leaves. A screen with
     /// more keys adds them here; Settings and SSH have none, the keyboard keeps its own line in

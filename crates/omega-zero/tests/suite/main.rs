@@ -11,6 +11,7 @@ mod app;
 mod audio;
 mod background_screen;
 mod bar;
+mod bar_hints;
 mod bios;
 mod bluetooth;
 mod bluetooth_screen;

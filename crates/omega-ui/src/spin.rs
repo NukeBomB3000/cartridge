@@ -63,7 +63,7 @@ pub enum CartModel {
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 13] = [
+    pub const ALL: [CartModel; 14] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -77,6 +77,7 @@ impl CartModel {
         CartModel::Md(MdShell::Genesis),
         CartModel::Sega8(Sega8Shell::GameGear),
         CartModel::Sega8(Sega8Shell::MasterSystem),
+        CartModel::Sega8(Sega8Shell::MarkIii),
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -95,6 +96,7 @@ impl CartModel {
             CartModel::Md(MdShell::Genesis) => 10,
             CartModel::Sega8(Sega8Shell::GameGear) => 11,
             CartModel::Sega8(Sega8Shell::MasterSystem) => 12,
+            CartModel::Sega8(Sega8Shell::MarkIii) => 13,
         }
     }
 

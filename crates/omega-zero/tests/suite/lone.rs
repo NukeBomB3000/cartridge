@@ -407,8 +407,8 @@ fn labels_hints_say_what_y_and_start_do() {
     let mut screen = LabelsScreen::default();
     assert!(words(&labels(None), &screen, true).is_empty());
     let mut signed = labels(Some(account()));
-    assert_eq!(words(&signed, &screen, false), ["Y SIGN OUT"]);
-    assert_eq!(words(&signed, &screen, true), ["Y SIGN OUT", "START FETCH"]);
+    assert_eq!(words(&signed, &screen, false), ["Y LOG OUT"]);
+    assert_eq!(words(&signed, &screen, true), ["Y LOG OUT", "START FETCH"]);
     screen.input(&mut signed, Action::GbaDown(Btn::Down), None);
     assert_eq!(words(&signed, &screen, true), ["START FETCH"]);
     assert_eq!(

@@ -802,7 +802,7 @@ fn a_signed_in_account_puts_y_sign_out_on_the_bar() {
     let a = booted(&d);
     assert_eq!(
         a.bar_hints(&Phase::Labels(LabelsScreen::default())),
-        [hint("Y", "SIGN OUT")]
+        [hint("Y", "LOG OUT")]
     );
 }
 
