@@ -115,11 +115,17 @@ fn read_node(node: &Path, queue: &Mutex<Vec<RawEvent>>, trace: Option<&Trace>) {
             if let Some(trace) = trace {
                 trace.event(&label, ev);
             }
-            if (ev.kind == EV_KEY && ev.value == 1) || (ev.kind == EV_ABS && ev.value != 0) {
+            if ev.kind == EV_KEY && ev.value == 1 {
                 crate::latency::read();
             }
             match ev.kind {
-                EV_ABS => events.extend(hat.feed(ev)),
+                EV_ABS => {
+                    let pressed = hat.feed(ev);
+                    if pressed.iter().any(|e| matches!(e, RawEvent::Down(_))) {
+                        crate::latency::read();
+                    }
+                    events.extend(pressed);
+                }
                 _ => events.extend(to_raw(ev)),
             }
         }

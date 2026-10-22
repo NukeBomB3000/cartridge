@@ -12,21 +12,43 @@ pub const SW_LID: u16 = 0x00;
 pub const EV_ABS: u16 = 0x03;
 pub const ABS_HAT0X: u16 = 0x10;
 pub const ABS_HAT0Y: u16 = 0x11;
+/// The sticks of a handheld that has them, the RG CubeXX's: the left across and down on Z and
+/// RX, the right on RY and RZ, each -4096 to 4096.
+pub const ABS_Z: u16 = 0x02;
+pub const ABS_RX: u16 = 0x03;
+pub const ABS_RY: u16 = 0x04;
+pub const ABS_RZ: u16 = 0x05;
 
+/// How far a stick is pushed before it presses its way on the d-pad, and how far back it must
+/// come before it lets go, so a stick held near the edge does not chatter.
+const STICK_PRESS: i32 = 2048;
+const STICK_LET_GO: i32 = 1024;
+
+/// The d-pad: the hat, and each stick pushed as far as a press.
 #[derive(Default)]
 pub struct Hat {
     x: i32,
     y: i32,
+    sticks: [i32; 4],
 }
 
 impl Hat {
     pub fn feed(&mut self, ev: Ev) -> Vec<RawEvent> {
-        let (held, ends) = match ev.code {
-            ABS_HAT0X => (&mut self.x, [Btn::Left, Btn::Right]),
-            ABS_HAT0Y => (&mut self.y, [Btn::Up, Btn::Down]),
+        let across = [Btn::Left, Btn::Right];
+        let down = [Btn::Up, Btn::Down];
+        let (held, ends, now) = match ev.code {
+            ABS_HAT0X => (&mut self.x, across, ev.value.signum()),
+            ABS_HAT0Y => (&mut self.y, down, ev.value.signum()),
+            ABS_Z | ABS_RX | ABS_RY | ABS_RZ => {
+                let i = usize::from(ev.code - ABS_Z);
+                let held = &mut self.sticks[i];
+                let reach = if *held == 0 { STICK_PRESS } else { STICK_LET_GO };
+                let now = if ev.value.abs() >= reach { ev.value.signum() } else { 0 };
+                (held, if i % 2 == 0 { across } else { down }, now)
+            }
             _ => return Vec::new(),
         };
-        let (was, now) = (*held, ev.value.signum());
+        let was = *held;
         if now == was {
             return Vec::new();
         }

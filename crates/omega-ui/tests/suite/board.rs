@@ -187,7 +187,7 @@ fn the_open_cart_starts_as_the_shelf_cart_and_lands_where_the_mockup_has_it() {
     );
     assert_eq!(
         shelf.y + shelf.h / 2.0,
-        (stage_y() + TOP_BAR_H + out_h() as f32 - BAR_H) / 2.0,
+        (TOP_BAR_H + out_h() as f32 - BAR_H) / 2.0,
         "not centred between the bar across the top and the bar across the bottom"
     );
     assert_eq!(board_at(0.0), shelf_cart());

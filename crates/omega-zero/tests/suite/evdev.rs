@@ -304,6 +304,24 @@ fn a_hat_swung_end_to_end_releases_before_it_presses() {
 }
 
 #[test]
+fn a_stick_pushed_far_enough_presses_the_d_pad_and_lets_go_further_back() {
+    let mut hat = omega_zero::input::evdev::Hat::default();
+    let ev = |code, value| omega_zero::input::evdev::Ev {
+        kind: omega_zero::input::evdev::EV_ABS,
+        code,
+        value,
+    };
+    assert!(hat.feed(ev(0x02, 1500)).is_empty(), "a nudge is not a press");
+    assert_eq!(hat.feed(ev(0x02, 3000)), vec![RawEvent::Down(Btn::Right)]);
+    assert!(hat.feed(ev(0x02, 1500)).is_empty(), "held near the edge it stays pressed");
+    assert_eq!(hat.feed(ev(0x02, 500)), vec![RawEvent::Up(Btn::Right)]);
+    assert_eq!(hat.feed(ev(0x03, -4096)), vec![RawEvent::Down(Btn::Up)]);
+    assert_eq!(hat.feed(ev(0x03, 0)), vec![RawEvent::Up(Btn::Up)]);
+    assert_eq!(hat.feed(ev(0x05, 4096)), vec![RawEvent::Down(Btn::Down)]);
+    assert_eq!(hat.feed(ev(0x04, -4096)), vec![RawEvent::Down(Btn::Left)]);
+}
+
+#[test]
 fn the_node_carrying_only_the_power_key_is_opened() {
     let d = tempfile::tempdir().unwrap();
     let (dev, sys) = (d.path().join("dev/input"), d.path().join("sys/class/input"));
