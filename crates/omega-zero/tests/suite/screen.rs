@@ -32,9 +32,9 @@ fn on_720x480_a_handheld_at_its_actual_size_is_the_whole_canvas_as_it_always_was
 }
 
 #[test]
-fn on_640x480_a_gba_game_stays_at_a_whole_2x_so_a_grid_falls_evenly() {
+fn on_640x480_a_gba_game_fills_the_width_from_the_top_over_a_bezel() {
     let s = screen_on(Canvas::FOUR_THREE, Platform::Gba, VideoMode::Actual);
-    assert_eq!(s.view.rect, [80.0, 60.0, 480.0, 320.0]);
+    assert_eq!(s.view.rect, [0.0, 0.0, 640.0, 427.0]);
     assert_eq!(s.view.uv, WHOLE_TEXTURE);
     assert_eq!(
         s.view.filter,
@@ -42,10 +42,7 @@ fn on_640x480_a_gba_game_stays_at_a_whole_2x_so_a_grid_falls_evenly() {
         "8/3 is no scale for the 3x mask"
     );
     assert_eq!(s.still, s.view);
-    assert!(
-        !s.bands.is_empty(),
-        "the canvas around the picture is left to the bezel"
-    );
+    assert_eq!(s.bands, vec![[0.0, 427.0, 640.0, 53.0]]);
 }
 
 #[test]
@@ -154,7 +151,7 @@ fn the_picture_is_the_game_s_own_window_inside_its_view() {
     let at = |c, p, m| picture_rect(p, screen_on(c, p, m).view);
     assert_eq!(
         at(Canvas::FOUR_THREE, Platform::Gba, VideoMode::Actual),
-        [80.0, 60.0, 480.0, 320.0]
+        [0.0, 0.0, 640.0, 427.0]
     );
     assert_eq!(
         at(Canvas::FOUR_THREE, Platform::Gb, VideoMode::Actual),
