@@ -10,7 +10,7 @@ use crate::nav::Offsets;
 const CORE_PICKER_RECEDE: f32 = 0.26;
 const CORE_PICKER_DIM: f32 = 0.614;
 /// How far above the bottom bar the selected game's name stands, in art pixels.
-const TITLE_GAP: u32 = 4;
+const TITLE_GAP: u32 = 7;
 
 impl App {
     /// The shelf, its carts moved `off.carts_dx` across and `off.carts_dy` down, its top bar
