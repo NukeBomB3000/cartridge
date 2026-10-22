@@ -9,10 +9,9 @@ use crate::nav::Offsets;
 
 const CORE_PICKER_RECEDE: f32 = 0.26;
 const CORE_PICKER_DIM: f32 = 0.614;
-/// How far under the selected cart the pill with its game's name stands, in art pixels, as far
-/// as the room above the bottom bar allows, and how near the bar it may come.
-const TITLE_UNDER: u32 = 6;
-const TITLE_GAP: u32 = 4;
+/// How far above the bottom bar the pill with the selected game's name stands, in art pixels:
+/// clear of the tallest cart's foot, the PC Engine's HuCard.
+const TITLE_GAP: u32 = 5;
 
 impl App {
     /// The shelf, its carts moved `off.carts_dx` across and `off.carts_dy` down, its top bar
@@ -41,15 +40,7 @@ impl App {
             let h = omega_ui::kit::action::BAR;
             let x = (omega_gfx::out_w() / px / 2).saturating_sub(w / 2) * px;
             let bar_top = omega_ui::kit::bar::BarLayout::top(omega_gfx::out_h());
-            // under the selected cart's foot, and never nearer the bar than its gap
-            let lowest = bar_top - ((h + TITLE_GAP) * px) as f32;
-            let shelf = self.shelf();
-            let foot = shelf
-                .model_at(shelf.index)
-                .map(|m| omega_ui::foot_y(omega_ui::model_shelf_box(m).1))
-                .unwrap_or(lowest);
-            let under = foot + (TITLE_UNDER * px) as f32;
-            let y = (under.min(lowest) / 2.0).round() * 2.0;
+            let y = bar_top - ((h + TITLE_GAP) * px) as f32;
             let at = out.len();
             out.push(omega_ui::kit::pixel::quad(tex, w, h, x as f32, y));
             shift(&mut out[at..], off.carts_dx, off.carts_dy);
