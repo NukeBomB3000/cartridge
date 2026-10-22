@@ -3541,8 +3541,7 @@ impl App {
     }
 
     /// While picking: A marks or unmarks the cart the shelf rests on, five at the most; START
-    /// keeps those marked, and with none marked switches Five Games off; B gives up, leaving
-    /// Five Games as it was.
+    /// keeps those marked, one at the least; B gives up, leaving Five Games as it was.
     pub(crate) fn picking_input(&mut self, action: Action) {
         match action {
             Action::GbaDown(Btn::A) => {
@@ -3558,20 +3557,19 @@ impl App {
                 } else if picked.len() < omega_store::FOCUS_MAX {
                     picked.push(key);
                 } else {
+                    self.hud.toast(Toast::PickAtMost, self.now());
                     return self.refuse();
                 }
                 self.shelf_platform = omega_ui::Printed::default();
             }
             Action::GbaDown(Btn::Start) => {
                 let picked = self.picking.take().unwrap_or_default();
-                match (picked.is_empty(), self.focus_on()) {
-                    (true, false) => {
-                        self.picking = Some(picked);
-                        self.refuse()
-                    }
-                    (true, true) => self.set_focus(None),
-                    (false, _) => self.set_focus(Some(picked)),
+                if picked.is_empty() {
+                    self.picking = Some(picked);
+                    self.hud.toast(Toast::PickAtLeast, self.now());
+                    return self.refuse();
                 }
+                self.set_focus(Some(picked));
             }
             Action::GbaDown(Btn::B) => {
                 self.picking = None;

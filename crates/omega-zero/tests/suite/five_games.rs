@@ -101,7 +101,7 @@ fn games_picked_on_the_shelf_become_the_only_shelf_until_switched_off() {
     press(&mut a, Btn::Start);
     assert_eq!(on_shelf(&a).len(), 1, "the change was not kept");
 
-    // every game unmarked switches it off
+    // none kept is refused; left on the row switches it off
     to_five_games(&mut a);
     press(&mut a, Btn::A);
     while !a.selected_picked() {
@@ -110,7 +110,18 @@ fn games_picked_on_the_shelf_become_the_only_shelf_until_switched_off() {
     press(&mut a, Btn::A);
     assert_eq!(a.picking_count(), Some(0), "the last game was not unmarked");
     press(&mut a, Btn::Start);
-    assert!(!a.focus_on(), "none kept did not switch it off");
+    assert_eq!(
+        a.picking_count(),
+        Some(0),
+        "START with none kept ended the picking"
+    );
+    assert!(a.focus_on(), "none kept switched it off");
+    press(&mut a, Btn::B);
+    to_five_games(&mut a);
+    press(&mut a, Btn::Left);
+    assert!(!a.focus_on(), "left on 5 GAMES did not switch it off");
+    a.apply(Action::GbaDown(Btn::B));
+    a.finish_slide();
     assert_eq!(
         on_shelf(&a).len(),
         4,

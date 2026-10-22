@@ -111,6 +111,8 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::CardRepairFailed,
             Toast::CardRepairLowBattery,
             Toast::Palette(omega_store::GbColors::Auto, false),
+            Toast::PickAtMost,
+            Toast::PickAtLeast,
         ],
         "a banner was added or dropped"
     );

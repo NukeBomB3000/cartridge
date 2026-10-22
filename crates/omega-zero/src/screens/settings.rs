@@ -122,7 +122,7 @@ impl App {
     }
 
     fn open_settings_row(&mut self, row: SettingsRow) {
-        // Five Games picks its games on the shelf, or changes them: none kept switches it off
+        // Five Games picks its games on the shelf, or changes them
         if row == SettingsRow::FiveGames {
             return self.begin_picking();
         }
@@ -158,8 +158,14 @@ impl App {
                 self.colour_pending = Some(s.colour_correction);
             }
             SettingsRow::Rumble => s.rumble = !s.rumble,
-            SettingsRow::FiveGames
-            | SettingsRow::Labels
+            // left or right switches Five Games off; A changes its games, or picks them
+            SettingsRow::FiveGames => {
+                if self.focus_on() {
+                    self.set_focus(None);
+                }
+                return;
+            }
+            SettingsRow::Labels
             | SettingsRow::DateTime
             | SettingsRow::Network
             | SettingsRow::Bluetooth
