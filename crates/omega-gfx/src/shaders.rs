@@ -187,19 +187,7 @@ uniform float u_bright;
 uniform float u_glow;
 varying vec2 v_uv;
 void main() {
-    // the curved tube bows the picture out from its middle, a little more down than across,
-    // and leaves black past its edges, their corners rounded
-    vec2 uv = v_uv;
-    float tube = 1.0;
-    if (u_mode > 8.5) {
-        vec2 p = uv * 2.0 - 1.0;
-        p *= 1.0 + vec2(0.035, 0.05) * p.yx * p.yx;
-        vec2 room = 1.0 - abs(p);
-        tube = smoothstep(0.0, 0.015, min(room.x, room.y));
-        tube *= mix(0.72, 1.0, clamp(room.x * room.y * 6.0, 0.0, 1.0));
-        uv = clamp(p * 0.5 + 0.5, 0.0, 1.0);
-    }
-    vec2 texel = (u_uv.xy + uv * u_uv.zw) * u_src;
+    vec2 texel = (u_uv.xy + v_uv * u_uv.zw) * u_src;
     vec2 from_centre = fract(texel) - 0.5;
     vec2 region = 0.5 - 0.5 / u_scale;
     vec2 f = (from_centre - clamp(from_centre, -region, region)) * u_scale + 0.5;
@@ -409,3 +397,56 @@ void main() {
     FRAG_COLOR = vec4(texture2D(u_tex, v_uv).rgb * u_gain, 1.0);
 }
 "#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ALL: [(&str, &str); 13] = [
+        ("RECT_VERT", RECT_VERT),
+        ("SPRITE_VERT", SPRITE_VERT),
+        ("SPUN_VERT", SPUN_VERT),
+        ("MODEL_VERT", MODEL_VERT),
+        ("MODEL_FRAG", MODEL_FRAG),
+        ("GAME_FRAG", GAME_FRAG),
+        ("GAME_SHARP_FRAG", GAME_SHARP_FRAG),
+        ("GAME_LOOK_FRAG", GAME_LOOK_FRAG),
+        ("SPRITE_FRAG", SPRITE_FRAG),
+        ("SPUN_FRAG", SPUN_FRAG),
+        ("BLIT_VERT", BLIT_VERT),
+        ("BLIT_VERT_TURNED", BLIT_VERT_TURNED),
+        ("BLIT_FRAG", BLIT_FRAG),
+    ];
+
+    /// The `u_` names in `src`, each once, in the order they come.
+    fn uniform_names(src: &str) -> Vec<&str> {
+        let mut out = Vec::new();
+        for word in src.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_')) {
+            if word.starts_with("u_") && !out.contains(&word) {
+                out.push(word);
+            }
+        }
+        out
+    }
+
+    /// A shader that reads a uniform it never declares compiles on no GPU, and the frontend
+    /// dies on the device before it draws: the look shader's curve was once pasted into the
+    /// plain sharp shader this way, which the host's tests never compile.
+    #[test]
+    fn every_uniform_a_shader_reads_it_declares() {
+        for (name, src) in ALL {
+            let declared: Vec<&str> = src
+                .lines()
+                .map(str::trim)
+                .filter(|l| l.starts_with("uniform "))
+                .filter_map(|l| l.trim_end_matches(';').split_whitespace().last())
+                .collect();
+            for used in uniform_names(src) {
+                assert!(
+                    declared.contains(&used),
+                    "{name} reads {used} but declares only {declared:?}"
+                );
+            }
+        }
+    }
+}

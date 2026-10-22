@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A card the kernel made read-only after an error no longer keeps omega-zero from starting:
+  its log goes to /tmp instead, and omega-zero comes up to offer SELECT+START to repair it.
 - A curved CRT for the television's consoles, after the CRT on SELECT+X: the picture bowed
   out to rounded dark corners, its scanlines following the bow.
 - Game Gear and Master System games, on Genesis Plus GX as the Mega Drive's: `Games/GG` takes
