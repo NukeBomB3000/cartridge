@@ -187,7 +187,19 @@ uniform float u_bright;
 uniform float u_glow;
 varying vec2 v_uv;
 void main() {
-    vec2 texel = (u_uv.xy + v_uv * u_uv.zw) * u_src;
+    // the curved tube bows the picture out from its middle, a little more down than across,
+    // and leaves black past its edges, their corners rounded
+    vec2 uv = v_uv;
+    float tube = 1.0;
+    if (u_mode > 8.5) {
+        vec2 p = uv * 2.0 - 1.0;
+        p *= 1.0 + vec2(0.035, 0.05) * p.yx * p.yx;
+        vec2 room = 1.0 - abs(p);
+        tube = smoothstep(0.0, 0.015, min(room.x, room.y));
+        tube *= mix(0.72, 1.0, clamp(room.x * room.y * 6.0, 0.0, 1.0));
+        uv = clamp(p * 0.5 + 0.5, 0.0, 1.0);
+    }
+    vec2 texel = (u_uv.xy + uv * u_uv.zw) * u_src;
     vec2 from_centre = fract(texel) - 0.5;
     vec2 region = 0.5 - 0.5 / u_scale;
     vec2 f = (from_centre - clamp(from_centre, -region, region)) * u_scale + 0.5;
@@ -236,7 +248,19 @@ float paper(vec2 p) {
     return 0.5 * grain(p) + 0.25 * grain(p * 2.0) + 0.25 * grain(p * 4.0);
 }
 void main() {
-    vec2 texel = (u_uv.xy + v_uv * u_uv.zw) * u_src;
+    // the curved tube bows the picture out from its middle, a little more down than across,
+    // and leaves black past its edges, their corners rounded
+    vec2 uv = v_uv;
+    float tube = 1.0;
+    if (u_mode > 8.5) {
+        vec2 p = uv * 2.0 - 1.0;
+        p *= 1.0 + vec2(0.035, 0.05) * p.yx * p.yx;
+        vec2 room = 1.0 - abs(p);
+        tube = smoothstep(0.0, 0.015, min(room.x, room.y));
+        tube *= mix(0.72, 1.0, clamp(room.x * room.y * 6.0, 0.0, 1.0));
+        uv = clamp(p * 0.5 + 0.5, 0.0, 1.0);
+    }
+    vec2 texel = (u_uv.xy + uv * u_uv.zw) * u_src;
     vec2 from_centre = fract(texel) - 0.5;
     vec2 region = 0.5 - 0.5 / u_scale;
     vec2 s = (from_centre - clamp(from_centre, -region, region)) * u_scale + 0.5;
@@ -247,7 +271,12 @@ void main() {
     vec2 edge = (grid_band(f + hp) - grid_band(f - hp)) / (2.0 * hp);
     float line = max(edge.x, edge.y);
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
-    if (u_mode > 7.5) {
+    if (u_mode > 8.5) {
+        c *= 0.7 + 0.3 * sin(fract(texel.y) * 3.141592654);
+        float m = mod(floor(gl_FragCoord.x), 3.0);
+        vec3 mask = m < 0.5 ? vec3(1.0, 0.7, 0.7) : (m < 1.5 ? vec3(0.7, 1.0, 0.7) : vec3(0.7, 0.7, 1.0));
+        c = min(c * mask * 1.35, vec3(1.0)) * tube;
+    } else if (u_mode > 7.5) {
         float shade = clamp(floor(lum * 3.0 + 0.5), 0.0, 3.0);
         vec3 p = shade < 0.5 ? vec3(0.06, 0.22, 0.06)
             : (shade < 1.5 ? vec3(0.19, 0.38, 0.19)

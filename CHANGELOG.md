@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A curved CRT for the television's consoles, after the CRT on SELECT+X: the picture bowed
+  out to rounded dark corners, its scanlines following the bow.
 - Game Gear and Master System games, on Genesis Plus GX as the Mega Drive's: `Games/GG` takes
   `.gg` and `Games/SMS` `.sms`, with Labels, Overlays, Saves and States beside them and labels
   from ScreenScraper. Each stands on the shelf as its own black cart, the Game Gear's wide with

@@ -230,7 +230,13 @@ fn select_and_x_goes_round_a_system_s_looks_and_keeps_them_for_the_system() {
         step(s, now, Some(RawEvent::Up(Btn::X)));
         step(s, now, Some(RawEvent::Up(Btn::Select)));
     };
-    for want in [Look::Scanlines, Look::Crt, Look::Off, Look::Scanlines] {
+    for want in [
+        Look::Scanlines,
+        Look::Crt,
+        Look::Curved,
+        Look::Off,
+        Look::Scanlines,
+    ] {
         chord(&mut s, &mut now);
         assert_eq!(s.app().look(), want);
         assert_eq!(shader_for(d.path(), Platform::Snes), want);
@@ -308,7 +314,7 @@ fn each_system_offers_its_own_screen_s_looks() {
         Look::Simpletex,
         Look::Transparent,
     ];
-    for p in [Platform::Gba, Platform::Gbc] {
+    for p in [Platform::Gba, Platform::Gbc, Platform::Gg] {
         assert_eq!(looks_for(p), handheld, "{p:?}");
     }
     assert_eq!(
@@ -321,11 +327,12 @@ fn each_system_offers_its_own_screen_s_looks() {
         Platform::Nes,
         Platform::Pce,
         Platform::Md,
+        Platform::Sms,
         Platform::Ps1,
     ] {
         assert_eq!(
             looks_for(p),
-            [Look::Off, Look::Scanlines, Look::Crt],
+            [Look::Off, Look::Scanlines, Look::Crt, Look::Curved],
             "{p:?}"
         );
     }

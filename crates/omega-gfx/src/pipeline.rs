@@ -41,10 +41,13 @@ pub enum Look {
     Transparent,
     /// The Game Boy's four greens, over a faint grid.
     Dmg,
+    /// The CRT on a curved tube: its picture bowed out to round dark corners, its scanlines
+    /// following the bow.
+    Curved,
 }
 
 impl Look {
-    pub const ALL: [Look; 9] = [
+    pub const ALL: [Look; 10] = [
         Look::Off,
         Look::Lcd,
         Look::Grid,
@@ -54,6 +57,7 @@ impl Look {
         Look::Simpletex,
         Look::Transparent,
         Look::Dmg,
+        Look::Curved,
     ];
 
     /// The look's number in the look shader's `u_mode`.
@@ -68,6 +72,7 @@ impl Look {
             Look::Simpletex => 6.0,
             Look::Transparent => 7.0,
             Look::Dmg => 8.0,
+            Look::Curved => 9.0,
         }
     }
 
@@ -82,6 +87,7 @@ impl Look {
             Look::Simpletex => "simpletex",
             Look::Transparent => "transparent",
             Look::Dmg => "dmg",
+            Look::Curved => "curved",
         }
     }
 

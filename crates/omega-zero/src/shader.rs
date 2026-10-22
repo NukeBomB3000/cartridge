@@ -35,7 +35,7 @@ pub fn looks_for(platform: Platform) -> &'static [Look] {
         | Platform::Pce
         | Platform::Nes
         | Platform::Md
-        | Platform::Sms => &[Look::Off, Look::Scanlines, Look::Crt],
+        | Platform::Sms => &[Look::Off, Look::Scanlines, Look::Crt, Look::Curved],
     }
 }
 

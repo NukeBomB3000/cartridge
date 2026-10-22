@@ -23,7 +23,7 @@ License version 2 or later, under omega-zero's own code after the effect of matt
 Transparency (bright pixels letting the unlit LCD's backing through, the dark ones casting a
 shadow on it), written without its code.
 
-The scanlines, the CRT and DMG are omega-zero's own. DMG is after the Game Boy's four-green
+The scanlines, the CRT, the curved CRT and DMG are omega-zero's own. DMG is after the Game Boy's four-green
 palette over Grid's line weighting.
 
 omega-zero itself is GNU General Public License version 3 or later, which these licenses permit.
