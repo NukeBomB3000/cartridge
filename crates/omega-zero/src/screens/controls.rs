@@ -53,15 +53,15 @@ impl ControlsView {
 
         let mut game = Vec::new();
         if platform.game_owns_l2_r2() {
-            game.extend([
-                ("SELECT+R2", "FAST FORWARD"),
-                ("SELECT+R2 ×2", "LATCH FAST FWD"),
-            ]);
+            game.push(("SELECT+R2/×2", "FAST FWD/LATCH"));
         } else {
             if platform.rewinds() {
                 game.push(("L2", "REWIND"));
             }
-            game.extend([("R2", "FAST FORWARD"), ("R2 ×2", "LATCH FAST FWD")]);
+            game.push(("R2 / ×2", "FAST FWD/LATCH"));
+        }
+        if platform.turbo_xy() {
+            game.push(("HOLD X Y", "TURBO A B"));
         }
         game.extend([("MENU ×2", "SAVE STATES"), ("HOLD MENU", "EJECT")]);
         match platform {
@@ -77,8 +77,7 @@ impl ControlsView {
         game.extend([
             ("SELECT+▲▼", "BRIGHTNESS"),
             ("SELECT+◀▶", "BLUE LIGHT"),
-            ("SELECT+L1", "LOAD STATE"),
-            ("SELECT+R1", "SAVE STATE"),
+            ("SELECT+L1 R1", "LOAD/SAVE"),
         ]);
         if platform.colour_correction() {
             game.push(("SELECT+A", "COLOUR"));
@@ -86,15 +85,17 @@ impl ControlsView {
         if platform.lcd_ghosting() {
             game.push(("SELECT+B", "GHOSTING"));
         }
+        // L1 and R1 change the picture size as SELECT+Y does where the game has no shoulders,
+        // and are left off for the room
         game.extend([("SELECT+Y", "PICTURE SIZE"), ("SELECT+X", "SHADER")]);
-        // the Game Boy's palette takes the line of its L1 and R1, which still change the picture
-        // size as SELECT+Y does: the page has room for no more
         if platform == Platform::Gb {
             game.push(("SELECT+L2 R2", "PALETTE"));
-        } else if platform.owns_shoulders() {
-            game.push(("L1 R1", "PICTURE SIZE"));
         }
-        game.extend([("VOL+ VOL-", "MUTE"), ("HOLD POWER", "POWER MENU")]);
+        game.extend([
+            ("SELECT+START", "REPAIR CARD"),
+            ("VOL+ VOL-", "MUTE"),
+            ("HOLD POWER", "POWER MENU"),
+        ]);
 
         ControlsView {
             title: "CONTROLS",

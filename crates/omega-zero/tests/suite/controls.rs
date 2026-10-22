@@ -124,19 +124,19 @@ fn controls_says_what_the_shelf_and_a_gba_game_do_with_each_button() {
         view.groups[1].lines,
         [
             ("L2", "REWIND"),
-            ("R2", "FAST FORWARD"),
-            ("R2 ×2", "LATCH FAST FWD"),
+            ("R2 / ×2", "FAST FWD/LATCH"),
+            ("HOLD X Y", "TURBO A B"),
             ("MENU ×2", "SAVE STATES"),
             ("HOLD MENU", "EJECT"),
             ("SELECT+MENU", "LINK"),
             ("SELECT+▲▼", "BRIGHTNESS"),
             ("SELECT+◀▶", "BLUE LIGHT"),
-            ("SELECT+L1", "LOAD STATE"),
-            ("SELECT+R1", "SAVE STATE"),
+            ("SELECT+L1 R1", "LOAD/SAVE"),
             ("SELECT+A", "COLOUR"),
             ("SELECT+B", "GHOSTING"),
             ("SELECT+Y", "PICTURE SIZE"),
             ("SELECT+X", "SHADER"),
+            ("SELECT+START", "REPAIR CARD"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]
@@ -144,7 +144,7 @@ fn controls_says_what_the_shelf_and_a_gba_game_do_with_each_button() {
 }
 
 #[test]
-fn a_game_boy_has_no_core_to_pick_and_leaves_l1_and_r1_to_the_picture() {
+fn a_game_boy_has_no_core_to_pick_and_only_the_game_boy_has_its_palettes() {
     for platform in [Platform::Gb, Platform::Gbc] {
         let view = ControlsView::new(platform);
         assert!(
@@ -162,7 +162,7 @@ fn a_game_boy_has_no_core_to_pick_and_leaves_l1_and_r1_to_the_picture() {
         }
     }
     let line = |p| ControlsView::new(p).groups[1].lines.clone();
-    assert!(line(Platform::Gbc).contains(&("L1 R1", "PICTURE SIZE")));
+    assert!(!line(Platform::Gbc).contains(&("SELECT+L2 R2", "PALETTE")));
     assert!(
         line(Platform::Gb).contains(&("SELECT+L2 R2", "PALETTE")),
         "the Game Boy's palette is not on its page"
@@ -177,16 +177,15 @@ fn a_snes_game_rewinds_and_fast_forwards_and_stretches_but_neither_links_nor_cor
         view.groups[1].lines,
         [
             ("L2", "REWIND"),
-            ("R2", "FAST FORWARD"),
-            ("R2 ×2", "LATCH FAST FWD"),
+            ("R2 / ×2", "FAST FWD/LATCH"),
             ("MENU ×2", "SAVE STATES"),
             ("HOLD MENU", "EJECT"),
             ("SELECT+▲▼", "BRIGHTNESS"),
             ("SELECT+◀▶", "BLUE LIGHT"),
-            ("SELECT+L1", "LOAD STATE"),
-            ("SELECT+R1", "SAVE STATE"),
+            ("SELECT+L1 R1", "LOAD/SAVE"),
             ("SELECT+Y", "PICTURE SIZE"),
             ("SELECT+X", "SHADER"),
+            ("SELECT+START", "REPAIR CARD"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]
@@ -200,17 +199,16 @@ fn a_playstation_game_fast_forwards_on_select_r2_and_swaps_discs() {
     assert_eq!(
         view.groups[1].lines,
         [
-            ("SELECT+R2", "FAST FORWARD"),
-            ("SELECT+R2 ×2", "LATCH FAST FWD"),
+            ("SELECT+R2/×2", "FAST FWD/LATCH"),
             ("MENU ×2", "SAVE STATES"),
             ("HOLD MENU", "EJECT"),
             ("SELECT+MENU", "DISC"),
             ("SELECT+▲▼", "BRIGHTNESS"),
             ("SELECT+◀▶", "BLUE LIGHT"),
-            ("SELECT+L1", "LOAD STATE"),
-            ("SELECT+R1", "SAVE STATE"),
+            ("SELECT+L1 R1", "LOAD/SAVE"),
             ("SELECT+Y", "PICTURE SIZE"),
             ("SELECT+X", "SHADER"),
+            ("SELECT+START", "REPAIR CARD"),
             ("VOL+ VOL-", "MUTE"),
             ("HOLD POWER", "POWER MENU"),
         ]

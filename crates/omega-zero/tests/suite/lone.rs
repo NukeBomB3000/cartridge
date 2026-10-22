@@ -248,13 +248,13 @@ fn the_controls_panel_is_flows_where_it_says_what_flow_says() {
         let face = controls_face(&view, palette(colour));
         let flow_h = panel_height(13 + 11 * 11);
         let well_y = 18;
-        // the header, the headings, and the first two lines of each column: A PLAY and HOLD A
-        // CLEAN START, L2 REWIND and R2 FAST FORWARD
+        // the header, the headings, and the first line of each column: A PLAY and L2 REWIND;
+        // the lines under them are the hotkeys' own, more than flow.html has room to say
         matches_flow(
             &face,
             &format!("controls-{name}"),
             flow_h,
-            0..well_y + line_y(2),
+            0..well_y + line_y(1),
         );
     }
 }
