@@ -6,8 +6,8 @@
 //! its corners round, its label in a well over the top of its face and four grip ridges across
 //! its foot over the step to its contacts. Both are black. The ridges and wells are relief in
 //! the face, not geometry. The Master System's face is drawn about 1.8 pixels to the millimetre,
-//! as the Mega Drive carts are; the Game Gear's, a handheld's small cart, nearer 3, so its label
-//! reads.
+//! as the Mega Drive carts are; the Game Gear's, a handheld's small cart, about 4, so it stands
+//! as tall as the carts beside it and its label reads.
 
 use std::sync::OnceLock;
 
@@ -60,13 +60,13 @@ const MASTER_SYSTEM_UNITS: (f32, f32) = (400.0, 536.0);
 
 /// The size of each face in pixels. Each is a multiple of four across, so it halves onto the art
 /// grid in the middle of the row, and an even number down.
-pub const GAME_GEAR_W: u32 = 200;
-pub const GAME_GEAR_H: u32 = 160;
+pub const GAME_GEAR_W: u32 = 280;
+pub const GAME_GEAR_H: u32 = 222;
 pub const MASTER_SYSTEM_W: u32 = 180;
 pub const MASTER_SYSTEM_H: u32 = 242;
 
 /// The label on each face, in its pixels: the inside of its well.
-const GAME_GEAR_LABEL: (u32, u32, u32, u32) = (16, 16, 168, 100);
+const GAME_GEAR_LABEL: (u32, u32, u32, u32) = (22, 22, 236, 140);
 const MASTER_SYSTEM_LABEL: (u32, u32, u32, u32) = (16, 16, 148, 146);
 
 /// How far in from the outline a clear shell's plastic lightens at its rim, in pixels.
