@@ -2,7 +2,7 @@
 //! 85 mm, stood upright with its contact edge at the foot, the way it goes into the console.
 //!
 //! It is drawn 4 units to the millimetre, 216 by 340. Its corners are rounded 3 mm; its label
-//! fills a shallow well across most of its face, and under the label three grip ridges run
+//! fills a square shallow well across the top of its face, and under the label grip ridges run
 //! across it above the contact edge. The ridges and the well are relief in the face, not
 //! geometry. The card is barely thicker than a credit card, 2.5 mm, so on the shelf it is all
 //! face.
@@ -46,10 +46,11 @@ pub const H: u32 = 296;
 /// stand on the screen rather than five slivers.
 pub const PITCH: f32 = 220.0;
 
-/// The label, in the face's pixels: the well's inside, 50 mm by 62 from 2 mm in at the sides
-/// and 4 mm down from the top, its corners a little round. It reaches almost to the card's
-/// edges, as a real HuCard's does, which leaves a generated title room for nine letters a line.
-const LABEL: (u32, u32, u32, u32) = (8, 15, 172, 216);
+/// The label, in the face's pixels: the well's inside, 50 mm square from 2 mm in at the sides
+/// and 4 mm down from the top, its corners a little round, the shape of ScreenScraper's scans of
+/// HuCard labels, so none of a scan is cut. It reaches almost to the card's edges, as a real
+/// HuCard's does, and leaves the grip ridges the card's foot.
+const LABEL: (u32, u32, u32, u32) = (8, 15, 172, 172);
 const LABEL_ROUND: u32 = 4;
 
 /// How far in from the outline a clear card's plastic lightens at its rim, in pixels.

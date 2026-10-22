@@ -118,7 +118,7 @@ fn a_hucard_face_is_clipped_to_its_round_corners_and_backed_by_its_own_shadow() 
 }
 
 #[test]
-fn a_hucard_label_fills_the_card_above_its_grip() {
+fn a_hucard_label_is_a_square_across_the_card_above_its_grip() {
     let d = root(&["Bonk's Adventure (USA)"], &["Bonk's Adventure (USA)"]);
     let carts = scan(d.path()).unwrap();
     let face = cart_face(cart(&carts, "Bonk's Adventure (USA)"));
@@ -126,8 +126,8 @@ fn a_hucard_label_fills_the_card_above_its_grip() {
     let (lw, lh) = ((x1 - x0 + 1) as f32, (y1 - y0 + 1) as f32);
     let (fw, fh) = (face.w as f32, face.h as f32);
     assert!(
-        lw / fw > 0.75 && lh / fh > 0.6,
-        "the label is {lw}x{lh} on a {fw}x{fh} face"
+        lw / fw > 0.75 && (lw - lh).abs() <= 1.0,
+        "the label is {lw}x{lh} on a {fw}x{fh} face, not a square across it"
     );
     assert!(
         ((x0 + x1 + 1) as f32 / 2.0 - fw / 2.0).abs() <= 1.0,
