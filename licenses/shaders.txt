@@ -19,7 +19,8 @@ rather than read from textured_paper.png.
 The paper's grain is Dave Hoskins' "Hash without Sine", MIT License, copyright (c) 2014.
 
 The scanlines and the CRT are omega-zero's own, as are Transparent and DMG. Transparent is
-written for omega-zero after the effect of mattakins' Pixel Transparency (bright pixels letting
+zfast_lcd by Greg Hogan (SoltanGris42), GNU General Public License version 2 or later, under
+omega-zero's own code after the effect of mattakins' Pixel Transparency (bright pixels letting
 the unlit LCD's backing through, the dark ones casting a shadow on it), without its code. DMG is
 after the Game Boy's four-green palette. Both share Grid's line weighting.
 

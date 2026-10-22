@@ -229,6 +229,9 @@ float grain(vec2 p) {
     q += dot(q, q.yzx + 33.33);
     return fract((q.x + q.y) * q.z);
 }
+bool white(vec3 c) {
+    return dot(c, vec3(0.2126, 0.7152, 0.0722)) > 0.9 && min(min(c.r, c.g), c.b) > 0.81;
+}
 float paper(vec2 p) {
     return 0.5 * grain(p) + 0.25 * grain(p * 2.0) + 0.25 * grain(p * 4.0);
 }
@@ -251,23 +254,34 @@ void main() {
             : (shade < 2.5 ? vec3(0.55, 0.67, 0.06) : vec3(0.61, 0.74, 0.06)));
         c = mix(p, vec3(0.58, 0.70, 0.08), 0.3 * line);
     } else if (u_mode > 6.5) {
-        // an unlit LCD: Grid's cells, bright ones letting through the grey backing a little
-        // grained, tinted as the Pocket's, with the dark pixels' shadow cast on it down and right
-        vec3 lcd = c * (1.0 - 0.75 * line);
+        // zfast_lcd by Greg Hogan under an unlit LCD after Pixel Transparency: bright pixels let
+        // the grey backing through, tinted as the Pocket's, and all but white ones cast a soft
+        // shadow on it down and right
+        vec2 d = abs(f - 0.5);
+        float y2 = max(d.x, d.y);
+        y2 *= y2;
+        float y4 = y2 * y2;
+        vec3 lcd = c * (1.0 - 14.0 * (y4 - 2.7 * y4 * y2));
+        lcd *= 0.6 + 0.4 * lcd;
         vec2 out_px = u_scale * u_uv.zw * u_src;
         float reach = sqrt(out_px.x * out_px.y / (640.0 * 480.0));
         vec2 shade_at = floor(texel - 3.0 * reach / u_scale) + 0.5;
-        vec2 blur = reach / u_scale;
-        float dark = 0.0;
-        dark += 1.0 - dot(texture2D(u_game, shade_at / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
-        dark += 1.0 - dot(texture2D(u_game, (shade_at + vec2(blur.x, 0.0)) / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
-        dark += 1.0 - dot(texture2D(u_game, (shade_at - vec2(blur.x, 0.0)) / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
-        dark += 1.0 - dot(texture2D(u_game, (shade_at + vec2(0.0, blur.y)) / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
-        dark += 1.0 - dot(texture2D(u_game, (shade_at - vec2(0.0, blur.y)) / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
-        float backing = 0.48 + 0.06 * (paper(gl_FragCoord.xy) - 0.45);
-        vec3 bg = clamp(vec3(0.651, 0.675, 0.518) + 2.0 * backing - 1.0, 0.0, 1.0);
-        bg *= 1.0 - 0.4 * dark / 5.0;
-        float through = clamp(0.53 * dot(lcd, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
+        vec3 caster = texture2D(u_game, shade_at / u_src).rgb;
+        float backing = 0.48 + 0.065 * (paper(gl_FragCoord.xy) - 0.44);
+        vec3 bg = vec3(backing);
+        if (!white(caster)) {
+            vec2 b = reach / u_scale;
+            float dark = 0.0;
+            for (int j = -1; j <= 1; j++) {
+                for (int i = -1; i <= 1; i++) {
+                    vec2 at = shade_at + vec2(float(i), float(j)) * b;
+                    dark += 1.0 - dot(texture2D(u_game, at / u_src).rgb, vec3(0.2126, 0.7152, 0.0722));
+                }
+            }
+            bg *= 1.0 - 0.4 * dark / 9.0;
+        }
+        bg = clamp(vec3(0.651, 0.675, 0.518) + 2.0 * bg - 1.0, 0.0, 1.0);
+        float through = clamp(0.533 * dot(lcd, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
         c = mix(lcd, bg, through);
     } else if (u_mode > 5.5) {
         // simpletex_lcd by jdgleaver, at its preset's grid; the paper drawn rather than a texture
