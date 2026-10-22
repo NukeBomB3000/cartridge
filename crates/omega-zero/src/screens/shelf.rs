@@ -9,8 +9,8 @@ use crate::nav::Offsets;
 
 const CORE_PICKER_RECEDE: f32 = 0.26;
 const CORE_PICKER_DIM: f32 = 0.614;
-/// How far above the bottom bar the selected game's name stands, in art pixels.
-const TITLE_GAP: u32 = 7;
+/// How far above the bottom bar the selected game's name stands in its pill, in art pixels.
+const TITLE_GAP: u32 = 4;
 
 impl App {
     /// The shelf, its carts moved `off.carts_dx` across and `off.carts_dy` down, its top bar
@@ -31,12 +31,12 @@ impl App {
                 shift(&mut out[carts..], off.carts_dx, off.carts_dy);
             }
         }
-        // the selected game's name over the bar across the bottom, going with the carts; not
+        // the selected game's name in a pill as the bar's, over the bar, going with the carts; not
         // while the core picker stands over the row
         if let (None, Some(tex)) = (self.core_picker_shown(), self.shelf_title.face) {
             let px = omega_ui::SPRITE_PX;
             let w = self.shelf_title.w;
-            let h = omega_ui::kit::text::WORD_H;
+            let h = omega_ui::kit::action::BAR;
             let x = (omega_gfx::out_w() / px / 2).saturating_sub(w / 2) * px;
             let bar_top = omega_ui::kit::bar::BarLayout::top(omega_gfx::out_h());
             let y = bar_top - ((h + TITLE_GAP) * px) as f32;
