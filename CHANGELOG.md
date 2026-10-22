@@ -379,7 +379,9 @@ The first release, for the RG35XX SP and the other H700 handhelds BaseOS runs on
   console's body carrying the GAME BOY ADVANCE logo. Game Boy games stay at 3x through the LCD
   mask.
 - Your own overlays: a `.png` the size of the screen in `Overlays/GBA`, `Overlays/GB` or
-  `Overlays/GBC`, laid over the game. One that would cover the game is ignored.
+  `Overlays/GBC`, laid over the game. One that would cover the game is ignored. Name one
+  `640x480-actual.png`, `640x480-aspect.png` or `640x480-stretch.png` for one picture size
+  only; `640x480.png` serves every size without one of its own.
 - The boot logo is only ever replaced with one the size of the device's own. Logos ship for
   640x480, 720x480 and 720x720 panels.
 - Rumble works on devices whose motor is the PMIC's `moto` pin rather than a force feedback

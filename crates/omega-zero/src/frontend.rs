@@ -149,6 +149,7 @@ fn boot_faces(carts: &[&Cart]) -> Vec<(CartFace, bool)> {
 /// laid over: one that would hide the game is refused rather than drawn.
 struct Overlay {
     platform: omega_store::Platform,
+    mode: crate::video_mode::VideoMode,
     face: Option<UndoFace>,
     tex: Option<TexId>,
     checked: Vec<([i32; 4], bool)>,
@@ -467,16 +468,22 @@ impl Frontend {
         picture: [f32; 4],
         compositor: &mut Compositor,
     ) -> Option<TexId> {
-        let at = match self.overlays.iter().position(|o| o.platform == platform) {
+        let mode = self.session.app().video_mode;
+        let at = match self
+            .overlays
+            .iter()
+            .position(|o| o.platform == platform && o.mode == mode)
+        {
             Some(at) => at,
             None => {
                 let face = self
                     .session
                     .app()
                     .root()
-                    .and_then(|root| overlay_face(root, platform));
+                    .and_then(|root| overlay_face(root, platform, mode.as_str()));
                 self.overlays.push(Overlay {
                     platform,
+                    mode,
                     face,
                     tex: None,
                     checked: Vec::new(),
@@ -493,7 +500,7 @@ impl Frontend {
             None => {
                 let clear = overlay_clear(&face.rgba, face.w, face.h, picture);
                 if !clear {
-                    let path = root.map(|r| overlay_path(&r, platform));
+                    let path = root.map(|r| overlay_path(&r, platform, mode.as_str()));
                     eprintln!(
                         "omega-zero: overlay: {} covers the game at {picture:?}, so it is not drawn",
                         path.map_or_else(String::new, |p| p.display().to_string())

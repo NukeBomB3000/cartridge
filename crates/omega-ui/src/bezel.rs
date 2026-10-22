@@ -180,19 +180,35 @@ fn shrink(src: &[u8], (sw, sh): (u32, u32), (w, h): (u32, u32)) -> Vec<u8> {
     out
 }
 
-/// The overlay for `platform` on this canvas, from `root`: Overlays/<system>/<w>x<h>.png,
-/// laid over the whole canvas, so it is only used at exactly the canvas's size.
-pub fn overlay_face(root: &Path, platform: Platform) -> Option<UndoFace> {
+/// The overlay for `platform` on this canvas in picture mode `mode`, from `root`:
+/// Overlays/<system>/<w>x<h>-<mode>.png, drawn for that mode's layout, else
+/// Overlays/<system>/<w>x<h>.png for every mode. Laid over the whole canvas, so it is only used
+/// at exactly the canvas's size.
+pub fn overlay_face(root: &Path, platform: Platform, mode: &str) -> Option<UndoFace> {
     let (w, h) = (out_w(), out_h());
-    let path = overlay_path(root, platform);
-    let rgba = crate::art::exact(&path, w, h)?;
-    Some(UndoFace { rgba, w, h })
+    overlay_paths(root, platform, mode)
+        .iter()
+        .find_map(|path| crate::art::exact(path, w, h))
+        .map(|rgba| UndoFace { rgba, w, h })
 }
 
-pub fn overlay_path(root: &Path, platform: Platform) -> PathBuf {
-    root.join("Overlays")
-        .join(platform.dir_name())
-        .join(format!("{}x{}.png", out_w(), out_h()))
+/// The overlay drawn for `mode`, if the card has one, else the one for every mode.
+pub fn overlay_path(root: &Path, platform: Platform, mode: &str) -> PathBuf {
+    let [own, every] = overlay_paths(root, platform, mode);
+    if own.is_file() {
+        own
+    } else {
+        every
+    }
+}
+
+fn overlay_paths(root: &Path, platform: Platform, mode: &str) -> [PathBuf; 2] {
+    let dir = root.join("Overlays").join(platform.dir_name());
+    let size = format!("{}x{}", out_w(), out_h());
+    [
+        dir.join(format!("{size}-{mode}.png")),
+        dir.join(format!("{size}.png")),
+    ]
 }
 
 /// The most of the game an overlay may hide: a frame drawn for another layout, or with an
