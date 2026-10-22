@@ -4,7 +4,8 @@
 
 - Five Games: 5 GAMES in Settings picks up to five games right on the shelf, across every
   system (A marks a cart, START keeps them, B gives up), and from then on the handheld shows
-  only those, on one shelf of their own, across restarts, until 5 GAMES is switched off again.
+  only those, on one shelf of their own, across restarts. 5 GAMES again changes them, the games
+  kept coming up marked; START with none marked switches Five Games off.
   It is for playing a few games rather than scrolling through hundreds. It takes LCD
   Ghosting's row, which SELECT+B still switches in a game.
 - Holding POWER in a game saves it where it is and powers off at once, with no menu; on the

@@ -122,14 +122,9 @@ impl App {
     }
 
     fn open_settings_row(&mut self, row: SettingsRow) {
-        // Five Games off picks its games on the shelf; on, A switches it off
+        // Five Games picks its games on the shelf, or changes them: none kept switches it off
         if row == SettingsRow::FiveGames {
-            if self.focus_on() {
-                self.set_focus(None);
-            } else {
-                return self.begin_picking();
-            }
-            return;
+            return self.begin_picking();
         }
         let to = match row {
             SettingsRow::Labels => Phase::Labels(LabelsScreen::default()),

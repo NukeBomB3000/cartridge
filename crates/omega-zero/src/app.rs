@@ -3526,14 +3526,23 @@ impl App {
         self.faces_stale = true;
     }
 
-    /// Starts picking Five Games' games on the shelf, with every system's carts on it.
+    /// Starts picking Five Games' games on the shelf, with every system's carts on it and the
+    /// games kept now marked, so they can be changed.
     pub(crate) fn begin_picking(&mut self) {
-        self.picking = Some(Vec::new());
+        let kept = self.focus.clone().unwrap_or_default();
+        if self.focus.is_some() {
+            // every system's shelf is laid out to pick from, Five Games' own kept till START
+            let focus = self.focus.take();
+            self.lay_out_shelves();
+            self.focus = focus;
+        }
+        self.picking = Some(kept);
         self.go(Phase::Shelf, Dir::FromAside);
     }
 
     /// While picking: A marks or unmarks the cart the shelf rests on, five at the most; START
-    /// switches Five Games on with those marked; B gives up.
+    /// keeps those marked, and with none marked switches Five Games off; B gives up, leaving
+    /// Five Games as it was.
     pub(crate) fn picking_input(&mut self, action: Action) {
         match action {
             Action::GbaDown(Btn::A) => {
@@ -3555,15 +3564,21 @@ impl App {
             }
             Action::GbaDown(Btn::Start) => {
                 let picked = self.picking.take().unwrap_or_default();
-                if picked.is_empty() {
-                    self.picking = Some(picked);
-                    return self.refuse();
+                match (picked.is_empty(), self.focus_on()) {
+                    (true, false) => {
+                        self.picking = Some(picked);
+                        self.refuse()
+                    }
+                    (true, true) => self.set_focus(None),
+                    (false, _) => self.set_focus(Some(picked)),
                 }
-                self.set_focus(Some(picked));
             }
             Action::GbaDown(Btn::B) => {
                 self.picking = None;
                 self.shelf_platform = omega_ui::Printed::default();
+                if self.focus_on() {
+                    self.lay_out_shelves();
+                }
             }
             _ => {}
         }

@@ -72,9 +72,45 @@ fn games_picked_on_the_shelf_become_the_only_shelf_until_switched_off() {
     let mut a = boot(d.path());
     assert_eq!(on_shelf(&a), [first, second], "a restart forgot Five Games");
 
+    // A on 5 GAMES changes the games kept: they come up marked among every system's carts
     to_five_games(&mut a);
     press(&mut a, Btn::A);
-    assert!(!a.focus_on());
+    assert_eq!(a.picking_count(), Some(2), "the games kept are not marked");
+    assert_eq!(
+        on_shelf(&a).len(),
+        4,
+        "the picking does not show every game"
+    );
+    // B leaves Five Games as it was
+    press(&mut a, Btn::B);
+    assert!(a.focus_on());
+    assert_eq!(
+        on_shelf(&a).len(),
+        2,
+        "B did not put Five Games' shelf back"
+    );
+
+    // a game unmarked is kept unmarked
+    to_five_games(&mut a);
+    press(&mut a, Btn::A);
+    while !a.selected_picked() {
+        step_right(&mut a);
+    }
+    press(&mut a, Btn::A);
+    assert_eq!(a.picking_count(), Some(1));
+    press(&mut a, Btn::Start);
+    assert_eq!(on_shelf(&a).len(), 1, "the change was not kept");
+
+    // every game unmarked switches it off
+    to_five_games(&mut a);
+    press(&mut a, Btn::A);
+    while !a.selected_picked() {
+        step_right(&mut a);
+    }
+    press(&mut a, Btn::A);
+    assert_eq!(a.picking_count(), Some(0), "the last game was not unmarked");
+    press(&mut a, Btn::Start);
+    assert!(!a.focus_on(), "none kept did not switch it off");
     assert_eq!(
         on_shelf(&a).len(),
         4,
