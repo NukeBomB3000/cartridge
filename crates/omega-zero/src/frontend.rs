@@ -247,6 +247,10 @@ impl Frontend {
     /// scan is drawn in it on the label workers' threads, the carts on screen first, for compose
     /// to upload as they come back.
     pub fn upload_faces(&mut self, compositor: &mut Compositor) {
+        self.session.app_mut().take_faces_stale();
+        for tex in self.session.app_mut().take_dropped_faces() {
+            compositor.update_texture(tex, 1, 1, &[0; 4]);
+        }
         let carts: Vec<&Cart> = self.session.app().carts().collect();
         let mut labelled = std::collections::HashSet::new();
         let faces = carts
@@ -314,6 +318,10 @@ impl Frontend {
     }
 
     pub fn compose(&mut self, compositor: &mut Compositor) {
+        // Five Games switched on or off lays the shelves out anew, every face drawn again
+        if self.session.app().faces_stale {
+            self.upload_faces(compositor);
+        }
         compositor.set_blue_light(self.session.app().blue_light());
         compositor.set_shake(self.session.app().screen_shake());
         compositor.set_screen_power(self.session.app().screen_power());

@@ -26,7 +26,8 @@ fn flow_rows(lit: SettingsRow) -> Vec<RowShown> {
     let value = |row| match row {
         SettingsRow::FastForward => Some("6X"),
         SettingsRow::FastForwardSound | SettingsRow::ColourCorrection => Some("OFF"),
-        SettingsRow::Rumble | SettingsRow::LcdGhosting => Some("ON"),
+        SettingsRow::Rumble => Some("ON"),
+        SettingsRow::FiveGames => Some("OFF"),
         SettingsRow::DateTime => Some("OCT 10 16:00"),
         SettingsRow::Network => Some("HOME"),
         SettingsRow::Bluetooth => Some("8BITDO SN30 PRO"),
@@ -287,7 +288,6 @@ fn the_rows_left_and_right_change_step_between_arrows_and_the_rows_that_open_end
             SettingsRow::FastForward,
             SettingsRow::FastForwardSound,
             SettingsRow::ColourCorrection,
-            SettingsRow::LcdGhosting,
             SettingsRow::Rumble
         ]
     );
@@ -462,7 +462,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
             "Fast Forward",
             "Fast Forward Sound",
             "Colour Correction",
-            "LCD Ghosting",
+            "5 Games",
             "Rumble",
             "Labels",
             "Date & Time",
@@ -476,6 +476,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
     assert_eq!(
         opens,
         [
+            SettingsRow::FiveGames,
             SettingsRow::Labels,
             SettingsRow::DateTime,
             SettingsRow::Network,

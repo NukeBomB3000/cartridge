@@ -33,6 +33,7 @@ mod eject;
 mod evdev;
 mod face_builder;
 mod fastforward;
+mod five_games;
 mod flush;
 mod frame_size;
 mod frames;

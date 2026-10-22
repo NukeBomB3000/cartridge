@@ -277,6 +277,16 @@ pub struct Readouts {
 pub struct App {
     pub(crate) phase: Phase,
     pub(crate) shelves: Vec<(Platform, Shelf)>,
+    /// Every cart scanned, whatever the shelves show: Five Games shows only a few of them.
+    pub(crate) all_carts: Vec<Cart>,
+    /// The games Five Games keeps the handheld to, while it is on.
+    pub(crate) focus: Option<Vec<(Platform, String)>>,
+    /// The games marked so far while Five Games' games are being picked on the shelf.
+    pub(crate) picking: Option<Vec<(Platform, String)>>,
+    /// The shelves were laid out again, so every face has to be drawn again.
+    pub(crate) faces_stale: bool,
+    /// The faces of the shelves laid out anew, for their textures to be given back.
+    pub(crate) dropped_faces: Vec<TexId>,
     pub(crate) shelf_at: usize,
     pub(crate) play_held: Option<Millis>,
     pub(crate) refusal: Option<Refusal>,
@@ -432,6 +442,7 @@ fn shelves_of(carts: Vec<Cart>) -> Vec<(Platform, Shelf)> {
 
 impl App {
     pub fn new(carts: Vec<Cart>) -> Self {
+        let all_carts = carts.clone();
         let shelves = shelves_of(carts);
         let shelf_at = shelves
             .iter()
@@ -444,6 +455,11 @@ impl App {
             network_faces: None,
             info_faces: None,
             controls_panel: None,
+            all_carts,
+            focus: None,
+            picking: None,
+            faces_stale: false,
+            dropped_faces: Vec::new(),
             keyboard_faces: None,
             link_faces: None,
             bluetooth: Bluetooth::new(bluetooth_jobs()),
@@ -555,6 +571,10 @@ impl App {
         app.root = Some(root.to_path_buf());
         app.theme = Theme::read_override(root);
         app.state = read_app_state(root);
+        app.focus = omega_store::read_focus(root);
+        if app.focus.is_some() {
+            app.lay_out_shelves();
+        }
         app.wifi.start(app.state.wifi);
         app.ssh.start(app.state.ssh, Some(root));
         app.bluetooth.start(app.state.bluetooth);
@@ -678,12 +698,11 @@ impl App {
         self.shelves
             .iter()
             .enumerate()
-            .filter(|(_, (p, _))| platform.is_none_or(|want| *p == want))
             .find_map(|(at, (_, shelf))| {
                 shelf
                     .carts
                     .iter()
-                    .position(|c| c.stem == stem)
+                    .position(|c| c.stem == stem && platform.is_none_or(|p| c.platform == p))
                     .map(|i| (at, i))
             })
     }
@@ -761,6 +780,17 @@ impl App {
 
     /// What the shelf's pill shows: the letter jumped to, or the shelf's system.
     pub fn pill_text(&self) -> Option<String> {
+        if let Some(n) = self.picking_count() {
+            return Some(format!("PICK {n}/{}", omega_store::FOCUS_MAX));
+        }
+        if self.focus_on() {
+            // Five Games' one shelf holds several systems: the pill names the cart's
+            return self
+                .shelf()
+                .carts
+                .get(self.shelf().index)
+                .map(|c| c.platform.dir_name().to_string());
+        }
         match self.pill_letter {
             Some(letter) => Some(letter.to_string()),
             None => self
@@ -1279,7 +1309,11 @@ impl App {
     /// The selected game's name as the shelf prints it under the row: its file's name without
     /// its tags.
     pub fn selected_title(&self) -> Option<String> {
-        self.selected_stem().map(omega_store::clean_title)
+        let title = self.selected_stem().map(omega_store::clean_title)?;
+        Some(match self.selected_picked() {
+            true => format!("+ {title}"),
+            false => title,
+        })
     }
 
     pub fn set_shelf_title_face(&mut self, face: TexId, w: u32) {
@@ -1379,6 +1413,18 @@ impl App {
         }
         let now = self.now();
         match self.phase {
+            Phase::Shelf if self.picking.is_some() => match action {
+                Action::GbaDown(Btn::A | Btn::B | Btn::Start) => self.picking_input(action),
+                Action::GbaDown(Btn::Up) => self.jump_letter(-1),
+                Action::GbaDown(Btn::Down) => self.jump_letter(1),
+                Action::ShelfLeft | Action::GbaDown(Btn::Left) => self.shelf_mut().hold_left(now),
+                Action::ShelfRight | Action::GbaDown(Btn::Right) => {
+                    self.shelf_mut().hold_right(now)
+                }
+                Action::GbaDown(Btn::L1) => self.switch_shelf(-1),
+                Action::GbaDown(Btn::R1) => self.switch_shelf(1),
+                _ => {}
+            },
             Phase::Shelf => match action {
                 Action::GbaDown(Btn::X) if self.core_picker.is_none() => self.open_core_picker(),
                 _ if self.core_picker.is_some() => self.core_picker_input(action),
@@ -1641,7 +1687,7 @@ impl App {
             return true;
         }
         if action == Action::LcdGhostingToggle {
-            self.change_setting(SettingsRow::LcdGhosting, true);
+            self.toggle_lcd_ghosting();
             let said = match self.state.lcd_ghosting {
                 true => Toast::GhostingOn,
                 false => Toast::GhostingOff,
@@ -3404,4 +3450,123 @@ fn free_stamp(ring: &StateRing, now: i64) -> String {
         stamp = format_stamp(secs);
     }
     stamp
+}
+
+impl App {
+    /// Whether Five Games is on.
+    pub fn focus_on(&self) -> bool {
+        self.focus.is_some()
+    }
+
+    /// While Five Games' games are being picked: how many are marked.
+    pub fn picking_count(&self) -> Option<usize> {
+        self.picking.as_ref().map(Vec::len)
+    }
+
+    /// Whether the cart the shelf rests on is marked, while games are being picked.
+    pub fn selected_picked(&self) -> bool {
+        let (Some(picked), Some(cart)) =
+            (&self.picking, self.shelf().carts.get(self.shelf().index))
+        else {
+            return false;
+        };
+        picked
+            .iter()
+            .any(|(p, s)| *p == cart.platform && *s == cart.stem)
+    }
+
+    /// The faces of the shelves laid out anew, for their textures to be given back.
+    pub fn take_dropped_faces(&mut self) -> Vec<TexId> {
+        std::mem::take(&mut self.dropped_faces)
+    }
+
+    /// Whether the faces must be drawn again, the shelves laid out anew; asking clears it.
+    pub fn take_faces_stale(&mut self) -> bool {
+        std::mem::take(&mut self.faces_stale)
+    }
+
+    /// Lays the shelves out again from every cart: Five Games' one shelf of its games, in the
+    /// order they were picked, or a shelf for each system.
+    pub(crate) fn lay_out_shelves(&mut self) {
+        let focused: Option<Vec<Cart>> = self.focus.as_ref().map(|games| {
+            games
+                .iter()
+                .filter_map(|(p, stem)| {
+                    self.all_carts
+                        .iter()
+                        .find(|c| c.platform == *p && c.stem == *stem)
+                        .cloned()
+                })
+                .collect()
+        });
+        for (_, shelf) in &mut self.shelves {
+            self.dropped_faces.extend(shelf.take_faces());
+        }
+        self.shelves = match focused {
+            Some(carts) if !carts.is_empty() => vec![(carts[0].platform, Shelf::new(carts))],
+            _ => shelves_of(self.all_carts.clone()),
+        };
+        self.shelf_at = self
+            .shelves
+            .iter()
+            .position(|(_, s)| !s.carts.is_empty())
+            .unwrap_or(0);
+        self.shelf_platform = omega_ui::Printed::default();
+        self.pill_letter = None;
+        self.faces_stale = true;
+    }
+
+    /// Starts picking Five Games' games on the shelf, with every system's carts on it.
+    pub(crate) fn begin_picking(&mut self) {
+        self.picking = Some(Vec::new());
+        self.go(Phase::Shelf, Dir::FromAside);
+    }
+
+    /// While picking: A marks or unmarks the cart the shelf rests on, five at the most; START
+    /// switches Five Games on with those marked; B gives up.
+    pub(crate) fn picking_input(&mut self, action: Action) {
+        match action {
+            Action::GbaDown(Btn::A) => {
+                let Some(cart) = self.shelf().carts.get(self.shelf().index).cloned() else {
+                    return;
+                };
+                let Some(picked) = self.picking.as_mut() else {
+                    return;
+                };
+                let key = (cart.platform, cart.stem.clone());
+                if let Some(at) = picked.iter().position(|k| *k == key) {
+                    picked.remove(at);
+                } else if picked.len() < omega_store::FOCUS_MAX {
+                    picked.push(key);
+                } else {
+                    return self.refuse();
+                }
+                self.shelf_platform = omega_ui::Printed::default();
+            }
+            Action::GbaDown(Btn::Start) => {
+                let picked = self.picking.take().unwrap_or_default();
+                if picked.is_empty() {
+                    self.picking = Some(picked);
+                    return self.refuse();
+                }
+                self.set_focus(Some(picked));
+            }
+            Action::GbaDown(Btn::B) => {
+                self.picking = None;
+                self.shelf_platform = omega_ui::Printed::default();
+            }
+            _ => {}
+        }
+    }
+
+    /// Switches Five Games on with `games`, or off, keeping it so across a restart.
+    pub(crate) fn set_focus(&mut self, games: Option<Vec<(Platform, String)>>) {
+        if let Some(root) = &self.root {
+            if let Err(e) = omega_store::write_focus(root, games.as_deref()) {
+                eprintln!("omega-zero: five games: {e}");
+            }
+        }
+        self.focus = games;
+        self.lay_out_shelves();
+    }
 }

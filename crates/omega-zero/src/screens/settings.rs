@@ -30,8 +30,8 @@ impl App {
             SettingsRow::FastForward => QuickValue::speed(self.state.ff_speed),
             SettingsRow::FastForwardSound => Some(QuickValue::flag(self.state.ff_sound)),
             SettingsRow::ColourCorrection => Some(QuickValue::flag(self.state.colour_correction)),
-            SettingsRow::LcdGhosting => Some(QuickValue::flag(self.state.lcd_ghosting)),
             SettingsRow::Rumble => Some(QuickValue::flag(self.state.rumble)),
+            SettingsRow::FiveGames => Some(QuickValue::flag(self.focus_on())),
             SettingsRow::Labels
             | SettingsRow::DateTime
             | SettingsRow::Network
@@ -122,6 +122,15 @@ impl App {
     }
 
     fn open_settings_row(&mut self, row: SettingsRow) {
+        // Five Games off picks its games on the shelf; on, A switches it off
+        if row == SettingsRow::FiveGames {
+            if self.focus_on() {
+                self.set_focus(None);
+            } else {
+                return self.begin_picking();
+            }
+            return;
+        }
         let to = match row {
             SettingsRow::Labels => Phase::Labels(LabelsScreen::default()),
             SettingsRow::DateTime => clock_screen(self.utc_secs(), self.state.utc_offset_min, true),
@@ -132,8 +141,8 @@ impl App {
             SettingsRow::FastForward
             | SettingsRow::FastForwardSound
             | SettingsRow::ColourCorrection
-            | SettingsRow::LcdGhosting
-            | SettingsRow::Rumble => return,
+            | SettingsRow::Rumble
+            | SettingsRow::FiveGames => return,
         };
         self.go(to, Dir::Deeper);
     }
@@ -153,18 +162,23 @@ impl App {
                 s.colour_correction = !s.colour_correction;
                 self.colour_pending = Some(s.colour_correction);
             }
-            SettingsRow::LcdGhosting => {
-                s.lcd_ghosting = !s.lcd_ghosting;
-                self.ghosting_pending = Some(s.lcd_ghosting);
-            }
             SettingsRow::Rumble => s.rumble = !s.rumble,
-            SettingsRow::Labels
+            SettingsRow::FiveGames
+            | SettingsRow::Labels
             | SettingsRow::DateTime
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
             | SettingsRow::About => return,
         }
+        self.persist();
+    }
+
+    /// The handhelds' LCD ghosting on or off, kept, and queued for the core: SELECT+B in a game,
+    /// its settings row having given its place to Five Games.
+    pub(crate) fn toggle_lcd_ghosting(&mut self) {
+        self.state.lcd_ghosting = !self.state.lcd_ghosting;
+        self.ghosting_pending = Some(self.state.lcd_ghosting);
         self.persist();
     }
 

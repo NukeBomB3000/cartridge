@@ -204,7 +204,11 @@ impl App {
     /// What the Controls screen says, while it is open: for the system of the shelf it was
     /// opened on.
     pub fn controls_view(&self) -> Option<ControlsView> {
-        let platform = self.shelves[self.shelf_at].0;
+        let platform = self
+            .shelf()
+            .carts
+            .get(self.shelf().index)
+            .map_or(self.shelves[self.shelf_at].0, |c| c.platform);
         matches!(self.phase, Phase::Controls).then(|| ControlsView::new(platform))
     }
 

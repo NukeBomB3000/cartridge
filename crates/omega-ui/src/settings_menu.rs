@@ -57,8 +57,9 @@ pub enum SettingsRow {
     FastForward,
     FastForwardSound,
     ColourCorrection,
-    /// The handhelds' cores blend each frame with the last, as the LCD ghosted.
-    LcdGhosting,
+    /// Five Games: the handheld kept to up to five games picked from the shelves. It took LCD
+    /// Ghosting's place, which SELECT+B switches in a game.
+    FiveGames,
     Rumble,
     Labels,
     DateTime,
@@ -75,7 +76,7 @@ impl SettingsRow {
         SettingsRow::FastForward,
         SettingsRow::FastForwardSound,
         SettingsRow::ColourCorrection,
-        SettingsRow::LcdGhosting,
+        SettingsRow::FiveGames,
         SettingsRow::Rumble,
         SettingsRow::Labels,
         SettingsRow::DateTime,
@@ -94,7 +95,7 @@ impl SettingsRow {
             SettingsRow::FastForward => "Fast Forward",
             SettingsRow::FastForwardSound => "Fast Forward Sound",
             SettingsRow::ColourCorrection => "Colour Correction",
-            SettingsRow::LcdGhosting => "LCD Ghosting",
+            SettingsRow::FiveGames => "5 Games",
             SettingsRow::Rumble => "Rumble",
             SettingsRow::Labels => "Labels",
             SettingsRow::DateTime => "Date & Time",
@@ -110,7 +111,7 @@ impl SettingsRow {
             SettingsRow::FastForward
             | SettingsRow::FastForwardSound
             | SettingsRow::ColourCorrection
-            | SettingsRow::LcdGhosting
+            | SettingsRow::FiveGames
             | SettingsRow::Rumble
             | SettingsRow::Labels => SettingsGroup::Configs,
             SettingsRow::DateTime
@@ -127,6 +128,7 @@ impl SettingsRow {
         matches!(
             self,
             SettingsRow::Labels
+                | SettingsRow::FiveGames
                 | SettingsRow::DateTime
                 | SettingsRow::Network
                 | SettingsRow::Bluetooth
@@ -143,7 +145,6 @@ impl SettingsRow {
             SettingsRow::FastForward
                 | SettingsRow::FastForwardSound
                 | SettingsRow::ColourCorrection
-                | SettingsRow::LcdGhosting
                 | SettingsRow::Rumble
         )
     }

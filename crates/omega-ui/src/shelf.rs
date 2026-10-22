@@ -193,6 +193,11 @@ impl Shelf {
         self.faces = faces;
     }
 
+    /// Its faces, given up for the shelves to be laid out anew.
+    pub fn take_faces(&mut self) -> Vec<TexId> {
+        std::mem::take(&mut self.faces)
+    }
+
     /// The model the cart `stem` is drawn with, once models are set: a game on several discs
     /// all its discs in one model.
     pub fn mesh_for(&self, stem: &str) -> Option<MeshId> {
