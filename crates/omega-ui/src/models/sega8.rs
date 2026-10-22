@@ -1,6 +1,6 @@
 //! Sega's 8-bit carts: the Game Gear's and the Master System's.
 //!
-//! Both are drawn 4 units to the millimetre. The Game Gear cart is 68 by 54 mm and 10 thick,
+//! Both are drawn 4 units to the millimetre. The Game Gear cart is 68 by 60 mm and 10 thick,
 //! wider than it is tall, its top corners cut off, its label in a well across most of its face
 //! and three grip ridges along its foot; the Master System cart is 100 by 134 mm and 20 thick,
 //! its corners round, its label in a well over the top of its face and four grip ridges across
@@ -34,16 +34,16 @@ pub const MASTER_SYSTEM_THICK: f32 = 20.0 / 100.0;
 /// size it stands at, so its label lands a texel to a pixel there.
 pub const SHELF_SCALE: f32 = 1.0;
 
-/// The Game Gear cart's outline, right half, in drawing units (272 by 216), clockwise from the
+/// The Game Gear cart's outline, right half, in drawing units (272 by 240), clockwise from the
 /// top: its cut top corner and its foot in two. The left half is its mirror.
 const GAME_GEAR_HALF: &[(f32, f32)] = &[
     (256.0, 0.0),
     (272.0, 16.0),
-    (272.0, 210.0),
-    (270.24, 214.24),
-    (266.0, 216.0),
+    (272.0, 234.0),
+    (270.24, 238.24),
+    (266.0, 240.0),
 ];
-const GAME_GEAR_UNITS: (f32, f32) = (272.0, 216.0);
+const GAME_GEAR_UNITS: (f32, f32) = (272.0, 240.0);
 
 /// The Master System cart's, right half, in drawing units (400 by 536): its round top corner in
 /// three cuts and its foot in two.
@@ -61,12 +61,13 @@ const MASTER_SYSTEM_UNITS: (f32, f32) = (400.0, 536.0);
 /// The size of each face in pixels. Each is a multiple of four across, so it halves onto the art
 /// grid in the middle of the row, and an even number down.
 pub const GAME_GEAR_W: u32 = 280;
-pub const GAME_GEAR_H: u32 = 222;
+pub const GAME_GEAR_H: u32 = 246;
 pub const MASTER_SYSTEM_W: u32 = 180;
 pub const MASTER_SYSTEM_H: u32 = 242;
 
 /// The label on each face, in its pixels: the inside of its well.
-const GAME_GEAR_LABEL: (u32, u32, u32, u32) = (22, 22, 236, 140);
+/// The Game Gear's label is ScreenScraper's scan's own shape, 236 by 172, so none of it is cut.
+const GAME_GEAR_LABEL: (u32, u32, u32, u32) = (22, 21, 236, 172);
 const MASTER_SYSTEM_LABEL: (u32, u32, u32, u32) = (16, 16, 148, 146);
 
 /// How far in from the outline a clear shell's plastic lightens at its rim, in pixels.

@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272 216">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 272 240">
   <!-- the cart's edges roll back: its left and top catch the light, its right and bottom turn away -->
-  <rect x="0" y="16" width="4" height="194" fill="#fff" fill-opacity="0.3"/>
+  <rect x="0" y="16" width="4" height="218" fill="#fff" fill-opacity="0.3"/>
   <rect x="16" y="0" width="240" height="4" fill="#fff" fill-opacity="0.3"/>
-  <rect x="268" y="16" width="4" height="194" fill="#000" fill-opacity="0.45"/>
-  <rect x="6" y="212" width="260" height="4" fill="#000" fill-opacity="0.35"/>
+  <rect x="268" y="16" width="4" height="218" fill="#000" fill-opacity="0.45"/>
+  <rect x="6" y="236" width="260" height="4" fill="#000" fill-opacity="0.35"/>
   <!-- the label's well across the face: shadow along its top and left, a lit lip under and right of it -->
-  <rect x="20" y="20" width="232" height="3" fill="#000" fill-opacity="0.45"/>
-  <rect x="20" y="23" width="3" height="135" fill="#000" fill-opacity="0.4"/>
-  <rect x="23" y="158" width="229" height="3" fill="#fff" fill-opacity="0.25"/>
-  <rect x="249" y="23" width="3" height="135" fill="#fff" fill-opacity="0.22"/>
+  <rect x="18" y="17" width="236" height="3" fill="#000" fill-opacity="0.45"/>
+  <rect x="18" y="20" width="3" height="168" fill="#000" fill-opacity="0.4"/>
+  <rect x="21" y="188" width="233" height="3" fill="#fff" fill-opacity="0.25"/>
+  <rect x="251" y="20" width="3" height="168" fill="#fff" fill-opacity="0.22"/>
   <!-- the grip ridges along the foot -->
-  <rect x="40" y="176" width="192" height="3" fill="#000" fill-opacity="0.4"/>
-  <rect x="40" y="179" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
-  <rect x="40" y="186" width="192" height="3" fill="#000" fill-opacity="0.4"/>
-  <rect x="40" y="189" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
-  <rect x="40" y="196" width="192" height="3" fill="#000" fill-opacity="0.4"/>
-  <rect x="40" y="199" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="40" y="203" width="192" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="40" y="206" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="40" y="213" width="192" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="40" y="216" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="40" y="223" width="192" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="40" y="226" width="192" height="2" fill="#fff" fill-opacity="0.15"/>
 </svg>
