@@ -19,6 +19,9 @@ pub(crate) struct Clocks {
     /// What the pill shows and the palette colour it was baked in, and its texture.
     platform: (String, u8),
     platform_tex: Option<TexId>,
+    /// The selected game's name under the row and the palette colour it was baked in.
+    title: (String, u8),
+    title_tex: Option<TexId>,
     /// The refused cart's alert, baked again when the palette changes.
     alert: Baked<u8>,
 }
@@ -51,5 +54,16 @@ pub(crate) fn sync_clock(app: &mut App, compositor: &mut Compositor, clocks: &mu
             app.set_shelf_platform_face(id, face.w);
         }
         clocks.platform = named;
+    }
+    let title = (app.selected_title().unwrap_or_default(), colour);
+    if title != clocks.title {
+        if title.0.is_empty() {
+            app.clear_shelf_title();
+        } else {
+            let face = omega_ui::kit::text::text_face(&title.0, app.palette().cream);
+            let id = upload_nearest(compositor, &mut clocks.title_tex, &face);
+            app.set_shelf_title_face(id, face.w);
+        }
+        clocks.title = title;
     }
 }

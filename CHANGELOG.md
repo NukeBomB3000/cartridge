@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The shelf names the selected game over the bar across the bottom, its file's name without
+  its tags in brackets, "Legend of Zelda, The" said as "The Legend of Zelda".
+- CONTROLS names every hotkey: X and Y held for turbo, SELECT+START for the card repair and, on
+  the Game Boy, SELECT+L2 R2 for its palette.
 - A card the kernel made read-only after an error no longer keeps omega-zero from starting:
   its log goes to /tmp instead, and omega-zero comes up to offer SELECT+START to repair it.
 - A curved CRT for the television's consoles, after the CRT on SELECT+X: the picture bowed

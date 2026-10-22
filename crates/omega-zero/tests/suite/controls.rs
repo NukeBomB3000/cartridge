@@ -241,3 +241,13 @@ fn controls_speaks_for_the_shelf_it_was_opened_on() {
         Some(ControlsView::new(Platform::Ps1))
     );
 }
+
+#[test]
+fn the_shelf_names_the_selected_game_without_its_tags() {
+    let d = crate::keys::root_with_games(Platform::Gba, &["Legend of Zelda, The (USA) [!]"]);
+    let (s, _motor) = common::session_with_platform(d.path());
+    assert_eq!(
+        s.app().selected_title().as_deref(),
+        Some("The Legend of Zelda")
+    );
+}

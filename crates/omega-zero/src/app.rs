@@ -351,6 +351,8 @@ pub struct App {
     /// The top bar's clock, figure and bolt, baked in its ink.
     pub(crate) top_readouts: Readouts,
     pub(crate) shelf_platform: omega_ui::Printed,
+    /// The selected game's name, printed under the row.
+    pub(crate) shelf_title: omega_ui::Printed,
     pub(crate) name_pending: bool,
     /// A game's start took omega-zero down last time: the boot leaves it on the shelf, or the
     /// seated cart where that game is not there, rather than resume either.
@@ -520,6 +522,7 @@ impl App {
             wallpaper: None,
             top_readouts: Readouts::default(),
             shelf_platform: omega_ui::Printed::default(),
+            shelf_title: omega_ui::Printed::default(),
             name_pending: false,
             hold_resume: false,
             pill_letter: None,
@@ -1271,6 +1274,20 @@ impl App {
         }
         self.link_choices.insert(reload.stem, reload.from);
         self.refuse_seated();
+    }
+
+    /// The selected game's name as the shelf prints it under the row: its file's name without
+    /// its tags.
+    pub fn selected_title(&self) -> Option<String> {
+        self.selected_stem().map(omega_store::clean_title)
+    }
+
+    pub fn set_shelf_title_face(&mut self, face: TexId, w: u32) {
+        self.shelf_title = omega_ui::Printed::new(face, w);
+    }
+
+    pub fn clear_shelf_title(&mut self) {
+        self.shelf_title = omega_ui::Printed::default();
     }
 
     pub fn selected_stem(&self) -> Option<&str> {

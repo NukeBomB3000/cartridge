@@ -18,6 +18,7 @@ mod scan;
 pub mod snes;
 mod stamp;
 mod theme;
+mod title;
 
 pub use app_state::{
     read_app_state, write_app_state, AppState, BLUE_LIGHT_MAX, BRIGHTNESS_MAX, FF_SPEEDS,
@@ -41,3 +42,4 @@ pub use stamp::{
     civil_from_days, days_from_civil, days_in_month, format_stamp, parse_stamp, stamp_now,
 };
 pub use theme::{Theme, THEME_FILE};
+pub use title::{clean_title, TITLE_MAX};
