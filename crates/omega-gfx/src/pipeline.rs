@@ -35,7 +35,7 @@ pub enum Look {
     Dot,
     Scanlines,
     Crt,
-    /// Pixels printed over grained paper, simpletex_lcd's idea.
+    /// simpletex_lcd: a light grid, the bright pixels showing the paper under them.
     Simpletex,
     /// Light pixels let a pale LCD background through, and dark ones cast a shadow onto it.
     Transparent,

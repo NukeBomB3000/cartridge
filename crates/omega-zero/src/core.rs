@@ -213,10 +213,13 @@ pub fn colour_option(which: Core, on: bool) -> Option<(&'static str, &'static st
 }
 
 /// The option that blends each frame with the last, as the handhelds' LCDs ghosted, spelt the
-/// way each of their cores declares it: mGBA mixes the two frames, gpSP its frame mixing.
+/// way each of their cores declares it: mGBA fades each frame into the next as an LCD's response did, gpSP its frame mixing.
 pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static str)> {
     match which {
-        Core::Mgba => Some(("mgba_interframe_blending", if on { "mix" } else { "OFF" })),
+        Core::Mgba => Some((
+            "mgba_interframe_blending",
+            if on { "lcd_ghosting" } else { "OFF" },
+        )),
         Core::Gpsp => Some(("gpsp_frame_mixing", if on { "enabled" } else { "disabled" })),
         Core::Snes9x
         | Core::Supafaust
@@ -381,7 +384,7 @@ mod tests {
     fn each_handheld_core_spells_lcd_ghosting_its_own_way() {
         assert_eq!(
             ghosting_option(Core::Mgba, true),
-            Some(("mgba_interframe_blending", "mix"))
+            Some(("mgba_interframe_blending", "lcd_ghosting"))
         );
         assert_eq!(
             ghosting_option(Core::Mgba, false),
@@ -403,7 +406,12 @@ mod tests {
     #[test]
     fn the_handheld_cores_are_set_to_blend_frames_only_while_ghosting_is_on() {
         for (which, key, on, off) in [
-            (Core::Mgba, "mgba_interframe_blending", "mix", "OFF"),
+            (
+                Core::Mgba,
+                "mgba_interframe_blending",
+                "lcd_ghosting",
+                "OFF",
+            ),
             (Core::Gpsp, "gpsp_frame_mixing", "enabled", "disabled"),
         ] {
             let value = |ghosting| {

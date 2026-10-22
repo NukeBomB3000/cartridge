@@ -11,9 +11,16 @@ Changes in slot: sharper dots (falloff 4.0) and a 0.85 blend.
 Grid, the line weighting of zfast_lcd_standard by Greg Hogan (SoltanGris42), copyright (C) 2017.
 GNU General Public License version 2 or later.
 
-The scanlines and the CRT are omega-zero's own, as are Simpletex, Transparent and DMG: written
-for omega-zero after the ideas of simpletex_lcd (pixels over paper), the pixel transparency of
-handheld LCD shaders and the Game Boy's four-green palette, without code from them. Transparent
-and DMG share Grid's line weighting.
+Simpletex, simpletex_lcd by jdgleaver, its grid the line weighting of zfast_lcd_standard as
+above. GNU General Public License version 2 or later.
+Changes in omega-zero: its preset's parameters fixed, and the paper texture drawn as grain
+rather than read from textured_paper.png.
+
+The paper's grain is Dave Hoskins' "Hash without Sine", MIT License, copyright (c) 2014.
+
+The scanlines and the CRT are omega-zero's own, as are Transparent and DMG. Transparent is
+written for omega-zero after the effect of mattakins' Pixel Transparency (bright pixels letting
+the unlit LCD's backing through, the dark ones casting a shadow on it), without its code. DMG is
+after the Game Boy's four-green palette. Both share Grid's line weighting.
 
 omega-zero itself is GNU General Public License version 3 or later, which these licenses permit.
