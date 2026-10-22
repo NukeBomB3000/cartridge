@@ -143,25 +143,37 @@ fn the_backlight_follows_brightness_from_boot() {
 }
 
 #[test]
-fn a_hold_opens_the_menu_and_commits_nothing() {
+fn a_hold_on_the_shelf_opens_the_menu_and_commits_nothing() {
     let d = tmp_root_with_carts(&["Emerald"]);
-    let mut a = app_playing_in(d.path(), "Emerald");
+    let mut a = boot(d.path());
     a.apply(Action::PowerHold);
     assert_eq!(a.power_menu(), Some(0), "the menu opens on Restart");
     assert!(!a.powering_off() && !a.restarting());
+}
+
+#[test]
+fn a_hold_in_a_game_saves_it_and_powers_off_with_no_menu() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.apply(Action::PowerHold);
+    assert_eq!(a.power_menu(), None, "a menu opened over the game");
+    assert!(
+        a.powering_off() && !a.restarting(),
+        "the hold did not power off"
+    );
     assert!(
         StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
             .read_resume()
             .unwrap()
             .is_some(),
-        "durable before the menu is even read: the user may hold on to the PMIC's own cutoff"
+        "the game was not saved before going down"
     );
 }
 
 #[test]
 fn the_menu_moves_and_wraps_at_both_ends() {
     let d = tmp_root_with_carts(&["Emerald"]);
-    let mut a = app_playing_in(d.path(), "Emerald");
+    let mut a = boot(d.path());
     let last = PowerChoice::ALL.len() - 1;
     a.apply(Action::PowerHold);
     a.apply(Action::GbaDown(Btn::Up));
@@ -177,14 +189,16 @@ fn the_menu_moves_and_wraps_at_both_ends() {
 #[test]
 fn b_leaves_the_menu_without_doing_anything() {
     let d = tmp_root_with_carts(&["Emerald"]);
-    let mut a = app_playing_in(d.path(), "Emerald");
+    let mut a = boot(d.path());
+    let before = std::mem::discriminant(a.phase());
     a.apply(Action::PowerHold);
     a.apply(Action::GbaDown(Btn::B));
     assert_eq!(a.power_menu(), None);
     assert!(!a.powering_off() && !a.restarting());
-    assert!(
-        matches!(a.phase(), Phase::Playing { .. }),
-        "back to the game"
+    assert_eq!(
+        std::mem::discriminant(a.phase()),
+        before,
+        "back where it was held"
     );
 }
 
@@ -192,7 +206,7 @@ fn b_leaves_the_menu_without_doing_anything() {
 fn each_row_commits_to_its_own_outcome() {
     for (down, want) in [(0, "restart"), (1, "off")] {
         let d = tmp_root_with_carts(&["Emerald"]);
-        let mut a = app_playing_in(d.path(), "Emerald");
+        let mut a = boot(d.path());
         a.apply(Action::PowerHold);
         for _ in 0..down {
             a.apply(Action::GbaDown(Btn::Down));
@@ -266,7 +280,7 @@ fn a_dozing_device_powers_off_by_itself_rather_than_waiting_for_the_lid() {
 }
 
 #[test]
-fn the_power_menu_holds_the_core_still() {
+fn a_hold_in_a_game_holds_the_core_still() {
     let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
     let (mut s, _motor) = session_with_platform(d.path());
     let mut now = 0;
@@ -278,21 +292,7 @@ fn the_power_menu_holds_the_core_still() {
     );
 
     hold_power(&mut s, &mut now);
-    assert_eq!(s.app().power_menu(), Some(0), "the menu never opened");
-    await_paused(&mut s);
-}
-
-#[test]
-fn a_committed_shutdown_holds_the_core_still() {
-    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
-    let (mut s, _motor) = session_with_platform(d.path());
-    let mut now = 0;
-    play(&mut s, &mut now);
-
-    hold_power(&mut s, &mut now);
-    s.app_mut().apply(Action::GbaDown(Btn::Down));
-    s.app_mut().apply(Action::GbaDown(Btn::A));
-    assert!(s.app().powering_off(), "Power Off is the second row");
+    assert!(s.app().powering_off(), "the hold did not power off");
     s.update(DT);
     await_paused(&mut s);
 }

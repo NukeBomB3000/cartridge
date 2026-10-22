@@ -139,10 +139,7 @@ fn the_power_menu_takes_the_motor_down() {
     while now < pressed + POWER_HOLD_MS + FRAME_MS {
         step(&mut s, &mut now);
     }
-    assert_eq!(s.app().power_menu(), Some(0), "the menu never opened");
-    assert_eq!(
-        motor.last(),
-        0,
-        "the cart kept buzzing under the power menu"
-    );
+    assert!(s.app().powering_off(), "the hold did not power off");
+    step(&mut s, &mut now);
+    assert_eq!(motor.last(), 0, "the cart kept buzzing as it went down");
 }

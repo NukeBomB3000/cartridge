@@ -161,7 +161,7 @@ fn power_slid(a: &App) -> (Option<PowerScreen>, Dir, Option<PowerScreen>) {
 const MENU: Option<PowerScreen> = Some(PowerScreen::Menu(PowerChoice::Restart));
 
 #[test]
-fn holding_power_opens_the_menu_over_the_shelf_a_menu_and_a_game() {
+fn holding_power_opens_the_menu_over_the_shelf_and_a_menu_and_powers_a_game_off() {
     let (_d, mut a) = on_shelf();
     a.apply(Action::PowerHold);
     assert_eq!(a.power_menu(), Some(0), "the menu opens on RESTART");
@@ -187,8 +187,16 @@ fn holding_power_opens_the_menu_over_the_shelf_a_menu_and_a_game() {
 
     let (_d, mut a) = in_a_game();
     a.apply(Action::PowerHold);
-    assert_eq!(power_slid(&a), (None, Dir::Deeper, MENU));
-    assert!(matches!(a.phase(), Phase::Playing { .. }));
+    assert_eq!(
+        power_slid(&a),
+        (
+            None,
+            Dir::Deeper,
+            Some(PowerScreen::Going(PowerChoice::PowerOff))
+        ),
+        "a game goes straight to POWER OFF, with no menu"
+    );
+    assert!(a.powering_off());
 }
 
 /// From the shelf the menu comes down from the top as the whole shelf drops out of the bottom,
@@ -272,43 +280,6 @@ fn from_a_menu_the_menu_drops_out_of_the_bottom_and_rises_back() {
     a.finish_slide();
     assert!(matches!(a.phase(), Phase::Controls), "{:?}", a.phase());
     assert_eq!(at(&frame(&a), CONTROLS_PANEL), Some(rest));
-}
-
-/// A game's picture cannot slide: the backdrop takes its place at once, under the menu as it
-/// comes in, and the game comes back once the menu has gone, held still until then.
-#[test]
-fn in_a_game_the_backdrop_takes_the_games_place_until_the_menu_has_gone() {
-    let (_d, mut a) = in_a_game();
-    let h = out_h() as f32;
-    let at: Millis = 100_000;
-    a.apply_at(Action::PowerHold, at);
-    for t in [0, SLIDE_MS / 2, SLIDE_MS] {
-        a.tick_ms(at + t);
-        let out = frame(&a);
-        assert!(!drew_game(&out), "the game shows under the menu at {t} ms");
-        assert!(
-            matches!(out.first(), Some(Draw::Rect { .. } | Draw::Tex { .. })),
-            "the backdrop is not first: {:?}",
-            out.first()
-        );
-    }
-    a.finish_slide();
-    assert_eq!(y_of(&frame(&a), MENU_PANEL), Some(home(menu_panel())));
-
-    a.apply_at(Action::GbaDown(Btn::B), at + 1_000);
-    a.tick_ms(at + 1_000 + SLIDE_MS / 2);
-    let out = frame(&a);
-    assert!(
-        !drew_game(&out),
-        "the game is back before the menu has gone"
-    );
-    assert!(a.power_shown(), "the game would run under the menu leaving");
-    assert_eq!(y_of(&out, MENU_PANEL), Some(home(menu_panel()) - h / 2.0));
-
-    a.update(SLIDE_MS as f32 / 1000.0);
-    assert!(!a.power_shown());
-    assert!(drew_game(&frame(&a)), "the game did not come back");
-    assert!(matches!(a.phase(), Phase::Playing { .. }));
 }
 
 #[test]
@@ -525,36 +496,6 @@ fn the_menus_bar_is_return_and_confirm_swapped_with_the_screens_under_it() {
         a.tick_ms(at + t);
         assert_eq!(a.bar_place(), Some(menu), "the actions moved at {t} ms");
     }
-}
-
-/// In a game there is no bar: it rises with the menu over the second half of its slide, and
-/// sinks away with it over the first half of the slide back.
-#[test]
-fn in_a_game_the_bar_rises_with_the_menu_and_sinks_with_it() {
-    let (_d, mut a) = in_a_game();
-    assert_eq!(a.bar_place(), None);
-    let at: Millis = 100_000;
-    a.apply_at(Action::PowerHold, at);
-    let out_of_sight = BarPlace {
-        actions: Actions::Menu,
-        sink: SINK,
-        drop: 0,
-    };
-    a.tick_ms(at + SLIDE_MS / 4);
-    assert_eq!(a.bar_place(), Some(out_of_sight));
-    a.tick_ms(at + 3 * SLIDE_MS / 4);
-    let p = a.power_slide().unwrap().progress(a.now());
-    assert_eq!(
-        a.bar_place(),
-        Some(swap_place(Actions::Shelf, Actions::Menu, p))
-    );
-
-    a.finish_slide();
-    a.apply_at(Action::GbaDown(Btn::B), at + 1_000);
-    a.tick_ms(at + 1_000 + 3 * SLIDE_MS / 4);
-    assert_eq!(a.bar_place(), Some(out_of_sight));
-    a.finish_slide();
-    assert_eq!(a.bar_place(), None);
 }
 
 /// After the choice nothing can be pressed: the whole bar sinks away with the menu's actions as

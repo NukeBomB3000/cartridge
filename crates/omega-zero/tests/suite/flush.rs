@@ -3,8 +3,8 @@ use crate::common;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use common::{app_playing_in, app_playing_with, tmp_root_with_carts};
-use omega_input::{Action, Btn};
+use common::{app_playing_in, app_playing_with, boot, tmp_root_with_carts};
+use omega_input::Action;
 use omega_power::{Battery, Charge, LedState};
 use omega_store::{read_app_state, Core, Platform, StateRing};
 use omega_zero::app::Phase;
@@ -76,26 +76,19 @@ fn a_power_tap_dozes_and_a_second_one_wakes() {
 }
 
 #[test]
-fn opening_the_menu_flushes_and_the_choice_powers_off() {
+fn a_hold_in_a_game_flushes_and_powers_off() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
 
     a.apply(Action::PowerHold);
     assert!(
-        !a.powering_off(),
-        "the hold asks the question, it does not answer it"
-    );
-    assert!(
         StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
             .read_resume()
             .unwrap()
             .is_some(),
-        "durable before the user has read a single row"
+        "the game was not saved"
     );
-
-    a.apply(Action::GbaDown(Btn::Down));
-    a.apply(Action::GbaDown(Btn::A));
-    assert!(a.powering_off(), "Power Off is the second row");
+    assert!(a.powering_off(), "the hold did not power off");
     assert_eq!(
         read_app_state(d.path()).cart,
         Some("Emerald".into()),
@@ -106,7 +99,7 @@ fn opening_the_menu_flushes_and_the_choice_powers_off() {
 #[test]
 fn a_release_after_the_hold_does_nothing_on_its_own() {
     let d = tmp_root_with_carts(&["Emerald"]);
-    let mut a = app_playing_in(d.path(), "Emerald");
+    let mut a = boot(d.path());
     a.apply(Action::PowerHold);
     a.apply(Action::PowerOff);
     assert!(!a.powering_off());

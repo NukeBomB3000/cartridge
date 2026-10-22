@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Holding POWER in a game saves it where it is and powers off at once, with no menu; on the
+  shelf and in the menus it opens the power menu as before. In a link session it is refused.
 - The shelf names the selected game over the bar across the bottom, its file's name without
   its tags in brackets, "Legend of Zelda, The" said as "The Legend of Zelda".
 - CONTROLS names every hotkey: X and Y held for turbo, SELECT+START for the card repair and, on

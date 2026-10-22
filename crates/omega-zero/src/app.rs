@@ -1339,6 +1339,16 @@ impl App {
                 return self.flush_resume();
             }
             Action::PowerTap => return self.power_press(),
+            // in a game POWER held saves it where it is and powers off at once; the power menu
+            // is the shelf's and the menus'. A link session is refused, as the menu was: going
+            // down would end the other player's game too
+            Action::PowerHold if matches!(self.phase, Phase::Playing { .. }) => {
+                if self.link_active() {
+                    return self.refuse();
+                }
+                self.flush_resume();
+                return self.begin_power_off();
+            }
             Action::PowerHold => return self.open_power_menu(),
             Action::PowerOff => return,
             _ => {}

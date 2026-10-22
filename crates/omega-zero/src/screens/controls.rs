@@ -94,7 +94,7 @@ impl ControlsView {
         game.extend([
             ("SELECT+START", "REPAIR CARD"),
             ("VOL+ VOL-", "MUTE"),
-            ("HOLD POWER", "POWER MENU"),
+            ("HOLD POWER", "SAVE, POWER OFF"),
         ]);
 
         ControlsView {

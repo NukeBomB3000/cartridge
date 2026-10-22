@@ -262,15 +262,15 @@ fn a_live_session_refuses_to_open_the_switcher() {
 }
 
 #[test]
-fn a_live_session_refuses_to_open_the_power_menu() {
+fn a_live_session_refuses_a_power_hold() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
     a.begin_link(0);
 
     a.apply(Action::PowerHold);
     assert!(
-        a.power_menu().is_none(),
-        "the power menu pauses the core, which a session forbids"
+        a.power_menu().is_none() && !a.powering_off(),
+        "going down would end the other player's game"
     );
     assert!(
         a.refusal_active(a.now()),
