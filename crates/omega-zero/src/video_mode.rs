@@ -165,22 +165,28 @@ pub fn screen_on_frame(
         };
     }
     match platform {
+        // a GBA picture smaller than the frame still keeps each game pixel the same whole
+        // number of panel pixels, so a look's grid falls evenly: 2x on 640x480, where 4:3
+        // gives the picture across the whole width
         Platform::Gba
         | Platform::Snes
         | Platform::Ps1
         | Platform::Pce
         | Platform::Nes
         | Platform::Md => {
-            let h = (cw * SRC_H as f32 / SRC_W as f32).round();
-            let view = GameView {
-                rect: [0.0, 0.0, cw, h],
-                uv: actual,
-                filter: Filter::Sharp,
+            let scale = (cw / SRC_W as f32).min(ch / SRC_H as f32).floor().max(1.0);
+            let (w, h) = (SRC_W as f32 * scale, SRC_H as f32 * scale);
+            let spare = ch - h;
+            let top = if spare < TOP_ROOM {
+                (spare / 2.0).round()
+            } else {
+                (spare * 3.0 / 8.0).round()
             };
+            let rect = [((cw - w) / 2.0).round(), top, w, h];
             Screen {
-                view,
-                still: view,
-                bands: around(c, view.rect),
+                view: sharp(rect, actual),
+                still: sharp(rect, actual),
+                bands: around(c, rect),
             }
         }
         Platform::Gb | Platform::Gbc => {
