@@ -6,13 +6,18 @@
   <rect x="8" y="515" width="432" height="5" fill="#000" fill-opacity="0.35"/>
   <!-- the label's well, its corners round: shadow along its top and left, a lit lip under and right of it -->
   <rect x="36" y="36" width="376" height="4" rx="2" fill="#000" fill-opacity="0.45"/>
-  <rect x="36" y="40" width="4" height="340" fill="#000" fill-opacity="0.4"/>
-  <rect x="40" y="380" width="372" height="4" rx="2" fill="#fff" fill-opacity="0.25"/>
-  <rect x="408" y="40" width="4" height="344" fill="#fff" fill-opacity="0.22"/>
-  <!-- the raised bar the console's name is moulded into, across the foot -->
-  <rect x="96" y="420" width="256" height="40" rx="6" fill="#fff" fill-opacity="0.12"/>
-  <rect x="96" y="420" width="256" height="3" fill="#fff" fill-opacity="0.25"/>
-  <rect x="96" y="457" width="256" height="3" fill="#000" fill-opacity="0.4"/>
+  <rect x="36" y="40" width="4" height="307" fill="#000" fill-opacity="0.4"/>
+  <rect x="40" y="347" width="372" height="4" rx="2" fill="#fff" fill-opacity="0.25"/>
+  <rect x="408" y="40" width="4" height="311" fill="#fff" fill-opacity="0.22"/>
+  <!-- the grip ridges across the face under the label, the console's name being the label's own -->
+  <rect x="64" y="384" width="320" height="4" fill="#000" fill-opacity="0.4"/>
+  <rect x="64" y="388" width="320" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="64" y="408" width="320" height="4" fill="#000" fill-opacity="0.4"/>
+  <rect x="64" y="412" width="320" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="64" y="432" width="320" height="4" fill="#000" fill-opacity="0.4"/>
+  <rect x="64" y="436" width="320" height="2" fill="#fff" fill-opacity="0.15"/>
+  <rect x="64" y="456" width="320" height="4" fill="#000" fill-opacity="0.4"/>
+  <rect x="64" y="460" width="320" height="2" fill="#fff" fill-opacity="0.15"/>
   <!-- the step along the foot, over the contacts -->
   <rect x="24" y="488" width="400" height="3" fill="#000" fill-opacity="0.4"/>
   <rect x="24" y="491" width="400" height="2" fill="#fff" fill-opacity="0.15"/>

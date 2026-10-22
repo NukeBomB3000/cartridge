@@ -1,3 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 532">
-  <rect x="0" y="0" width="480" height="532" rx="8" ry="8" fill="#fff"/>
+  <path d="M 8 0 L 472 0 A 8 8 0 0 1 480 8 L 480 432 L 476 436 L 457 436 L 453 440 L 453 526 L 447 532 L 33 532 L 27 526 L 27 440 L 23 436 L 4 436 L 0 432 L 0 8 A 8 8 0 0 1 8 0 Z" fill="#fff"/>
 </svg>

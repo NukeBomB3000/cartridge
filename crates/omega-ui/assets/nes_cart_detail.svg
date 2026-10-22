@@ -1,47 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 532">
   <!-- the cart's edges: its left and top catch the light, its right and bottom turn away -->
-  <rect x="0" y="8" width="6" height="516" fill="#fff" fill-opacity="0.4"/>
+  <rect x="0" y="8" width="6" height="424" fill="#fff" fill-opacity="0.4"/>
   <rect x="8" y="0" width="464" height="5" fill="#fff" fill-opacity="0.35"/>
-  <rect x="474" y="8" width="6" height="516" fill="#000" fill-opacity="0.4"/>
-  <rect x="8" y="527" width="464" height="5" fill="#000" fill-opacity="0.3"/>
-  <!-- the lip across the top, where the cart is held: a raised band that throws a shadow under it -->
-  <rect x="6" y="5" width="468" height="20" fill="#fff" fill-opacity="0.12"/>
-  <rect x="6" y="25" width="468" height="4" fill="#000" fill-opacity="0.4"/>
-  <!-- the guide channels down either side, where the cart slides into the console -->
-  <rect x="16" y="40" width="5" height="470" fill="#000" fill-opacity="0.35"/>
-  <rect x="21" y="40" width="2" height="470" fill="#fff" fill-opacity="0.25"/>
-  <rect x="457" y="40" width="5" height="470" fill="#000" fill-opacity="0.35"/>
-  <rect x="462" y="40" width="2" height="470" fill="#fff" fill-opacity="0.2"/>
-  <!-- the label sits in a well: shadow along its top and left, a lit lip under and right of it -->
-  <rect x="44" y="40" width="392" height="5" fill="#000" fill-opacity="0.45"/>
-  <rect x="44" y="45" width="5" height="271" fill="#000" fill-opacity="0.4"/>
-  <rect x="48" y="316" width="392" height="4" fill="#fff" fill-opacity="0.4"/>
-  <rect x="436" y="44" width="4" height="276" fill="#fff" fill-opacity="0.35"/>
-  <!-- the ridged panel across the foot: a sunken frame, and the ridges across it -->
-  <rect x="44" y="344" width="392" height="4" fill="#000" fill-opacity="0.4"/>
-  <rect x="44" y="348" width="4" height="148" fill="#000" fill-opacity="0.35"/>
-  <rect x="44" y="496" width="392" height="3" fill="#fff" fill-opacity="0.3"/>
-  <rect x="432" y="348" width="4" height="151" fill="#fff" fill-opacity="0.25"/>
-  <g fill-opacity="0.5">
-    <rect x="56" y="358" width="368" height="6" fill="#000"/>
-    <rect x="56" y="372" width="368" height="6" fill="#000"/>
-    <rect x="56" y="386" width="368" height="6" fill="#000"/>
-    <rect x="56" y="400" width="368" height="6" fill="#000"/>
-    <rect x="56" y="414" width="368" height="6" fill="#000"/>
-    <rect x="56" y="428" width="368" height="6" fill="#000"/>
-    <rect x="56" y="442" width="368" height="6" fill="#000"/>
-    <rect x="56" y="456" width="368" height="6" fill="#000"/>
-    <rect x="56" y="470" width="368" height="6" fill="#000"/>
-  </g>
-  <g fill-opacity="0.35">
-    <rect x="56" y="364" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="378" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="392" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="406" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="420" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="434" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="448" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="462" width="368" height="3" fill="#fff"/>
-    <rect x="56" y="476" width="368" height="3" fill="#fff"/>
-  </g>
+  <rect x="474" y="8" width="6" height="424" fill="#000" fill-opacity="0.4"/>
+  <rect x="27" y="440" width="5" height="86" fill="#fff" fill-opacity="0.3"/>
+  <rect x="448" y="440" width="5" height="86" fill="#000" fill-opacity="0.35"/>
+  <rect x="33" y="527" width="414" height="5" fill="#000" fill-opacity="0.3"/>
+  <!-- the step where the foot narrows, catching the light along its top -->
+  <rect x="4" y="436" width="23" height="4" fill="#000" fill-opacity="0.35"/>
+  <rect x="453" y="436" width="23" height="4" fill="#000" fill-opacity="0.35"/>
+  <rect x="27" y="436" width="426" height="3" fill="#fff" fill-opacity="0.2"/>
+  <!-- the grip grooves down the left of the face, where the cart is held -->
+  <rect x="86" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="91" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="98" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="103" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="110" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="115" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="122" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="127" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="134" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="139" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="146" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="151" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="158" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="163" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <rect x="170" y="22" width="5" height="396" fill="#000" fill-opacity="0.38"/>
+  <rect x="175" y="22" width="2" height="396" fill="#fff" fill-opacity="0.28"/>
+  <!-- the label sits upright in a well right of the grooves: shadow along its top and left, a lit lip under and right of it -->
+  <rect x="190" y="7" width="228" height="4" fill="#000" fill-opacity="0.4"/>
+  <rect x="190" y="11" width="4" height="355" fill="#000" fill-opacity="0.35"/>
+  <rect x="194" y="366" width="224" height="4" fill="#fff" fill-opacity="0.35"/>
+  <rect x="414" y="11" width="4" height="359" fill="#fff" fill-opacity="0.3"/>
+  <!-- the arrow moulded into the foot, pointing the way the cart goes in -->
+  <path d="M 222 462 L 258 462 L 240 488 Z" fill="#000" fill-opacity="0.3"/>
+  <path d="M 225 462 L 255 462 L 254 465 L 226 465 Z" fill="#fff" fill-opacity="0.2"/>
 </svg>

@@ -2,7 +2,8 @@
 //! Famicom cart, which came in a colour of its game's own.
 //!
 //! Both are drawn 4 units to the millimetre. The Game Pak is 120 by 133 mm and 20 mm thick, stood
-//! upright with its label in a well across the top of its face and five grip ridges under it; the
+//! upright with its label upright in a well right of its middle and grip grooves down its left,
+//! its foot a little narrower than the rest, an arrow moulded into it; the
 //! Famicom cart is 108 by 71 mm and 17 mm thick, lying across, its label filling most of its face
 //! and grip grooves down its sides. The ridges, grooves and wells are relief in the face, not
 //! geometry. Both faces are drawn about 1.77 pixels to the millimetre, a little under the SNES
@@ -40,16 +41,17 @@ pub const FAMICOM_THICK: f32 = 17.0 / 108.0;
 pub const SHELF_SCALE: f32 = 1.0;
 
 /// The Game Pak's outline, right half, in drawing units (480 by 532), clockwise from the top:
-/// each round corner in three cuts. The left half is its mirror.
+/// its round top corner, and the step where its foot narrows. The left half is its mirror.
 const NES_HALF: &[(f32, f32)] = &[
     (472.0, 0.0),
-    (476.0, 1.07),
-    (478.93, 4.0),
+    (477.66, 2.34),
     (480.0, 8.0),
-    (480.0, 524.0),
-    (478.93, 528.0),
-    (476.0, 530.93),
-    (472.0, 532.0),
+    (480.0, 432.0),
+    (476.0, 436.0),
+    (457.0, 436.0),
+    (453.0, 440.0),
+    (453.0, 526.0),
+    (447.0, 532.0),
 ];
 const NES_UNITS: (f32, f32) = (480.0, 532.0);
 
@@ -73,10 +75,10 @@ pub const NES_H: u32 = 236;
 pub const FAMICOM_W: u32 = 192;
 pub const FAMICOM_H: u32 = 126;
 
-/// The label on each face, in its pixels: the inside of its well. The Game Pak's is 95 mm by 68
-/// across the top of its face; the Famicom cart's 95 by 50 across most of its, its corners a
-/// little round.
-const NES_LABEL: (u32, u32, u32, u32) = (22, 20, 168, 120);
+/// The label on each face, in its pixels: the inside of its well. The Game Pak's is 55 mm by 89,
+/// upright right of its middle, the shape of ScreenScraper's scans of its labels; the Famicom
+/// cart's 95 by 50 across most of its face, its corners a little round.
+const NES_LABEL: (u32, u32, u32, u32) = (86, 5, 97, 157);
 const FAMICOM_LABEL: (u32, u32, u32, u32) = (12, 12, 168, 88);
 const FAMICOM_LABEL_ROUND: u32 = 3;
 

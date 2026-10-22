@@ -183,13 +183,18 @@ fn a_mega_drive_label_fills_its_well_where_the_real_cart_has_it() {
     let carts = scan(d.path()).unwrap();
     // the share of the face the label takes, and where on the face it starts and ends
     for (stem, (wide, tall), starts, ends) in [
-        ("Sonic the Hedgehog (USA)", (0.75, 0.55), 0.14, 0.76),
-        ("Puyo Puyo (Japan)", (0.8, 0.62), 0.06, 0.75),
+        ("Sonic the Hedgehog (USA)", (0.75, 0.5), 0.14, 0.72),
+        ("Puyo Puyo (Japan)", (0.8, 0.55), 0.06, 0.7),
     ] {
         let face = cart_face(cart(&carts, stem));
         let (x0, y0, x1, y1) = colour_box(&face, ART).expect("the label art was not pasted");
         let (lw, lh) = ((x1 - x0 + 1) as f32, (y1 - y0 + 1) as f32);
         let (fw, fh) = (face.w as f32, face.h as f32);
+        // the shape of ScreenScraper's scans, the console's name across their foot
+        assert!(
+            (lw / lh - 1.2).abs() < 0.03,
+            "{stem}: the label is {lw}x{lh}"
+        );
         assert!(
             lw / fw > wide && lh / fh > tall,
             "{stem}: the label is {lw}x{lh} on a {fw}x{fh} face"

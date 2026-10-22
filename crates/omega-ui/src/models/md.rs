@@ -2,9 +2,10 @@
 //! Genesis's of America.
 //!
 //! Both are drawn 4 units to the millimetre. The Mega Drive cart is 112 by 130 mm, its top
-//! corners rolled round, its label in a round-cornered well over the top of its face and a
-//! raised bar across its foot where the console's name is moulded; the Genesis cart is 110 by
-//! 135 mm and squarer, three grip ridges across its top and its label in a well under them.
+//! corners rolled round, its label in a round-cornered well over the top of its face, the
+//! console's name across the label's foot, and grip ridges under it; the Genesis cart is 110 by
+//! 135 mm and squarer, three grip ridges across its top, its label in a well under them and
+//! more ridges under that. Each label well is the shape of ScreenScraper's scans, 1.2 to 1.
 //! Both are 20 mm thick and black. The ridges, bar and wells are relief in the face, not
 //! geometry. Both faces are drawn about 1.78 pixels to the millimetre, as the NES carts are.
 
@@ -71,12 +72,12 @@ pub const MEGA_DRIVE_H: u32 = 232;
 pub const GENESIS_W: u32 = 196;
 pub const GENESIS_H: u32 = 240;
 
-/// The label on each face, in its pixels: the inside of its well. The Mega Drive cart's is 92 mm
-/// by 85 across the top of its face, its corners round; the Genesis cart's 86 by 79 under its
-/// grip ridges.
-const MEGA_DRIVE_LABEL: (u32, u32, u32, u32) = (18, 18, 164, 152);
+/// The label on each face, in its pixels: the inside of its well, 1.2 to 1 as ScreenScraper's
+/// scans are. The Mega Drive cart's is 92 mm by 77 across the top of its face, its corners round;
+/// the Genesis cart's 86 by 72 under its grip ridges.
+const MEGA_DRIVE_LABEL: (u32, u32, u32, u32) = (18, 18, 164, 137);
 const MEGA_DRIVE_LABEL_ROUND: u32 = 5;
-const GENESIS_LABEL: (u32, u32, u32, u32) = (22, 38, 152, 140);
+const GENESIS_LABEL: (u32, u32, u32, u32) = (22, 38, 152, 127);
 
 /// How far in from the outline a clear shell's plastic lightens at its rim, in pixels.
 const RIM: u32 = 5;

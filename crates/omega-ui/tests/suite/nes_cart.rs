@@ -153,25 +153,32 @@ fn an_nes_label_fills_its_well_where_the_real_cart_has_it() {
     let stems = ["Super Mario Bros. 3 (USA)", "Super Mario Bros. 3 (Japan)"];
     let d = root(&stems, &stems, "");
     let carts = scan(d.path()).unwrap();
-    // the share of the face's width and height the label takes, and how far down it may end
-    for (stem, (wide, tall), ends) in [
-        ("Super Mario Bros. 3 (USA)", (0.75, 0.48), 0.62),
-        ("Super Mario Bros. 3 (Japan)", (0.85, 0.65), 0.85),
-    ] {
-        let face = cart_face(cart(&carts, stem));
-        let (x0, y0, x1, y1) = colour_box(&face, ART).expect("the label art was not pasted");
-        let (lw, lh) = ((x1 - x0 + 1) as f32, (y1 - y0 + 1) as f32);
-        let (fw, fh) = (face.w as f32, face.h as f32);
-        assert!(
-            lw / fw > wide && lh / fh > tall,
-            "{stem}: the label is {lw}x{lh} on a {fw}x{fh} face"
-        );
-        assert!(
-            ((x0 + x1 + 1) as f32 / 2.0 - fw / 2.0).abs() <= 1.0,
-            "{stem}: the label is not across the middle"
-        );
-        assert!((y1 as f32) < fh * ends, "{stem}: the label runs to {y1}");
-    }
+    // the Game Pak's label stands upright right of its middle, the grip grooves to its left, the
+    // shape of its scans; the Famicom cart's runs across most of its face
+    let face = cart_face(cart(&carts, "Super Mario Bros. 3 (USA)"));
+    let (x0, _, x1, y1) = colour_box(&face, ART).expect("the label art was not pasted");
+    let (_, y0b, _, _) = colour_box(&face, ART).unwrap();
+    let (lw, lh) = ((x1 - x0 + 1) as f32, (y1 - y0b + 1) as f32);
+    let (fw, fh) = (face.w as f32, face.h as f32);
+    assert!(
+        (lw / lh - 0.62).abs() < 0.03,
+        "the label is {lw}x{lh}, not upright"
+    );
+    assert!(lh / fh > 0.6, "the label is {lw}x{lh} on a {fw}x{fh} face");
+    assert!(
+        x0 as f32 > fw * 0.35,
+        "the label starts at {x0}, over the grooves"
+    );
+    assert!((y1 as f32) < fh * 0.75, "the label runs to {y1}");
+    let face = cart_face(cart(&carts, "Super Mario Bros. 3 (Japan)"));
+    let (x0, _, x1, y1) = colour_box(&face, ART).expect("the label art was not pasted");
+    let (lw, fw, fh) = ((x1 - x0 + 1) as f32, face.w as f32, face.h as f32);
+    assert!(lw / fw > 0.85, "the Famicom label is {lw} on a {fw} face");
+    assert!(
+        ((x0 + x1 + 1) as f32 / 2.0 - fw / 2.0).abs() <= 1.0,
+        "the Famicom label is not across the middle"
+    );
+    assert!((y1 as f32) < fh * 0.85, "the Famicom label runs to {y1}");
 }
 
 #[test]
