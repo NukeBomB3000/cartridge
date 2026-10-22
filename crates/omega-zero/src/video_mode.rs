@@ -150,6 +150,9 @@ pub fn screen_on_frame(
     }
     let actual = source_rect(platform, VideoMode::Actual);
     let (cw, ch) = (c.w as f32, c.h as f32);
+    if matches!(platform, Platform::Gb | Platform::Gbc) {
+        return game_boy_actual(c, platform);
+    }
     if cw >= FRAME.0 && ch >= FRAME.1 {
         let spare = ch - FRAME.1;
         let top = if spare < TOP_ROOM {
@@ -191,6 +194,31 @@ pub fn screen_on_frame(
                 bands: around(c, whole),
             }
         }
+    }
+}
+
+/// A Game Boy game's 160x144 window alone at the largest whole scale the canvas holds, three
+/// panel pixels to a game pixel on 640x480 and 720x480, standing as the GBA's frame does: on the
+/// top edge with the body and its wordmark below, or a little above the middle when there is
+/// room. A look's grid falls evenly on it.
+fn game_boy_actual(c: Canvas, platform: Platform) -> Screen {
+    let (cw, ch) = (c.w as f32, c.h as f32);
+    let (pw, ph) = platform.picture();
+    let (pw, ph) = (pw as f32, ph as f32);
+    let scale = (cw / pw).min(ch / ph).floor().max(1.0);
+    let (w, h) = (pw * scale, ph * scale);
+    let spare = ch - h;
+    let top = if spare < TOP_ROOM {
+        0.0
+    } else {
+        (spare * 3.0 / 8.0).round()
+    };
+    let rect = [((cw - w) / 2.0).round(), top, w, h];
+    let view = sharp(rect, source_rect(platform, VideoMode::Aspect));
+    Screen {
+        view,
+        still: view,
+        bands: around(c, rect),
     }
 }
 

@@ -12,8 +12,9 @@ fn area(r: [f32; 4], c: Canvas) -> f32 {
 }
 
 #[test]
-fn on_720x480_a_handheld_at_its_actual_size_is_the_whole_canvas_as_it_always_was() {
-    for platform in PLATFORMS {
+fn on_720x480_a_gba_at_its_actual_size_is_the_whole_canvas_as_it_always_was() {
+    {
+        let platform = Platform::Gba;
         let s = screen_on(Canvas::WIDE, platform, VideoMode::Actual);
         assert_eq!(s.view.rect, [0.0, 0.0, 720.0, 480.0], "{platform:?}");
         assert_eq!(s.view.uv, WHOLE_TEXTURE);
@@ -46,19 +47,20 @@ fn on_640x480_a_gba_game_fills_the_width_from_the_top_over_a_bezel() {
 }
 
 #[test]
-fn on_640x480_a_game_boy_game_stays_at_3x_through_the_mask() {
-    for platform in [Platform::Gb, Platform::Gbc] {
-        let s = screen_on(Canvas::FOUR_THREE, platform, VideoMode::Actual);
-        assert_eq!(s.view.filter, Filter::Sharp);
-        assert_eq!(s.view.uv, WHOLE_TEXTURE);
-        let [x, y, w, h] = s.view.rect;
-        assert_eq!((w, h), (720.0, 480.0), "not 3x");
-        let picture = (x + 40.0 * 3.0, y + 8.0 * 3.0);
-        assert_eq!(picture, (80.0, 24.0), "the 160x144 picture is not centred");
-        assert!(
-            s.bands.is_empty(),
-            "the frame's own border covers the canvas"
-        );
+fn a_game_boy_game_at_its_actual_size_is_its_window_at_3x_on_the_top_edge_over_the_body() {
+    for (c, x) in [(Canvas::FOUR_THREE, 80.0), (Canvas::WIDE, 120.0)] {
+        for platform in [Platform::Gb, Platform::Gbc] {
+            let s = screen_on(c, platform, VideoMode::Actual);
+            assert_eq!(s.view.filter, Filter::Sharp);
+            assert_eq!(s.view.uv, source_rect(platform, VideoMode::Aspect));
+            assert_eq!(s.view.rect, [x, 0.0, 480.0, 432.0], "{c:?} {platform:?}");
+            assert_eq!(s.still, s.view);
+            assert!(
+                s.bands.iter().any(|b| b[2] == c.w as f32 && b[3] == 48.0),
+                "no band across the canvas for the wordmark: {:?}",
+                s.bands
+            );
+        }
     }
 }
 
@@ -116,7 +118,8 @@ fn a_stretched_handheld_fills_every_canvas_without_its_border() {
 
 #[test]
 fn on_720x720_the_3x_frame_stands_above_the_middle_between_two_bands() {
-    for platform in PLATFORMS {
+    {
+        let platform = Platform::Gba;
         let s = screen_on(Canvas::SQUARE, platform, VideoMode::Actual);
         assert_eq!(s.view.rect, [0.0, 90.0, 720.0, 480.0]);
         assert_eq!(s.view.filter, Filter::Sharp);
@@ -155,7 +158,7 @@ fn the_picture_is_the_game_s_own_window_inside_its_view() {
     );
     assert_eq!(
         at(Canvas::FOUR_THREE, Platform::Gb, VideoMode::Actual),
-        [80.0, 24.0, 480.0, 432.0]
+        [80.0, 0.0, 480.0, 432.0]
     );
     assert_eq!(
         at(Canvas::FOUR_THREE, Platform::Gbc, VideoMode::Stretch),
@@ -163,7 +166,7 @@ fn the_picture_is_the_game_s_own_window_inside_its_view() {
     );
     assert_eq!(
         at(Canvas::WIDE, Platform::Gb, VideoMode::Actual),
-        [120.0, 24.0, 480.0, 432.0]
+        [120.0, 0.0, 480.0, 432.0]
     );
     assert_eq!(
         at(Canvas::WIDE, Platform::Gba, VideoMode::Actual),

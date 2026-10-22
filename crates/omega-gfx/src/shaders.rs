@@ -261,7 +261,11 @@ void main() {
         float y2 = max(d.x, d.y);
         y2 *= y2;
         float y4 = y2 * y2;
-        vec3 lcd = c * (1.0 - 14.0 * (y4 - 2.7 * y4 * y2));
+        // at a scale of no whole number the cells come out 2 and 3 pixels wide, so the
+        // borders are drawn at under half their darkness to keep the unevenness faint
+        vec2 off = abs(u_scale - floor(u_scale + 0.5));
+        float border = max(off.x, off.y) > 0.01 ? 6.0 : 14.0;
+        vec3 lcd = c * (1.0 - border * (y4 - 2.7 * y4 * y2));
         lcd *= 0.6 + 0.4 * lcd;
         vec2 out_px = u_scale * u_uv.zw * u_src;
         float reach = sqrt(out_px.x * out_px.y / (640.0 * 480.0));
