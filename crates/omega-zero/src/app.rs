@@ -1582,14 +1582,20 @@ impl App {
         };
         for (platform, stem) in self.labels.take_fresh() {
             let path = crate::label_sync::label_path(&root, platform, &stem);
-            let shelf = self.shelves.iter_mut().find(|(p, _)| *p == platform);
-            let Some(cart) = shelf.and_then(|(_, s)| s.carts.iter_mut().find(|c| c.stem == stem))
+            let mine = |c: &&mut Cart| c.platform == platform && c.stem == stem;
+            let Some(cart) = self
+                .shelves
+                .iter_mut()
+                .find_map(|(_, s)| s.carts.iter_mut().find(mine))
             else {
                 continue;
             };
             // a later disc's label, saved under the disc's own name, leaves the game's as it was
             if path.is_file() {
-                cart.label = Some(path);
+                cart.label = Some(path.clone());
+                if let Some(kept) = self.all_carts.iter_mut().find(mine) {
+                    kept.label = Some(path);
+                }
             }
             self.stale_faces.push((platform, stem));
         }
@@ -1606,8 +1612,10 @@ impl App {
         carts
             .into_iter()
             .filter_map(|(platform, stem)| {
-                let (_, shelf) = self.shelves.iter().find(|(p, _)| *p == platform)?;
-                let (cart, face) = shelf.find(&stem)?;
+                let (cart, face) = self
+                    .shelves
+                    .iter()
+                    .find_map(|(_, s)| s.find_of(platform, &stem))?;
                 Some((cart.clone(), face?))
             })
             .collect()
@@ -1615,8 +1623,10 @@ impl App {
 
     /// The face the cart `stem` of `platform` is drawn on now.
     pub fn face_of(&self, platform: Platform, stem: &str) -> Option<TexId> {
-        let (_, shelf) = self.shelves.iter().find(|(p, _)| *p == platform)?;
-        shelf.find(stem)?.1
+        self.shelves
+            .iter()
+            .find_map(|(_, s)| s.find_of(platform, stem))?
+            .1
     }
 
     /// Every cart, the shelf in view first and on each shelf the carts nearest its picked one

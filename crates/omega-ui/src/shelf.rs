@@ -248,6 +248,15 @@ impl Shelf {
         Some((&self.carts[i], self.faces.get(i).copied()))
     }
 
+    /// The cart `stem` of `platform`, and its face: a shelf may hold several systems' carts.
+    pub fn find_of(&self, platform: Platform, stem: &str) -> Option<(&Cart, Option<TexId>)> {
+        let i = self
+            .carts
+            .iter()
+            .position(|c| c.platform == platform && c.stem == stem)?;
+        Some((&self.carts[i], self.faces.get(i).copied()))
+    }
+
     pub fn left(&mut self) {
         self.step(-1);
     }
