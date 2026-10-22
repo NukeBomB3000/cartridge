@@ -207,6 +207,8 @@ pub fn system_id(platform: Platform) -> u32 {
         Platform::Pce => 31,
         Platform::Nes => 3,
         Platform::Md => 1,
+        Platform::Gg => 21,
+        Platform::Sms => 2,
     }
 }
 
@@ -376,6 +378,11 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
                 out.extend(["us", "wor", "eu", "jp"]);
             }
         },
+        // Sega's 8-bit games came out in Europe most, then America and Japan
+        Platform::Gg | Platform::Sms => {
+            out.extend(EUROPE);
+            out.extend(["wor", "us", "jp", "br"]);
+        }
     }
     once_each(out)
 }

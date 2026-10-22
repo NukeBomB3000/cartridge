@@ -92,6 +92,7 @@ mod resume;
 mod rewind;
 mod rumble;
 mod screen;
+mod sega8;
 mod settings;
 mod sfx;
 mod single;

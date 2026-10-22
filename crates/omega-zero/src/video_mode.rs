@@ -118,7 +118,12 @@ pub fn screen_for(platform: Platform, mode: VideoMode, frame: (u32, u32)) -> Scr
 fn is_console(platform: Platform) -> bool {
     matches!(
         platform,
-        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md
+        Platform::Snes
+            | Platform::Ps1
+            | Platform::Pce
+            | Platform::Nes
+            | Platform::Md
+            | Platform::Sms
     )
 }
 
@@ -150,7 +155,7 @@ pub fn screen_on_frame(
     }
     let actual = source_rect(platform, VideoMode::Actual);
     let (cw, ch) = (c.w as f32, c.h as f32);
-    if matches!(platform, Platform::Gb | Platform::Gbc) {
+    if matches!(platform, Platform::Gb | Platform::Gbc | Platform::Gg) {
         return game_boy_actual(c, platform);
     }
     if cw >= FRAME.0 && ch >= FRAME.1 {
@@ -173,7 +178,8 @@ pub fn screen_on_frame(
         | Platform::Ps1
         | Platform::Pce
         | Platform::Nes
-        | Platform::Md => {
+        | Platform::Md
+        | Platform::Sms => {
             let h = (cw * SRC_H as f32 / SRC_W as f32).round();
             let view = GameView {
                 rect: [0.0, 0.0, cw, h],
@@ -186,7 +192,7 @@ pub fn screen_on_frame(
                 bands: around(c, view.rect),
             }
         }
-        Platform::Gb | Platform::Gbc => {
+        Platform::Gb | Platform::Gbc | Platform::Gg => {
             let whole = [(cw - FRAME.0) / 2.0, (ch - FRAME.1) / 2.0, FRAME.0, FRAME.1];
             Screen {
                 view: sharp(whole, actual),

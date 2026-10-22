@@ -622,7 +622,9 @@ pub fn sockets_for(platform: Platform) -> Sockets {
         | Platform::Ps1
         | Platform::Pce
         | Platform::Nes
-        | Platform::Md => GBA_SOCKETS,
+        | Platform::Md
+        | Platform::Gg
+        | Platform::Sms => GBA_SOCKETS,
     }
 }
 

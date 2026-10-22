@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Game Gear and Master System games, on Genesis Plus GX as the Mega Drive's: `Games/GG` takes
+  `.gg` and `Games/SMS` `.sms`, with Labels, Overlays, Saves and States beside them and labels
+  from ScreenScraper. Each stands on the shelf as its own black cart, the Game Gear's wide with
+  its top corners cut, the Master System's tall with grip ridges. A Game Gear game is laid out as
+  a Game Boy game is, 3x at its actual size over the body, with the handheld looks on SELECT+X,
+  LCD ghosting on SELECT+B and the picture size on L1 R1; a Master System game as a television's
+  console, twice its lines, with scanlines and CRT. 1 and 2 are B and A, X and Y turbo.
+- An overlay can be drawn for one picture size: `Overlays/<system>/640x480-actual.png` or
+  `-aspect.png` comes before `640x480.png`.
+- A Game Boy game at its actual size is its 160x144 window at 3x on the top edge over the body,
+  with the console's wordmark below, as a GBA game stands, rather than the whole GBA frame.
+- Simpletex is jdgleaver's simpletex_lcd, and Transparent zfast_lcd under an unlit LCD after
+  Pixel Transparency; LCD ghosting on mGBA fades each frame into the next.
+
 - Game Boy only games can be drawn in any of mGBA's 48 palettes: SELECT+R2 and SELECT+L2 step
   through them in a game, from Auto, the Game Boy Color's own colouring as before, through
   Grayscale, DMG Green and GB Pocket to the Super Game Boy's. A game opened in a palette takes

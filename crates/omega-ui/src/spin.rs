@@ -3,6 +3,7 @@ use omega_gfx::{out_h, spun_x, Draw, MeshId, MeshVertex, TexId};
 use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
+use crate::models::sega8::{self, Sega8Shell};
 use crate::models::{disc, hucard, snes, snes::SnesShell};
 use crate::silhouette::GbShell;
 
@@ -58,10 +59,11 @@ pub enum CartModel {
     HuCard,
     Nes(NesShell),
     Md(MdShell),
+    Sega8(Sega8Shell),
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 11] = [
+    pub const ALL: [CartModel; 13] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -73,6 +75,8 @@ impl CartModel {
         CartModel::Nes(NesShell::Famicom),
         CartModel::Md(MdShell::MegaDrive),
         CartModel::Md(MdShell::Genesis),
+        CartModel::Sega8(Sega8Shell::GameGear),
+        CartModel::Sega8(Sega8Shell::MasterSystem),
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -89,6 +93,8 @@ impl CartModel {
             CartModel::Nes(NesShell::Famicom) => 8,
             CartModel::Md(MdShell::MegaDrive) => 9,
             CartModel::Md(MdShell::Genesis) => 10,
+            CartModel::Sega8(Sega8Shell::GameGear) => 11,
+            CartModel::Sega8(Sega8Shell::MasterSystem) => 12,
         }
     }
 
@@ -101,6 +107,7 @@ impl CartModel {
             CartModel::HuCard => hucard::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
+            CartModel::Sega8(shell) => sega8::thick(shell),
         }
     }
 }
@@ -232,6 +239,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::HuCard => hucard::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
+        CartModel::Sega8(shell) => sega8::outline(shell),
     }
 }
 

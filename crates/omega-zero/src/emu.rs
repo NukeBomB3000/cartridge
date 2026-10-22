@@ -1587,14 +1587,20 @@ mod tests {
     }
 
     #[test]
-    fn only_the_handhelds_and_the_nes_have_turbo_and_only_the_playstation_has_no_rewind() {
+    fn only_the_handhelds_the_nes_and_the_master_system_have_turbo_and_only_the_playstation_has_no_rewind(
+    ) {
         for platform in Platform::ALL {
             let rules = Rules::of(platform);
             assert_eq!(
                 rules.turbo,
                 matches!(
                     platform,
-                    Platform::Gba | Platform::Gb | Platform::Gbc | Platform::Nes
+                    Platform::Gba
+                        | Platform::Gb
+                        | Platform::Gbc
+                        | Platform::Nes
+                        | Platform::Gg
+                        | Platform::Sms
                 ),
                 "{platform:?}"
             );

@@ -457,9 +457,20 @@ impl Session {
         let palette = crate::core::palette_for(self.app.gb_palette(), platform, &rom, player);
         self.app.set_palette_live(palette.is_some());
         let setup = match platform {
-            Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md => {
-                Setup::Console
-            }
+            Platform::Snes
+            | Platform::Ps1
+            | Platform::Pce
+            | Platform::Nes
+            | Platform::Md
+            | Platform::Sms => Setup::Console,
+            // the Game Gear has no cable or palette here, only its LCD's ghosting
+            Platform::Gg => Setup::Handheld {
+                serial: "auto",
+                colour: false,
+                ghosting: self.app.lcd_ghosting(),
+                link: None,
+                palette: None,
+            },
             Platform::Gba | Platform::Gb | Platform::Gbc => Setup::Handheld {
                 serial,
                 colour: self.app.colour_correction(),

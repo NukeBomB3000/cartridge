@@ -11,10 +11,12 @@ pub enum Platform {
     Pce,
     Nes,
     Md,
+    Gg,
+    Sms,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 8] = [
+    pub const ALL: [Platform; 10] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -23,6 +25,8 @@ impl Platform {
         Platform::Pce,
         Platform::Nes,
         Platform::Md,
+        Platform::Gg,
+        Platform::Sms,
     ];
 
     pub fn name(self) -> &'static str {
@@ -35,6 +39,8 @@ impl Platform {
             Platform::Pce => "PC Engine",
             Platform::Nes => "Nintendo Entertainment System",
             Platform::Md => "Mega Drive",
+            Platform::Gg => "Game Gear",
+            Platform::Sms => "Master System",
         }
     }
 
@@ -48,6 +54,8 @@ impl Platform {
             Platform::Pce => "PCE",
             Platform::Nes => "NES",
             Platform::Md => "MD",
+            Platform::Gg => "GG",
+            Platform::Sms => "SMS",
         }
     }
 
@@ -60,6 +68,8 @@ impl Platform {
             Platform::Pce => &["pce"],
             Platform::Nes => &["nes"],
             Platform::Md => &["md", "gen", "bin"],
+            Platform::Gg => &["gg"],
+            Platform::Sms => &["sms"],
         }
     }
 
@@ -72,20 +82,28 @@ impl Platform {
             Platform::Pce => (256, 240),
             Platform::Nes => (256, 224),
             Platform::Md => (320, 224),
+            Platform::Gg => (160, 144),
+            Platform::Sms => (256, 192),
         }
     }
 
     /// Whether the frontend keeps L1/R1 while a game of this system plays, for its picture
-    /// size: only the Game Boys, whose games have no shoulder buttons.
+    /// size: only the Game Boys and the Game Gear, whose games have no shoulder buttons.
     pub fn owns_shoulders(self) -> bool {
-        matches!(self, Platform::Gb | Platform::Gbc)
+        matches!(self, Platform::Gb | Platform::Gbc | Platform::Gg)
     }
 
-    /// Whether held X/Y are turbo A/B: on the handhelds and the NES, whose games have no X or Y.
+    /// Whether held X/Y are turbo A/B: on the handhelds, the NES and the Master System, whose
+    /// games have no X or Y.
     pub fn turbo_xy(self) -> bool {
         matches!(
             self,
-            Platform::Gba | Platform::Gb | Platform::Gbc | Platform::Nes
+            Platform::Gba
+                | Platform::Gb
+                | Platform::Gbc
+                | Platform::Nes
+                | Platform::Gg
+                | Platform::Sms
         )
     }
 
@@ -95,9 +113,12 @@ impl Platform {
     }
 
     /// Whether the handheld LCD's ghosting applies: the cores that run the handhelds' games,
-    /// mGBA and gpSP, can blend each frame with the last.
+    /// mGBA and gpSP, can blend each frame with the last, as Genesis Plus GX can a Game Gear's.
     pub fn lcd_ghosting(self) -> bool {
-        matches!(self, Platform::Gba | Platform::Gb | Platform::Gbc)
+        matches!(
+            self,
+            Platform::Gba | Platform::Gb | Platform::Gbc | Platform::Gg
+        )
     }
 
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states

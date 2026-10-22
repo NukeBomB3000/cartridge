@@ -6,6 +6,7 @@ use omega_store::{Cart, Outline, Platform};
 use crate::label_cut::label_art;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
+use crate::models::sega8::{self, Sega8Shell};
 use crate::models::{disc, hucard, snes, snes::SnesShell};
 use crate::shell::{shell_for, Finish, Shell};
 use crate::silhouette::{
@@ -98,7 +99,9 @@ pub fn gb_shell_of(cart: &Cart) -> Option<GbShell> {
         | Platform::Ps1
         | Platform::Pce
         | Platform::Nes
-        | Platform::Md => None,
+        | Platform::Md
+        | Platform::Gg
+        | Platform::Sms => None,
         Platform::Gb | Platform::Gbc => Some(match cart.shell.map(|c| c.outline) {
             Some(Outline::Notched) => GbShell::Notched,
             Some(Outline::Rounded) => GbShell::Rounded,
@@ -122,6 +125,8 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(nes::shell_of(cart)),
         Platform::Md => CartModel::Md(md::shell_of(cart)),
+        Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
+        Platform::Sms => CartModel::Sega8(Sega8Shell::MasterSystem),
     }
 }
 
@@ -144,6 +149,7 @@ pub(crate) fn spec(model: CartModel) -> Spec {
         CartModel::HuCard => hucard::spec(),
         CartModel::Nes(shell) => nes::spec(shell),
         CartModel::Md(shell) => md::spec(shell),
+        CartModel::Sega8(shell) => sega8::spec(shell),
         CartModel::Gba => Spec {
             w: CART_W,
             h: CART_H,
@@ -191,6 +197,8 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
     match platform {
         Platform::Gba => (SEATED_W, SEATED_H),
         Platform::Md => md::face_box(MdShell::MegaDrive),
+        Platform::Gg => sega8::face_box(Sega8Shell::GameGear),
+        Platform::Sms => sega8::face_box(Sega8Shell::MasterSystem),
         Platform::Nes => nes::face_box(NesShell::Nes),
         Platform::Pce => (hucard::W, hucard::H),
         Platform::Gb | Platform::Gbc => (SEATED_W, GB_SEATED_H),
@@ -210,6 +218,8 @@ pub fn cart_box(platform: Platform) -> (u32, u32) {
     model_box(match platform {
         Platform::Gba => CartModel::Gba,
         Platform::Md => CartModel::Md(MdShell::MegaDrive),
+        Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
+        Platform::Sms => CartModel::Sega8(Sega8Shell::MasterSystem),
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(NesShell::Nes),
         Platform::Gb | Platform::Gbc => CartModel::Gb(GbShell::Notched),
@@ -252,6 +262,8 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
         .filter(|model| match model {
             CartModel::Gba => platform == Platform::Gba,
             CartModel::Md(_) => platform == Platform::Md,
+            CartModel::Sega8(Sega8Shell::GameGear) => platform == Platform::Gg,
+            CartModel::Sega8(Sega8Shell::MasterSystem) => platform == Platform::Sms,
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),

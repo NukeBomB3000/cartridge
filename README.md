@@ -1,8 +1,8 @@
 <h1 align="center"><img src="assets/logo/omega-zero-logo@2x.png" width="420" alt="omega-zero"></h1>
 
 <p align="center">A Game Boy-centric frontend for Anbernic H700 handhelds running
-<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>. It plays GBA, GBC and GB games, and NES,
-SNES, Mega Drive, PC Engine and PlayStation games too, on a shelf of cartridges and discs that go down into the handheld when
+<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>. It plays GBA, GBC, GB and Game Gear games, and NES,
+SNES, Master System, Mega Drive, PC Engine and PlayStation games too, on a shelf of cartridges and discs that go down into the handheld when
 you play them.</p>
 
 <p align="center">
@@ -40,6 +40,7 @@ is the most useful thing you can send.
   label scans: Game Boy carts in their own plastics, NES carts as the grey Game Pak or a Famicom
   cart in its game's own colour, SNES carts in the American shape for a game
   from the USA and the Super Famicom's for the rest, Mega Drive carts or the American Genesis's,
+  black Game Gear and Master System carts,
   PC Engine HuCards, pale grey or an American
   black TurboChip, and PlayStation discs, a game on several
   discs standing as a stack of them. The one you are on floats and sways; A pulls it down out of
@@ -48,9 +49,9 @@ is the most useful thing you can send.
   fades into the shelf.
 - Eight cores: mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
   mGBA for the Game Boys; FCEUmm for the NES; Genesis Plus GX for the Mega Drive, A, B and C on
-  Y, B and A; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, with a BIOS of its own built in. GBA
+  Y, B and A, and for the Game Gear and the Master System, 1 and 2 on B and A; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, with a BIOS of its own built in. GBA
   fills a 640x480 screen and the PlayStation fills it at 4:3; the NES, SNES, Mega Drive and PC Engine
-  are drawn at twice their size, and Game Boy stays at 3x. On every television's console SELECT+Y
+  are drawn at twice their size, and Game Boy and Game Gear stay at 3x. On every television's console SELECT+Y
   goes round integer, 4:3 and stretched.
 - Screen looks on SELECT+X, kept per system: LCD, grid and dot for the Game Boys and the GBA,
   ported from slot's, and scanlines and CRT for the television's consoles. The picture size is
@@ -112,8 +113,9 @@ is the most useful thing you can send.
 2. Copy the contents of the [latest release](https://github.com/oauramos/omega-zero/releases/latest)
    to the root of that card.
 3. Put your games in `Games/GBA`, `Games/GB`, `Games/GBC`, `Games/NES`, `Games/SNES`, `Games/MD`,
-   `Games/PCE` and `Games/PS1`. An NES game is a `.nes`, a Mega Drive game a `.md`, `.gen` or
-   `.bin`, a PC Engine game a `.pce`. A
+   `Games/GG`, `Games/SMS`, `Games/PCE` and `Games/PS1`. An NES game is a `.nes`, a Mega Drive
+   game a `.md`, `.gen` or `.bin`, a Game Gear game a `.gg`, a Master System game a `.sms`, a PC
+   Engine game a `.pce`. A
    PlayStation game is a `.cue` with its `.bin`, a `.chd`, a `.pbp` or an `.m3u`; a real
    PlayStation BIOS, such as `scph5501.bin`, is used from `BIOS/` when it is there.
 4. Boot. On the shelf, START opens Settings and a tap of SELECT shows every button.
@@ -139,7 +141,7 @@ omega-zero is made by **Otávio ([@oauramos](https://github.com/oauramos))**.
   snes_faust (GPL-2.0), for the SNES;
   [Beetle PCE Fast](https://github.com/libretro/beetle-pce-fast-libretro), Mednafen's pce_fast
   (GPL-2.0), for the PC Engine; [Genesis Plus GX](https://github.com/libretro/Genesis-Plus-GX)
-  (free for non-commercial use only) for the Mega Drive; and
+  (free for non-commercial use only) for the Mega Drive, Game Gear and Master System; and
   [PCSX ReARMed](https://github.com/libretro/pcsx_rearmed) (GPL-2.0) for the PlayStation. Their
   licences and patches, and the source of all but mGBA, ship in `System/licenses/`.
 - The card repair checks exFAT cards with fsck.exfat from
@@ -155,7 +157,7 @@ maintainer. The site and these pictures are drawn with its
 UI kit, [`assets/ui`](assets/ui).
 
 Game Boy, Game Boy Color, Game Boy Advance, Nintendo Entertainment System, Famicom, Super Nintendo
-Entertainment System and Super Famicom are trademarks of Nintendo. Mega Drive and Genesis are trademarks of Sega. PC Engine
+Entertainment System and Super Famicom are trademarks of Nintendo. Mega Drive, Genesis, Game Gear and Master System are trademarks of Sega. PC Engine
 and TurboGrafx-16 are trademarks of Konami. PlayStation is a
 trademark of Sony Interactive Entertainment. Anbernic
 is a trademark of its owner. This project is not affiliated with any of them.

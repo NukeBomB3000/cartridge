@@ -29,10 +29,13 @@ pub fn looks_for(platform: Platform) -> &'static [Look] {
             Look::Transparent,
             Look::Dmg,
         ],
-        Platform::Gba | Platform::Gbc => &HANDHELD,
-        Platform::Snes | Platform::Ps1 | Platform::Pce | Platform::Nes | Platform::Md => {
-            &[Look::Off, Look::Scanlines, Look::Crt]
-        }
+        Platform::Gba | Platform::Gbc | Platform::Gg => &HANDHELD,
+        Platform::Snes
+        | Platform::Ps1
+        | Platform::Pce
+        | Platform::Nes
+        | Platform::Md
+        | Platform::Sms => &[Look::Off, Look::Scanlines, Look::Crt],
     }
 }
 

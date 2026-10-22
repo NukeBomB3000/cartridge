@@ -39,6 +39,7 @@ mod render_row_edges;
 mod render_shelf_wrap;
 mod render_snes_cart;
 mod saves;
+mod sega8_cart;
 mod shelf;
 mod shell;
 mod spin;

@@ -114,7 +114,7 @@ impl Core {
             Platform::Ps1 => &[Core::PcsxRearmed],
             Platform::Pce => &[Core::PceFast],
             Platform::Nes => &[Core::Fceumm],
-            Platform::Md => &[Core::GenesisPlusGx],
+            Platform::Md | Platform::Gg | Platform::Sms => &[Core::GenesisPlusGx],
         }
     }
 

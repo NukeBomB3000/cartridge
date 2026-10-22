@@ -213,7 +213,8 @@ pub fn colour_option(which: Core, on: bool) -> Option<(&'static str, &'static st
 }
 
 /// The option that blends each frame with the last, as the handhelds' LCDs ghosted, spelt the
-/// way each of their cores declares it: mGBA fades each frame into the next as an LCD's response did, gpSP its frame mixing.
+/// way each of their cores declares it: mGBA fades each frame into the next as an LCD's response
+/// did, gpSP its frame mixing, Genesis Plus GX its Game Gear's LCD filter.
 pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static str)> {
     match which {
         Core::Mgba => Some((
@@ -221,12 +222,12 @@ pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static 
             if on { "lcd_ghosting" } else { "OFF" },
         )),
         Core::Gpsp => Some(("gpsp_frame_mixing", if on { "enabled" } else { "disabled" })),
-        Core::Snes9x
-        | Core::Supafaust
-        | Core::PcsxRearmed
-        | Core::PceFast
-        | Core::Fceumm
-        | Core::GenesisPlusGx => None,
+        // its filter is for the Game Gear's LCD, and only ever on for a Game Gear game
+        Core::GenesisPlusGx => Some((
+            "genesis_plus_gx_lcd_filter",
+            if on { "enabled" } else { "disabled" },
+        )),
+        Core::Snes9x | Core::Supafaust | Core::PcsxRearmed | Core::PceFast | Core::Fceumm => None,
     }
 }
 
@@ -397,6 +398,10 @@ mod tests {
         assert_eq!(
             ghosting_option(Core::Gpsp, false),
             Some(("gpsp_frame_mixing", "disabled"))
+        );
+        assert_eq!(
+            ghosting_option(Core::GenesisPlusGx, true),
+            Some(("genesis_plus_gx_lcd_filter", "enabled"))
         );
         for which in [Core::Snes9x, Core::Supafaust, Core::PcsxRearmed] {
             assert_eq!(ghosting_option(which, true), None, "{which:?}");

@@ -63,6 +63,8 @@ pub const SNES_SHELL: Shell = shell([0x8b, 0x8a, 0x91], Finish::Solid);
 /// The Mega Drive cart of Japan and Europe, and the Genesis cart of America, both black.
 pub const MEGA_DRIVE_SHELL: Shell = shell([0x22, 0x22, 0x25], Finish::Solid);
 pub const GENESIS_SHELL: Shell = shell([0x2a, 0x2a, 0x2d], Finish::Solid);
+pub const GAME_GEAR_SHELL: Shell = shell([0x26, 0x26, 0x29], Finish::Solid);
+pub const MASTER_SYSTEM_SHELL: Shell = shell([0x1e, 0x1e, 0x21], Finish::Solid);
 
 /// The NES Game Pak, in its grey.
 pub const NES_SHELL: Shell = shell([0x8f, 0x8e, 0x93], Finish::Solid);
@@ -132,6 +134,8 @@ pub fn shell_for(cart: &Cart) -> Shell {
             MdShell::MegaDrive => MEGA_DRIVE_SHELL,
             MdShell::Genesis => GENESIS_SHELL,
         },
+        Platform::Gg => GAME_GEAR_SHELL,
+        Platform::Sms => MASTER_SYSTEM_SHELL,
         Platform::Nes => match crate::models::nes::shell_of(cart) {
             NesShell::Nes => NES_SHELL,
             NesShell::Famicom => famicom_shell_for(&cart.stem),

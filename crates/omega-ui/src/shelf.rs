@@ -23,6 +23,7 @@ pub fn shelf_scale(platform: Platform) -> f32 {
     match platform {
         Platform::Gba => 1.0,
         Platform::Md => md::SHELF_SCALE,
+        Platform::Gg | Platform::Sms => crate::models::sega8::SHELF_SCALE,
         Platform::Nes => nes::SHELF_SCALE,
         Platform::Pce => hucard::SHELF_SCALE,
         Platform::Gb | Platform::Gbc => GB_SHELF_SCALE,
@@ -41,6 +42,7 @@ pub fn model_scale(model: CartModel) -> f32 {
         CartModel::HuCard => hucard::SHELF_SCALE,
         CartModel::Nes(_) => nes::SHELF_SCALE,
         CartModel::Md(_) => md::SHELF_SCALE,
+        CartModel::Sega8(_) => crate::models::sega8::SHELF_SCALE,
     }
 }
 
