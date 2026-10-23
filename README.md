@@ -23,10 +23,10 @@ for its panel.
 |---|---|---|
 | RG35XX SP | 640x480 | Main target, in daily use |
 | RG SP | 720x480 | Supported, not yet retested on hardware |
-| RG34XX SP, RG34XX | 720x480 | Untested |
+| RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
 | RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
 | RG40XX H, RG40XX V | 640x480 | Untested |
-| RG CubeXX | 720x720 | Experimental |
+| RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
 | RG28XX | 480x640, turned | Experimental |
 
 Own an untested one? A [device report](https://github.com/oauramos/omega-zero/wiki/Device-Reports)

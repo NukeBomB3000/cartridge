@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- RG CubeXX: both analog sticks steer as the d-pad, on the shelf, in the menus and in games,
+  pressing past half their reach and letting go under a quarter so a stick held near the edge
+  does not chatter. Real analog values for the cores are still to come.
+- RG CubeXX: on its square screen the shelf and the open cart stand in the middle between the
+  bars instead of down by the footer. 640x480 and 720x480 are unchanged.
+- Overlays for 720x720 can be drawn per picture size as for the other panels:
+  `Overlays/GB/720x720-actual.png` and so on. At Aspect a Game Boy game fills the square's
+  width, so it has no room for one.
 - Five Games: 5 GAMES in Settings picks up to five games right on the shelf, across every
   system (A marks a cart, START keeps them, B gives up), and from then on the handheld shows
   only those, on one shelf of their own, across restarts. The pill counts the games picked; a
