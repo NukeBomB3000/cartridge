@@ -14,6 +14,7 @@ mod contrast;
 mod disc;
 mod dive;
 mod font;
+mod guide;
 mod hucard;
 mod hud;
 mod keyboard;

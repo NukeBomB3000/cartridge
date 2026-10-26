@@ -26,6 +26,7 @@ mod controls;
 mod core_options;
 mod core_picker;
 mod disc_screen;
+mod guide_screen;
 mod discs;
 mod dist;
 mod drc;

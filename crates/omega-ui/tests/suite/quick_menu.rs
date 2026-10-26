@@ -528,7 +528,7 @@ fn a_hidden_row_is_stepped_over_both_ways() {
 fn the_values_read_as_flow_prints_them() {
     assert_eq!(
         QuickValue::ALL.map(QuickValue::text),
-        ["2X", "3X", "4X", "6X", "ON", "OFF"]
+        ["2X", "3X", "4X", "6X", "ON", "OFF", "LOW", "MED", "HIGH"]
     );
     assert_eq!(QuickValue::flag(true), QuickValue::On);
     assert_eq!(QuickValue::flag(false), QuickValue::Off);

@@ -221,9 +221,10 @@ impl Session {
             eprintln!("omega-zero: {action:?} in {:?}", self.app.phase());
         }
         match action {
-            Action::RewindStart => self.rewinding = true,
+            // over the guide L2 and R2 size its text instead
+            Action::RewindStart if !self.app.guide_open() => self.rewinding = true,
             Action::RewindStop => self.rewinding = false,
-            Action::FfStart => self.fast = true,
+            Action::FfStart if !self.app.guide_open() => self.fast = true,
             Action::FfStop => self.fast = false,
             _ => {}
         }

@@ -13,7 +13,7 @@ use omega_ui::{
 use omega_ui::{overlay_clear, overlay_face, overlay_path};
 
 use crate::face_builder::FaceBuilder;
-use crate::frontend::faces::upload_nearest;
+use crate::frontend::faces::{upload_nearest, upload_rgba};
 use crate::label_cutter::LabelCutter;
 use crate::list_view::ListView;
 use crate::opening::Facts;
@@ -88,6 +88,7 @@ pub struct Frontend {
     link: LinkTexes,
     /// The DISC screen's panel and bar.
     disc: DiscTexes,
+    guide_tex: Option<TexId>,
     core_asked: Option<String>,
     core_board_tex: Option<TexId>,
     core_lid_tex: Option<TexId>,
@@ -181,6 +182,7 @@ impl Frontend {
             cutter: LabelCutter::spawn(),
             link: LinkTexes::default(),
             disc: DiscTexes::default(),
+            guide_tex: None,
             core_asked: None,
             core_board_tex: None,
             core_lid_tex: None,
@@ -384,6 +386,10 @@ impl Frontend {
         );
         sync_link(self.session.app_mut(), compositor, &mut self.link);
         sync_disc(self.session.app_mut(), compositor, &mut self.disc);
+        if let Some(rgba) = self.session.app_mut().take_guide_page() {
+            let tex = upload_rgba(compositor, &mut self.guide_tex, out_w(), out_h(), &rgba);
+            self.session.app_mut().set_guide_tex(tex);
+        }
         sync_switcher(
             self.session.app_mut(),
             compositor,

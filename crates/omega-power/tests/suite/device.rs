@@ -232,12 +232,23 @@ fn without_force_feedback_the_pmic_motor_pin_rumbles() {
     assert_eq!(motor_pin(d.path()), Some(pin.clone()));
     let mut p = platform(&d);
     assert!(p.report().contains("moto"), "{}", p.report());
+    // the motor is driven from its own thread, so the pin is read until it comes round
     p.set_rumble(u16::MAX);
-    assert_eq!(fs::read_to_string(&pin).unwrap(), "1");
-    p.set_rumble(40_000);
-    assert_eq!(fs::read_to_string(&pin).unwrap(), "1");
+    assert_eq!(pin_comes_to(&pin, "1"), "1");
     p.set_rumble(0);
-    assert_eq!(fs::read_to_string(&pin).unwrap(), "0");
+    assert_eq!(pin_comes_to(&pin, "0"), "0");
+}
+
+/// The pin's value once it reads `want`, or what it reads after half a second.
+fn pin_comes_to(pin: &std::path::Path, want: &str) -> String {
+    let end = std::time::Instant::now() + std::time::Duration::from_millis(500);
+    loop {
+        let now = fs::read_to_string(pin).unwrap().trim().to_string();
+        if now == want || std::time::Instant::now() > end {
+            return now;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(2));
+    }
 }
 
 #[test]
@@ -246,8 +257,9 @@ fn a_motor_left_running_is_stopped_when_omega_zero_lets_go_of_it() {
     let pin = with_motor_pin(&d);
     let mut p = platform(&d);
     p.set_rumble(u16::MAX);
+    assert_eq!(pin_comes_to(&pin, "1"), "1");
     drop(p);
-    assert_eq!(fs::read_to_string(&pin).unwrap(), "0");
+    assert_eq!(pin_comes_to(&pin, "0"), "0");
 }
 
 #[test]

@@ -48,6 +48,8 @@ pub enum Toast {
     /// Picking Five Games' games: a sixth asked for, or START with none.
     PickAtMost,
     PickAtLeast,
+    /// A short MENU press in a game with no guide in GUIDES for it.
+    NoGuide,
 }
 
 /// What the toast says once disc `n` is in, for every disc a PlayStation game can have.
@@ -65,7 +67,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 26] = [
+    pub const ALL: [Toast; 27] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -92,6 +94,7 @@ impl Toast {
         Toast::Palette(omega_store::GbColors::Auto, false),
         Toast::PickAtMost,
         Toast::PickAtLeast,
+        Toast::NoGuide,
     ];
 
     /// Its place in `ALL`: every disc's toast is the one place.
@@ -123,6 +126,7 @@ impl Toast {
             Toast::Palette(..) => 23,
             Toast::PickAtMost => 24,
             Toast::PickAtLeast => 25,
+            Toast::NoGuide => 26,
         }
     }
 
@@ -151,6 +155,7 @@ impl Toast {
             Toast::Palette(_, true) => "PALETTE",
             Toast::Palette(_, false) => "PALETTE NEXT START",
             Toast::PickAtMost | Toast::PickAtLeast => "5 GAMES",
+            Toast::NoGuide => "GUIDE",
         }
     }
 
@@ -192,6 +197,7 @@ impl Toast {
             Toast::CardRepairLowBattery => "Charge to 20% first",
             Toast::PickAtMost => "5 games at most",
             Toast::PickAtLeast => "Pick 1 game at least",
+            Toast::NoGuide => "No guide found",
             Toast::Palette(colors, _) => colors.label(),
             Toast::Disc(n) => DISC_IN
                 .get(usize::from(n).wrapping_sub(1))

@@ -58,6 +58,8 @@ is the most useful thing you can send.
   kept per system too.
 - A PlayStation game on several discs is one game: DISC, on SELECT+MENU in a game, puts another
   disc in, and the game resumes with the disc that was in the drive.
+- Game guides on a short MENU press in a game: `GUIDES/<system>/<game>.txt` or `.html`, read
+  over the paused game with paging, scrolling and eight text sizes, reopened where it was left.
 - Resume on boot, save states with a switcher, rewind (not on the PlayStation), fast-forward,
   and turbo buttons on the Game Boys and the NES.
 - Link play between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,

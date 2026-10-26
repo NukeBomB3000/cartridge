@@ -259,7 +259,8 @@ impl Gestures {
             }
             Btn::L2 if !self.keys.game_l2_r2 => match self.keys.rewind {
                 true => self.rewind_start(),
-                false => Vec::new(),
+                // nothing rewinds, but a screen over the game may still want L2
+                false => vec![Action::GbaDown(Btn::L2)],
             },
             Btn::R2 if !self.keys.game_l2_r2 => self.ff_down(now),
             _ => {
@@ -290,6 +291,7 @@ impl Gestures {
                 self.chord_held &= !PALETTE_CHORD;
                 Vec::new()
             }
+            Btn::L2 if !self.keys.game_l2_r2 && !self.keys.rewind => vec![Action::GbaUp(Btn::L2)],
             Btn::L2 if !self.keys.game_l2_r2 => self.rewind_stop(),
             Btn::R2 if !self.keys.game_l2_r2 => self.ff_up(now),
             _ => {

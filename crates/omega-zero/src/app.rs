@@ -325,6 +325,12 @@ pub struct App {
     /// The DISC screen's panel, and its bar.
     pub(crate) disc_panel: Option<Lone>,
     pub(crate) disc_bar: Option<DiscBar>,
+    /// The guide a short MENU press opens over a game, its page as uploaded, where the player
+    /// was in each guide, and the guide read last for each game.
+    pub(crate) guide: Option<crate::guide_screen::GuideScreen>,
+    pub(crate) guide_tex: Option<TexId>,
+    pub(crate) guide_marks: Option<crate::guide_screen::GuideMarks>,
+    pub(crate) guide_last: HashMap<String, String>,
     pub(crate) link_sprites: Option<LinkSprites>,
     pub(crate) link_hardware: LinkKind,
     pub(crate) last_role: LinkRow,
@@ -512,6 +518,10 @@ impl App {
             disc_swap: None,
             disc_panel: None,
             disc_bar: None,
+            guide: None,
+            guide_tex: None,
+            guide_marks: None,
+            guide_last: HashMap::new(),
             link_sprites: None,
             link_hardware: LinkKind::Cable,
             last_role: LinkRow::Host,
@@ -1240,7 +1250,7 @@ impl App {
 
     /// Whether a screen over the game holds it paused: the link screen or the DISC screen.
     pub fn game_menu_open(&self) -> bool {
-        self.game_menu.is_some() || self.disc_screen.is_some()
+        self.game_menu.is_some() || self.disc_screen.is_some() || self.guide.is_some()
     }
 
     pub fn game_menu(&self) -> Option<GameMenu> {
@@ -1449,6 +1459,9 @@ impl App {
         if self.disc_screen.is_some() {
             return self.disc_input(action);
         }
+        if self.guide.is_some() {
+            return self.guide_input(action);
+        }
         let now = self.now();
         match self.phase {
             Phase::Shelf if self.picking.is_some() => match action {
@@ -1496,6 +1509,7 @@ impl App {
                 }
                 Action::Eject => self.eject(),
                 Action::GameMenu => self.game_menu_shortcut(),
+                Action::QuickMenu => self.open_guide(),
                 Action::Polaroids => self.open_polaroids(),
                 Action::SaveState => self.save_state(),
                 Action::LoadState => self.load_newest(),
@@ -1922,6 +1936,7 @@ impl App {
     pub fn update(&mut self, dt: f32) {
         self.clock += dt as f64 * 1000.0;
         self.tick_shelf_buzz();
+        self.step_guide();
         self.step_boot_fade(dt);
         self.step_opening(dt);
         self.step_start_notice(dt);
@@ -2278,6 +2293,7 @@ impl App {
         if let Some(screen) = &self.disc_screen {
             self.draw_disc_screen(screen, out);
         }
+        self.draw_guide(out);
         self.hud.draw_at(self.now(), self.top_bar_reach(), out);
         self.draw_opening(out);
         self.draw_start_notice(out);
@@ -2696,7 +2712,7 @@ impl App {
         }
     }
 
-    fn eject(&mut self) {
+    pub(crate) fn eject(&mut self) {
         if self.single_cart() {
             return self.refuse();
         }
@@ -3316,7 +3332,7 @@ impl App {
         self.ring().and_then(|r| r.list().ok()).unwrap_or_default()
     }
 
-    fn open_polaroids(&mut self) {
+    pub(crate) fn open_polaroids(&mut self) {
         if self.link_active() {
             return self.refuse();
         }

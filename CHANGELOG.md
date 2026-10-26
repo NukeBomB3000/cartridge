@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Game guides: a short MENU press in a game opens its walkthrough over the paused game, from
+  `GUIDES/<system>/<game>.txt` (or `.html`/`.htm`), matched by name with brackets and case left
+  out; several guides go in a folder named as the game, X steps through them. L1/R1 or
+  Left/Right turn a page, Up/Down scroll and keep scrolling while held, L2/R2 make the text
+  smaller or larger (8 sizes), B or MENU close it. A double MENU press still opens the save
+  states. Hard-wrapped TXT prose is joined back into paragraphs (a word split by a hyphen made
+  whole), tables and ASCII art keep their columns in a fixed-width face shrunk to fit across,
+  decorated and underlined lines become headings; HTML shows its headings, paragraphs, lists,
+  tables and `<pre>` blocks and drops scripts and styles. The place in each guide and the size
+  are kept in `Config/guides.txt` and survive restarts and size changes. A game without a guide
+  says so with a toast. Text is set in DejaVu Sans and DejaVu Sans Mono.
 - Rumble works again: the ANBERNIC-keys driver drops the motor's effect when another handle on
   its node closes, so it is armed again at the start of each buzz. Each buzz runs at least
   100 ms, so a game's taps are felt, and at most 150 ms.

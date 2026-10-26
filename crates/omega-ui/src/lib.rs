@@ -9,6 +9,7 @@ mod clock;
 mod dive;
 mod draw;
 mod footer;
+pub mod guide;
 mod hud;
 mod keyboard;
 pub mod kit;
