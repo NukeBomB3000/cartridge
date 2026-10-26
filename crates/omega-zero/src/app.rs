@@ -57,9 +57,10 @@ pub const SEATED_AT: f32 = INSERT_S - INSERT_HOLD_S;
 
 pub const EJECT_S: f32 = SEATED_AT;
 
-/// How long the launcher's buzzes run: a tick as the shelf moves on, a thump as a cart seats.
+/// How long the launcher's buzzes run: a tick as the shelf moves on, a thump as a cart seats,
+/// comes out, or the handheld powers off.
 pub const SHELF_BUZZ_MS: Millis = 40;
-pub const SEAT_BUZZ_MS: Millis = 120;
+pub const THUMP_MS: Millis = 250;
 
 const EJECT_HOLD_S: f32 = 0.2;
 
@@ -1984,7 +1985,7 @@ impl App {
                 let was = *t;
                 *t += dt;
                 if !*resumed && was < SEATED_AT && *t >= SEATED_AT {
-                    self.buzz = Some(SEAT_BUZZ_MS);
+                    self.buzz = Some(THUMP_MS);
                 }
                 let at = SEATED_AT - Sfx::Insert.lead();
                 touched = !*resumed && was < at && *t >= at;
@@ -2002,6 +2003,9 @@ impl App {
             }
             _ => None,
         };
+        if touched && matches!(self.phase, Phase::Ejecting { .. }) {
+            self.buzz = Some(THUMP_MS);
+        }
         if touched {
             self.sfx = Some(match self.phase {
                 Phase::Ejecting { .. } => Sfx::Eject,
@@ -3171,6 +3175,7 @@ impl App {
         }
         self.close_game_menu();
         self.powering_off = true;
+        self.buzz = Some(THUMP_MS);
         self.act_at = self.now() + SHUTDOWN_SHOW_MS;
         self.set_led(LedState::Off);
         self.show_going(PowerChoice::PowerOff);

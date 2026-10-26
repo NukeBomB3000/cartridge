@@ -141,6 +141,11 @@ fn the_power_menu_takes_the_motor_down() {
     }
     assert!(s.app().powering_off(), "the hold did not power off");
     step(&mut s, &mut now);
+    assert_eq!(motor.last(), u16::MAX, "powering off did not thump");
+    let going = now;
+    while now < going + omega_zero::app::THUMP_MS + FRAME_MS {
+        step(&mut s, &mut now);
+    }
     assert_eq!(motor.last(), 0, "the cart kept buzzing as it went down");
 }
 
@@ -239,6 +244,34 @@ fn a_cart_seating_thumps_the_motor() {
         std::thread::sleep(Duration::from_millis(1));
     }
     assert!(felt, "the cart seated without a thump");
+}
+
+#[test]
+fn taking_a_cart_out_thumps_the_motor() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    play(&mut s, &mut now);
+    let seated = now;
+    while now < seated + omega_zero::app::THUMP_MS + FRAME_MS {
+        step(&mut s, &mut now);
+    }
+    assert_eq!(motor.last(), 0, "the seating thump ran on into the game");
+    let pressed = now;
+    event(&mut s, RawEvent::Down(Btn::Menu), &mut now);
+    while now < pressed + MENU_HOLD_MS + FRAME_MS {
+        step(&mut s, &mut now);
+    }
+    event(&mut s, RawEvent::Up(Btn::Menu), &mut now);
+    let mut felt = false;
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !matches!(s.app().phase(), Phase::Shelf) {
+        assert!(Instant::now() < deadline, "the cart never came out");
+        step(&mut s, &mut now);
+        felt |= motor.last() == u16::MAX;
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    assert!(felt, "the cart came out without a thump");
 }
 
 #[test]
