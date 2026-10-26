@@ -19,6 +19,10 @@ use crate::prefetch::Prefetch;
 /// past the first frame, where a core that cannot take its options gives up.
 const SETTLED_FRAMES: u64 = 120;
 
+/// The shortest a buzz runs, and the longest, in milliseconds.
+pub const RUMBLE_MIN_MS: Millis = 100;
+pub const RUMBLE_MAX_MS: Millis = 150;
+
 pub struct Session {
     root: PathBuf,
     app: App,
@@ -29,6 +33,8 @@ pub struct Session {
     rewinding: bool,
     fast: bool,
     motor: u16,
+    /// When the buzz running now began, and how strong the game asks for it.
+    pulse: Option<(Millis, u16)>,
     reloading: bool,
     driven: bool,
     /// The system and stem of the game the core was last opened for.
@@ -65,6 +71,7 @@ impl Session {
             rewinding: false,
             fast: false,
             motor: 0,
+            pulse: None,
             reloading: false,
             driven: false,
             running: None,
@@ -317,10 +324,41 @@ impl Session {
         self.prefetch.reading()
     }
 
+    /// Runs the motor as the game asks, each buzz for at least `RUMBLE_MIN_MS`, so a game's
+    /// frame-long taps are felt, and at most `RUMBLE_MAX_MS`, so a GameCube-length pulse does
+    /// not drone on.
     fn sync_rumble(&mut self) {
-        let want = match &self.emu {
-            Some(emu) if self.playing() && self.app.rumble_enabled() => emu.rumble().strength(),
-            _ => 0,
+        let asked = match &self.emu {
+            Some(emu) if self.playing() && self.app.rumble_enabled() => {
+                match emu.rumble().strength() {
+                    0 => 0,
+                    _ => self.app.rumble_strength(),
+                }
+            }
+            _ => {
+                self.pulse = None;
+                return self.rumble(0);
+            }
+        };
+        let now = self.app.now();
+        let want = match (asked, self.pulse) {
+            (0, Some((at, strength))) if now.saturating_sub(at) < RUMBLE_MIN_MS => strength,
+            (0, _) => {
+                self.pulse = None;
+                0
+            }
+            (asked, Some((at, _))) => {
+                self.pulse = Some((at, asked));
+                if now.saturating_sub(at) < RUMBLE_MAX_MS {
+                    asked
+                } else {
+                    0
+                }
+            }
+            (asked, None) => {
+                self.pulse = Some((now, asked));
+                asked
+            }
         };
         self.rumble(want);
     }

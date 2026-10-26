@@ -179,7 +179,7 @@ fn fast_forward_steps_through_its_speeds_and_saves_each_one() {
 }
 
 #[test]
-fn rumble_and_fast_forward_sound_flip_on_either_arrow_and_save() {
+fn fast_forward_sound_flips_and_rumble_steps_through_its_strengths_and_both_save() {
     let (d, mut a, _) = on_carousel();
     let card = |d: &TempDir| {
         let s = read_app_state(d.path());
@@ -197,11 +197,18 @@ fn rumble_and_fast_forward_sound_flip_on_either_arrow_and_save() {
     press(&mut a, Btn::Down);
     press(&mut a, Btn::Down);
     press(&mut a, Btn::Down);
+    assert_eq!(a.settings_value(SettingsRow::Rumble), Some(QuickValue::High));
     press(&mut a, Btn::Right);
+    assert_eq!(card(&d), (false, true), "HIGH went past the top");
+    for want in [QuickValue::Med, QuickValue::Low, QuickValue::Off] {
+        press(&mut a, Btn::Left);
+        assert_eq!(a.settings_value(SettingsRow::Rumble), Some(want));
+    }
     assert_eq!(card(&d), (false, false));
     assert!(!a.rumble_enabled());
-    assert_eq!(a.settings_value(SettingsRow::Rumble), Some(QuickValue::Off));
-    press(&mut a, Btn::Left);
+    press(&mut a, Btn::Right);
+    assert_eq!(a.settings_value(SettingsRow::Rumble), Some(QuickValue::Low));
+    assert_eq!(read_app_state(d.path()).rumble_level, 1);
     assert_eq!(card(&d), (false, true));
 }
 
@@ -552,7 +559,7 @@ fn the_rows_say_what_is_set_in_flows_capitals() {
             text("ON"),
             text("OFF"),
             text("OFF"),
-            text("ON"),
+            text("HIGH"),
             None,
             clock_text,
             text("OFF"),

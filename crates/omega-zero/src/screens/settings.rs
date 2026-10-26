@@ -2,7 +2,7 @@
 //! right change in place, and GENERAL, whose rows open a screen of their own.
 
 use omega_input::{Action, Btn};
-use omega_store::FF_SPEEDS;
+use omega_store::{FF_SPEEDS, RUMBLE_LEVEL_MAX};
 use omega_ui::{date_time_text, Draw, QuickValue, RowShown, SettingsFaces, SettingsMenu};
 
 pub use omega_ui::{SettingsGroup, SettingsRow};
@@ -30,7 +30,7 @@ impl App {
             SettingsRow::FastForward => QuickValue::speed(self.state.ff_speed),
             SettingsRow::FastForwardSound => Some(QuickValue::flag(self.state.ff_sound)),
             SettingsRow::ColourCorrection => Some(QuickValue::flag(self.state.colour_correction)),
-            SettingsRow::Rumble => Some(QuickValue::flag(self.state.rumble)),
+            SettingsRow::Rumble => Some(QuickValue::rumble(self.state.rumble, self.state.rumble_level)),
             SettingsRow::FiveGames => Some(QuickValue::flag(self.focus_on())),
             SettingsRow::Labels
             | SettingsRow::DateTime
@@ -157,7 +157,22 @@ impl App {
                 s.colour_correction = !s.colour_correction;
                 self.colour_pending = Some(s.colour_correction);
             }
-            SettingsRow::Rumble => s.rumble = !s.rumble,
+            SettingsRow::Rumble => {
+                // OFF, LOW, MED and HIGH in a row, stopping at either end
+                let at = if s.rumble { s.rumble_level } else { 0 };
+                let to = if right {
+                    (at + 1).min(RUMBLE_LEVEL_MAX)
+                } else {
+                    at.saturating_sub(1)
+                };
+                if to == at {
+                    return;
+                }
+                s.rumble = to > 0;
+                if to > 0 {
+                    s.rumble_level = to;
+                }
+            }
             // left or right switches Five Games off; A changes its games, or picks them
             SettingsRow::FiveGames => {
                 if self.focus_on() {

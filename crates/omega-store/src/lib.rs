@@ -23,7 +23,7 @@ mod title;
 
 pub use app_state::{
     read_app_state, write_app_state, AppState, BLUE_LIGHT_MAX, BRIGHTNESS_MAX, FF_SPEEDS,
-    FF_SPEED_DEFAULT, UTC_OFFSET_MAX, UTC_OFFSET_MIN, VOLUME_MAX,
+    FF_SPEED_DEFAULT, RUMBLE_LEVEL_MAX, UTC_OFFSET_MAX, UTC_OFFSET_MIN, VOLUME_MAX,
 };
 pub use atomic::{atomic_write, atomic_write_dated, sweep_temps};
 pub use backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS};

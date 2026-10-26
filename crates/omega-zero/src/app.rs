@@ -1118,6 +1118,16 @@ impl App {
         self.state.rumble
     }
 
+    /// How hard the motor runs while it buzzes, at the strength Settings has: the motor knows
+    /// only on and off, so LOW and MED are it on for 35 and 60 % of the time.
+    pub fn rumble_strength(&self) -> u16 {
+        match self.state.rumble_level {
+            1 => (u32::from(u16::MAX) * 35 / 100) as u16,
+            2 => (u32::from(u16::MAX) * 60 / 100) as u16,
+            _ => u16::MAX,
+        }
+    }
+
     pub fn ff_speed(&self) -> u8 {
         self.state.ff_speed
     }

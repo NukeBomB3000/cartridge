@@ -172,6 +172,10 @@ fn open_named(
                 for (key, value) in palette_options(core, setup.palette()) {
                     opened.set_option(key, &value);
                 }
+                // the DualShock, as only it rumbles; its sticks stay centred
+                if core == Core::PcsxRearmed {
+                    opened.set_port_device(omega_retro::DEVICE_DUALSHOCK);
+                }
                 if let Some(player) = link {
                     apply_link_options(&mut opened, core, player);
                 }
@@ -337,6 +341,7 @@ pub fn core_options(
             put("pcsx_rearmed_bios", "auto");
             put("pcsx_rearmed_memcard1", "libretro");
             put("pcsx_rearmed_memcard2", "none");
+            put("pcsx_rearmed_vibration", "enabled");
         }
         Core::PceFast => put("pce_fast_frameskip", "auto"),
         Core::Fceumm => {

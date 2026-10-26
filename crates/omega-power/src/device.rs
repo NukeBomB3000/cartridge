@@ -4,6 +4,7 @@ use std::io::Write;
 use std::os::unix::io::AsRawFd;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::mpsc::RecvTimeoutError;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::refresh::PanelRefresh;
@@ -86,7 +87,7 @@ pub struct DevicePlatform {
     max_brightness: u32,
     battery: Option<PathBuf>,
     rtc: Option<PathBuf>,
-    motor: Option<Motor>,
+    motor: Option<Drive>,
     led: Option<Led>,
     refresh: Option<PanelRefresh>,
 }
@@ -122,7 +123,7 @@ impl DevicePlatform {
         };
         let battery = first_dir(&sysfs.join("class/power_supply"), is_battery);
         let rtc = first_dir(&sysfs.join("class/rtc"), |_| true);
-        let motor = Motor::open(sysfs);
+        let motor = Motor::open(sysfs).map(Drive::start);
         let led = first_dir(&sysfs.join("class/leds"), |d| {
             d.join("multi_intensity").is_file() || d.join("brightness").is_file()
         })
@@ -179,7 +180,7 @@ impl DevicePlatform {
             None => "no backlight".to_string(),
         };
         let motor = match &self.motor {
-            Some(m) => format!("motor {}", m.name()),
+            Some(m) => format!("motor {}", m.name),
             None => "no motor".to_string(),
         };
         let refresh = match self.refresh {
@@ -229,6 +230,74 @@ pub fn motor_change(strength: u16, running: bool) -> Option<bool> {
     }
 }
 
+/// How long one on-and-off of the motor takes when it runs at less than full strength: the
+/// motor knows only on and off, so a weaker buzz is it on for part of each period.
+const PWM_PERIOD_MS: u64 = 20;
+
+/// The motor run from a thread of its own, at the strength last asked for: full on, off, or
+/// switched on and off each period for the share of it the strength is of the most.
+struct Drive {
+    name: String,
+    to: std::sync::mpsc::Sender<u16>,
+    strength: u16,
+}
+
+impl Drive {
+    fn start(mut motor: Motor) -> Drive {
+        let name = motor.name();
+        let (to, from) = std::sync::mpsc::channel::<u16>();
+        std::thread::spawn(move || {
+            let mut strength = 0u16;
+            loop {
+                let next = match strength {
+                    0 | u16::MAX => {
+                        motor.play(strength > 0);
+                        from.recv().ok()
+                    }
+                    _ => {
+                        let on = PWM_PERIOD_MS * u64::from(strength) / u64::from(u16::MAX);
+                        let on = on.max(1);
+                        motor.play(true);
+                        match from.recv_timeout(Duration::from_millis(on)) {
+                            Ok(s) => Some(s),
+                            Err(RecvTimeoutError::Disconnected) => None,
+                            Err(RecvTimeoutError::Timeout) => {
+                                motor.play(false);
+                                match from.recv_timeout(Duration::from_millis(PWM_PERIOD_MS - on)) {
+                                    Ok(s) => Some(s),
+                                    Err(RecvTimeoutError::Disconnected) => None,
+                                    Err(RecvTimeoutError::Timeout) => Some(strength),
+                                }
+                            }
+                        }
+                    }
+                };
+                match next {
+                    Some(s) => {
+                        if strength == 0 && s > 0 {
+                            motor.rearm();
+                        }
+                        strength = s;
+                    }
+                    None => return,
+                }
+            }
+        });
+        Drive {
+            name,
+            to,
+            strength: 0,
+        }
+    }
+
+    fn set(&mut self, strength: u16) {
+        if strength != self.strength {
+            self.strength = strength;
+            let _ = self.to.send(strength);
+        }
+    }
+}
+
 /// The rumble motor: a force feedback node where the kernel offers one, or the PMIC's motor
 /// pin, which the Anbernic kernel exposes as a power supply's `moto` file instead.
 enum Motor {
@@ -250,14 +319,21 @@ impl Motor {
         }
     }
 
-    fn running(&self) -> bool {
-        match self {
-            Motor::Ff(m) => m.running,
-            Motor::Pin(m) => m.running,
+    /// Has the next start upload the effect again, at the start of each buzz.
+    fn rearm(&mut self) {
+        if let Motor::Ff(m) = self {
+            m.armed = false;
         }
     }
 
     fn play(&mut self, on: bool) {
+        let running = match self {
+            Motor::Ff(m) => m.running,
+            Motor::Pin(m) => m.running,
+        };
+        if on == running {
+            return;
+        }
         match self {
             Motor::Ff(m) => m.play(on),
             Motor::Pin(m) => m.play(on),
@@ -306,6 +382,8 @@ struct FfMotor {
     name: String,
     id: i16,
     running: bool,
+    /// Whether the effect was uploaded since the buzz began.
+    armed: bool,
 }
 
 #[repr(C)]
@@ -354,6 +432,34 @@ extern "C" {
     fn ioctl(fd: c_int, request: c_ulong, ...) -> c_int;
 }
 
+/// Uploads the full-strength rumble as effect `id`, or as a new one for -1, and returns its id.
+fn upload(node: &fs::File, id: i16) -> std::io::Result<i16> {
+    let mut effect = FfEffect {
+        kind: FF_RUMBLE,
+        id,
+        direction: 0,
+        trigger: FfTrigger::default(),
+        replay: FfReplay::default(),
+        _align: 0,
+        rumble: FfRumble {
+            strong: u16::MAX,
+            weak: u16::MAX,
+        },
+        _tail: [0; 28],
+    };
+    let rc = unsafe {
+        ioctl(
+            node.as_raw_fd(),
+            EVIOCSFF,
+            &mut effect as *mut FfEffect as *mut c_void,
+        )
+    };
+    if rc < 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(effect.id)
+}
+
 impl FfMotor {
     fn open(sysfs: &Path) -> Option<FfMotor> {
         let name = rumble_node(sysfs)?;
@@ -363,42 +469,34 @@ impl FfMotor {
             .open(Path::new(DEV_INPUT).join(&name))
             .map_err(|e| eprintln!("omega-zero: rumble {name}: {e}"))
             .ok()?;
-        let mut effect = FfEffect {
-            kind: FF_RUMBLE,
-            id: -1,
-            direction: 0,
-            trigger: FfTrigger::default(),
-            replay: FfReplay::default(),
-            _align: 0,
-            rumble: FfRumble {
-                strong: u16::MAX,
-                weak: u16::MAX,
-            },
-            _tail: [0; 28],
-        };
-        let rc = unsafe {
-            ioctl(
-                node.as_raw_fd(),
-                EVIOCSFF,
-                &mut effect as *mut FfEffect as *mut c_void,
-            )
-        };
-        if rc < 0 {
-            eprintln!(
-                "omega-zero: rumble {name}: {}",
-                std::io::Error::last_os_error()
-            );
-            return None;
-        }
+        let id = upload(&node, -1)
+            .map_err(|e| eprintln!("omega-zero: rumble {name}: {e}"))
+            .ok()?;
         Some(FfMotor {
             node,
             name,
-            id: effect.id,
+            id,
             running: false,
+            armed: true,
         })
     }
 
+    /// Starts or stops the motor. The effect is uploaded again at the start of each buzz: the
+    /// ANBERNIC-keys driver drops it when another handle on its node closes, as the input
+    /// reader's does, and a start of an effect it no longer has does nothing.
     fn play(&mut self, on: bool) {
+        if on && !self.armed {
+            match upload(&self.node, self.id).or_else(|_| upload(&self.node, -1)) {
+                Ok(id) => {
+                    self.id = id;
+                    self.armed = true;
+                }
+                Err(e) => {
+                    eprintln!("omega-zero: rumble {}: {e}", self.name);
+                    return;
+                }
+            }
+        }
         let ev = FfEvent {
             sec: 0,
             usec: 0,
@@ -724,11 +822,8 @@ impl Platform for DevicePlatform {
     }
 
     fn set_rumble(&mut self, strength: u16) {
-        let Some(motor) = &mut self.motor else {
-            return;
-        };
-        if let Some(on) = motor_change(strength, motor.running()) {
-            motor.play(on);
+        if let Some(motor) = &mut self.motor {
+            motor.set(strength);
         }
     }
 }

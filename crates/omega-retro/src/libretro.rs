@@ -35,6 +35,9 @@ struct Host {
     disk: Option<DiskControlExtCallback>,
     audio: Vec<i16>,
     inputs: [u16; 2],
+    /// Whether the d-pad also pushes the left stick, for a DualShock in its analog mode on a
+    /// handheld with no stick of its own.
+    stick_from_d_pad: bool,
     system_dir: CString,
     save_dir: CString,
     rumble: Rumble,
@@ -68,6 +71,7 @@ impl Host {
             disk: None,
             audio: Vec::new(),
             inputs: [0; 2],
+            stick_from_d_pad: false,
             system_dir,
             save_dir,
             rumble: Rumble::default(),
@@ -505,7 +509,15 @@ unsafe extern "C" fn audio_batch(data: *const i16, frames: usize) -> usize {
 
 unsafe extern "C" fn input_poll() {}
 
-unsafe extern "C" fn input_state(port: c_uint, device: c_uint, _index: c_uint, id: c_uint) -> i16 {
+unsafe extern "C" fn input_state(port: c_uint, device: c_uint, index: c_uint, id: c_uint) -> i16 {
+    if device == DEVICE_ANALOG {
+        return with_host(|h| {
+            let input = *h.inputs.get(port as usize)?;
+            (h.stick_from_d_pad && index == ANALOG_LEFT).then(|| d_pad_stick(input, id))
+        })
+        .flatten()
+        .unwrap_or(0);
+    }
     if device != DEVICE_JOYPAD {
         return 0;
     }
@@ -522,6 +534,21 @@ unsafe extern "C" fn input_state(port: c_uint, device: c_uint, _index: c_uint, i
     .unwrap_or(0)
 }
 
+/// The left stick's axis `id`, 0 across and 1 down, pushed all the way by the d-pad.
+fn d_pad_stick(input: u16, id: c_uint) -> i16 {
+    use crate::core::ButtonMask;
+    let (low, high) = match id {
+        0 => (ButtonMask::LEFT, ButtonMask::RIGHT),
+        1 => (ButtonMask::UP, ButtonMask::DOWN),
+        _ => return 0,
+    };
+    match (input & low != 0, input & high != 0) {
+        (true, false) => -i16::MAX,
+        (false, true) => i16::MAX,
+        _ => 0,
+    }
+}
+
 pub struct LibretroCore {
     api: Api,
     host: Box<Host>,
@@ -530,6 +557,8 @@ pub struct LibretroCore {
     /// The disc to start from, and the file it is read from, handed to the core before it loads.
     initial_disc: Option<(c_uint, CString)>,
     loaded: bool,
+    /// The pad plugged into the first port once the game is in.
+    port_device: c_uint,
     _lib: Library,
 }
 
@@ -744,6 +773,7 @@ impl LibretroCore {
             rom_path: None,
             initial_disc: None,
             loaded: false,
+            port_device: DEVICE_JOYPAD,
             _lib: lib,
         })
     }
@@ -832,7 +862,7 @@ impl RetroCore for LibretroCore {
             sample_rate: av.timing.sample_rate,
         };
         self.host.geometry = av.geometry;
-        unsafe { (self.api.set_controller_port_device)(0, DEVICE_JOYPAD) };
+        unsafe { (self.api.set_controller_port_device)(0, self.port_device) };
         Ok(())
     }
 
@@ -943,6 +973,11 @@ impl RetroCore for LibretroCore {
 
     fn disc_path(&self, index: usize) -> Option<String> {
         unsafe { disc_file(self.host.disk, index) }
+    }
+
+    fn set_port_device(&mut self, device: c_uint) {
+        self.port_device = device;
+        self.host.stick_from_d_pad = device == DEVICE_DUALSHOCK;
     }
 
     fn set_initial_disc(&mut self, index: usize, path: &str) {
@@ -1868,6 +1903,22 @@ mod tests {
         let mask = |port| unsafe { input_state(port, DEVICE_JOYPAD, 0, JOYPAD_MASK) } as u16;
         assert_eq!(mask(0), ButtonMask::A);
         assert_eq!(mask(1), ButtonMask::B | ButtonMask::START);
+    }
+
+    #[test]
+    fn a_dualshock_on_a_handheld_without_a_stick_takes_the_d_pad_as_its_left_stick() {
+        let mut host = host_with(HashMap::new(), false);
+        host.inputs = [ButtonMask::LEFT | ButtonMask::DOWN, 0];
+        let _active = Active::bind(&mut host);
+        let axis = |index, id| unsafe { input_state(0, DEVICE_ANALOG, index, id) };
+        assert_eq!(axis(ANALOG_LEFT, 0), 0, "a joypad's d-pad pushed a stick");
+        drop(_active);
+
+        host.stick_from_d_pad = true;
+        let _active = Active::bind(&mut host);
+        assert_eq!(axis(ANALOG_LEFT, 0), -i16::MAX);
+        assert_eq!(axis(ANALOG_LEFT, 1), i16::MAX);
+        assert_eq!(axis(1, 0), 0, "the right stick moved too");
     }
 
     #[test]

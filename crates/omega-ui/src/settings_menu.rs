@@ -179,16 +179,23 @@ pub enum QuickValue {
     Speed6,
     On,
     Off,
+    /// Rumble's strengths.
+    Low,
+    Med,
+    High,
 }
 
 impl QuickValue {
-    pub const ALL: [QuickValue; 6] = [
+    pub const ALL: [QuickValue; 9] = [
         QuickValue::Speed2,
         QuickValue::Speed3,
         QuickValue::Speed4,
         QuickValue::Speed6,
         QuickValue::On,
         QuickValue::Off,
+        QuickValue::Low,
+        QuickValue::Med,
+        QuickValue::High,
     ];
 
     pub fn index(self) -> usize {
@@ -204,6 +211,9 @@ impl QuickValue {
             QuickValue::Speed6 => "6X",
             QuickValue::On => "ON",
             QuickValue::Off => "OFF",
+            QuickValue::Low => "LOW",
+            QuickValue::Med => "MED",
+            QuickValue::High => "HIGH",
         }
     }
 
@@ -214,6 +224,16 @@ impl QuickValue {
             4 => Some(QuickValue::Speed4),
             6 => Some(QuickValue::Speed6),
             _ => None,
+        }
+    }
+
+    /// Rumble as its row shows it: off, or on at strength `level`, 1 to 3.
+    pub fn rumble(on: bool, level: u8) -> QuickValue {
+        match (on, level) {
+            (false, _) => QuickValue::Off,
+            (true, 1) => QuickValue::Low,
+            (true, 2) => QuickValue::Med,
+            (true, _) => QuickValue::High,
         }
     }
 

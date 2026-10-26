@@ -133,6 +133,9 @@ pub trait RetroCore: Send {
     /// as it was when the game was last put away; called before `load`. A core that checks finds
     /// `path` at that index or starts from the first disc.
     fn set_initial_disc(&mut self, _index: usize, _path: &str) {}
+    /// The pad to plug into the first port when the game loads, a joypad unless said otherwise;
+    /// called before `load`.
+    fn set_port_device(&mut self, _device: u32) {}
 }
 
 #[cfg(test)]

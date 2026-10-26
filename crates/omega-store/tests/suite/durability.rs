@@ -196,6 +196,7 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
             clock_set: true,
             utc_offset_min: -300,
             rumble: true,
+            rumble_level: 3,
             ff_speed: FF_SPEED_DEFAULT,
             ff_sound: false,
             colour_correction: false,
@@ -219,6 +220,7 @@ fn the_quick_menu_settings_round_trip_as_their_own_lines() {
     let s = AppState {
         clock_set: true,
         rumble: false,
+        rumble_level: 1,
         ff_speed: 2,
         ff_sound: true,
         colour_correction: true,
