@@ -57,6 +57,10 @@ pub const SEATED_AT: f32 = INSERT_S - INSERT_HOLD_S;
 
 pub const EJECT_S: f32 = SEATED_AT;
 
+/// How long the launcher's buzzes run: a tick as the shelf moves on, a thump as a cart seats.
+pub const SHELF_BUZZ_MS: Millis = 40;
+pub const SEAT_BUZZ_MS: Millis = 120;
+
 const EJECT_HOLD_S: f32 = 0.2;
 
 const POWER_ON_S: f32 = 0.6;
@@ -353,6 +357,11 @@ pub struct App {
     pub(crate) look: omega_gfx::Look,
     link: Option<LinkSession>,
     pub(crate) sfx: Option<Sfx>,
+    /// A buzz the launcher asks of the motor, in milliseconds: a tick as the shelf moves, a
+    /// thump as a cart seats.
+    buzz: Option<Millis>,
+    /// The shelf and the cart on it last frame, to tick when they change.
+    spot: (usize, usize),
     pub(crate) polaroids: Option<Polaroids>,
     pub(crate) clock_panel: Option<Lone>,
     pub(crate) settings_faces: Option<SettingsFaces>,
@@ -531,6 +540,8 @@ impl App {
             look: omega_gfx::Look::Off,
             link: None,
             sfx: None,
+            buzz: None,
+            spot: (usize::MAX, usize::MAX),
             polaroids: None,
             clock_panel: None,
             settings_faces: None,
@@ -1081,6 +1092,22 @@ impl App {
 
     pub fn take_sfx(&mut self) -> Option<Sfx> {
         self.sfx.take()
+    }
+
+    pub fn take_buzz(&mut self) -> Option<Millis> {
+        self.buzz.take()
+    }
+
+    /// Ticks the motor when the cart in the middle of the shelf changes under the player.
+    fn tick_shelf_buzz(&mut self) {
+        let Some(shelf) = self.shelves.get(self.shelf_at) else {
+            return;
+        };
+        let spot = (self.shelf_at, shelf.1.index);
+        let was = std::mem::replace(&mut self.spot, spot);
+        if matches!(self.phase, Phase::Shelf) && was.0 != usize::MAX && was != spot {
+            self.buzz = Some(SHELF_BUZZ_MS);
+        }
     }
 
     pub fn set_power(&mut self, mut power: Power) {
@@ -1893,6 +1920,7 @@ impl App {
 
     pub fn update(&mut self, dt: f32) {
         self.clock += dt as f64 * 1000.0;
+        self.tick_shelf_buzz();
         self.step_boot_fade(dt);
         self.step_opening(dt);
         self.step_start_notice(dt);
@@ -1955,6 +1983,9 @@ impl App {
             } => {
                 let was = *t;
                 *t += dt;
+                if !*resumed && was < SEATED_AT && *t >= SEATED_AT {
+                    self.buzz = Some(SEAT_BUZZ_MS);
+                }
                 let at = SEATED_AT - Sfx::Insert.lead();
                 touched = !*resumed && was < at && *t >= at;
                 (*t >= INSERT_S && *core_ready).then(|| Phase::Playing {

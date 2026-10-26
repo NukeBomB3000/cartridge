@@ -35,6 +35,8 @@ pub struct Session {
     motor: u16,
     /// When the buzz running now began, and how strong the game asks for it.
     pulse: Option<(Millis, u16)>,
+    /// Until when the launcher's buzz runs.
+    ui_buzz: Millis,
     reloading: bool,
     driven: bool,
     /// The system and stem of the game the core was last opened for.
@@ -72,6 +74,7 @@ impl Session {
             fast: false,
             motor: 0,
             pulse: None,
+            ui_buzz: 0,
             reloading: false,
             driven: false,
             running: None,
@@ -299,6 +302,9 @@ impl Session {
         if let Some(sfx) = self.app.take_sfx() {
             self.play_sfx(sfx);
         }
+        if let Some(ms) = self.app.take_buzz() {
+            self.ui_buzz = self.app.now() + ms;
+        }
         self.sync_core();
         self.settle_start();
         self.sync_reload();
@@ -337,7 +343,9 @@ impl Session {
             }
             _ => {
                 self.pulse = None;
-                return self.rumble(0);
+                let buzz = self.app.rumble_enabled() && self.app.now() < self.ui_buzz;
+                let want = if buzz { self.app.rumble_strength() } else { 0 };
+                return self.rumble(want);
             }
         };
         let now = self.app.now();

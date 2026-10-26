@@ -162,7 +162,7 @@ fn a_short_tap_runs_the_motor_long_enough_to_feel() {
         let held = s.app().now() - start;
         assert_eq!(
             motor.last(),
-            20_000,
+            u16::MAX,
             "a tap stopped the motor after {held} ms"
         );
     }
@@ -200,4 +200,65 @@ fn a_buzz_is_cut_off_at_the_longest_the_motor_runs() {
     core.set(0, STRONG, u16::MAX);
     step(&mut s, &mut now);
     assert_eq!(motor.last(), u16::MAX, "the next hit never buzzed");
+}
+
+#[test]
+fn the_shelf_ticks_the_motor_as_it_moves_on() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    step(&mut s, &mut now);
+    step(&mut s, &mut now);
+    assert_eq!(motor.last(), 0, "the shelf buzzed before it moved");
+    event(&mut s, RawEvent::Down(Btn::Right), &mut now);
+    event(&mut s, RawEvent::Up(Btn::Right), &mut now);
+    let mut felt = motor.last() > 0;
+    step(&mut s, &mut now);
+    felt |= motor.last() > 0;
+    assert!(felt, "the shelf moved on without a tick");
+    let moved = now;
+    while now < moved + omega_zero::app::SHELF_BUZZ_MS + 3 * FRAME_MS {
+        step(&mut s, &mut now);
+    }
+    assert_eq!(motor.last(), 0, "the tick ran on");
+}
+
+#[test]
+fn a_cart_seating_thumps_the_motor() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    event(&mut s, RawEvent::Down(Btn::A), &mut now);
+    event(&mut s, RawEvent::Up(Btn::A), &mut now);
+    let mut felt = false;
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !matches!(s.app().phase(), Phase::Playing { .. }) {
+        assert!(Instant::now() < deadline, "the cart never seated");
+        step(&mut s, &mut now);
+        felt |= motor.last() == u16::MAX;
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    assert!(felt, "the cart seated without a thump");
+}
+
+#[test]
+fn with_rumble_off_the_launcher_stays_still() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    write_app_state(
+        d.path(),
+        &AppState {
+            rumble: false,
+            ..AppState::default()
+        },
+    )
+    .unwrap();
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    step(&mut s, &mut now);
+    event(&mut s, RawEvent::Down(Btn::Right), &mut now);
+    event(&mut s, RawEvent::Up(Btn::Right), &mut now);
+    for _ in 0..5 {
+        step(&mut s, &mut now);
+        assert_eq!(motor.last(), 0, "the shelf ticked with rumble off");
+    }
 }
