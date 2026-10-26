@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Rumble works again: the ANBERNIC-keys driver drops the motor's effect when another handle on
+  its node closes, so it is armed again at the start of each buzz. Each buzz runs at least
+  100 ms, so a game's taps are felt, and at most 150 ms.
+- Rumble in Settings is OFF, LOW, MED or HIGH. The motor knows only on and off, so LOW and MED
+  switch it on for 35 and 60 % of each 20 ms.
+- The launcher rumbles too: a tick as the shelf moves on, a thump as a cart seats, as it comes
+  out and as the handheld powers off.
+- PlayStation games get a DualShock, the pad that rumbles; the d-pad also pushes its left stick,
+  so a game in analog mode plays on a handheld without one.
 - RG CubeXX: both analog sticks steer as the d-pad, on the shelf, in the menus and in games,
   pressing past half their reach and letting go under a quarter so a stick held near the edge
   does not chatter. Real analog values for the cores are still to come.
