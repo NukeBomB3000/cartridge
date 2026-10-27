@@ -27,7 +27,7 @@ impl FaceBuilder {
                         cart = newer;
                     }
                     let faces = BuiltFaces {
-                        stem: cart.stem.clone(),
+                        stem: faces_key(&cart),
                         board: board_face(&cart),
                         lid: padded(&cart_face(&cart), TURN_PAD),
                     };
@@ -53,4 +53,10 @@ impl FaceBuilder {
         }
         newest
     }
+}
+
+/// What a cart's faces are known by: its system and its name, as two systems can each have a
+/// game of the same name, 007 on the Game Boy Color and on the PlayStation alike.
+pub fn faces_key(cart: &Cart) -> String {
+    format!("{}/{}", cart.platform.dir_name(), cart.stem)
 }

@@ -252,3 +252,18 @@ fn the_arrows_do_nothing_while_the_picker_waits() {
         "no hop once the cart had opened"
     );
 }
+
+#[test]
+fn a_game_of_one_name_on_two_shelves_has_two_sets_of_faces() {
+    use cartridge::face_builder::faces_key;
+    let cart = |platform| cartridge_store::Cart {
+        platform,
+        stem: "007 - The World Is Not Enough".into(),
+        rom: "x".into(),
+        label: None,
+        code: String::new(),
+        shell: None,
+        title: String::new(),
+    };
+    assert_ne!(faces_key(&cart(Platform::Gbc)), faces_key(&cart(Platform::Ps1)));
+}

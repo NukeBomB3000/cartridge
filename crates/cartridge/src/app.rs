@@ -1407,6 +1407,11 @@ impl App {
         self.shelf_title = cartridge_ui::Printed::default();
     }
 
+    /// The cart the shelf rests on.
+    pub fn selected_cart(&self) -> Option<&Cart> {
+        self.shelf().carts.get(self.shelf().index)
+    }
+
     pub fn selected_stem(&self) -> Option<&str> {
         self.shelf()
             .carts
@@ -2497,7 +2502,7 @@ impl App {
     pub fn set_core_board_faces(&mut self, board: TexId, lid: TexId) {
         self.core_board_face = Some(board);
         self.core_lid_face = Some(lid);
-        self.core_faces_stem = self.selected_stem().map(str::to_string);
+        self.core_faces_stem = self.selected_cart().map(crate::face_builder::faces_key);
     }
 
     /// The core picker's parts: each core's socket and named chip, indexed by `Core::index`; the
@@ -2878,9 +2883,8 @@ impl App {
     }
 
     fn core_faces_ready(&self) -> bool {
-        self.core_faces_stem
-            .as_deref()
-            .is_some_and(|stem| self.selected_stem() == Some(stem))
+        self.core_faces_stem.is_some()
+            && self.core_faces_stem == self.selected_cart().map(crate::face_builder::faces_key)
     }
 
     fn core_picker_input(&mut self, action: Action) {

@@ -149,12 +149,15 @@ impl Plastic {
 }
 
 /// The open cart: the back of its shell, the board in it, the ROM chip marked with the game's
-/// title. A SNES cart opens on a SNES board in its own shell.
+/// title. A SNES cart opens on a SNES board in its own shell, and a PlayStation disc on the
+/// console's own mainboard, the title on its CPU.
 pub fn board_face(cart: &Cart) -> CartFace {
     let plastic = Plastic::of(shell_for(cart).colour);
     let mut face = blank(BOARD_W, BOARD_H);
     if cart.platform == Platform::Snes {
         snes_board(&mut face, &plastic, snes::shell_of(cart));
+    } else if cart.platform == Platform::Ps1 {
+        ps1_board(&mut face);
     } else {
         shell(&mut face, &plastic);
         pcb(&mut face, &plastic);
@@ -1090,3 +1093,126 @@ fn snes_parts(face: &mut UndoFace) {
 
     print(face, "SHVC-1A3M", 17, 12, SILK);
 }
+
+/// The PlayStation's own board, PU-18's look: green to its edges, its corners rounded and a
+/// screw hole in each; the CPU in a square package with pins on all four sides, where the
+/// cart's ROM lies, carrying the game's title; the two RAM chips and the BIOS above the
+/// sockets; the crystal; the CD drive's white ribbon connector and the controller ports'
+/// header along the bottom; traces and vias between, and the board's name in its silkscreen.
+fn ps1_board(face: &mut UndoFace) {
+    let (w, h) = (BOARD_W as i32, BOARD_H as i32);
+    let corner = |y: i32| rounded(y, h, &[3, 1, 1], &[3, 1, 1]);
+    for y in 0..h {
+        let c = corner(y);
+        fill(face, [c, y, w - 2 * c, 1], PS1_PCB);
+        dot(face, c, y, PS1_PCB_EDGE);
+        dot(face, w - 1 - c, y, PS1_PCB_EDGE);
+    }
+    fill(face, [3, 0, w - 6, 1], PS1_PCB_EDGE);
+    fill(face, [3, h - 1, w - 6, 1], PS1_PCB_EDGE);
+    for (cx, cy) in [(7, 7), (w - 8, 7), (7, h - 8), (w - 8, h - 8)] {
+        disc(face, cx, cy, 4, PIN_DARK);
+        disc(face, cx, cy, 3, PIN);
+        disc(face, cx, cy, 2, HOLE);
+    }
+
+    for trace in PS1_TRACES {
+        path(face, trace, PS1_TRACE);
+    }
+    for &(x, y) in PS1_VIAS {
+        fill(face, [x - 1, y - 1, 3, 3], PS1_TRACE);
+        dot(face, x, y, HOLE);
+    }
+
+    // the CPU: a square package, a row of fine pins along every side
+    let [x, y, cw, ch] = [ROM_X as i32, ROM_Y as i32, ROM_W as i32, ROM_H as i32];
+    for n in 0..(cw - 4) / 2 {
+        let px = x + 2 + n * 2;
+        dot(face, px, y - 1, PIN);
+        dot(face, px, y - 2, PIN_DARK);
+        dot(face, px, y + ch, PIN);
+        dot(face, px, y + ch + 1, PIN_DARK);
+    }
+    for n in 0..(ch - 4) / 2 {
+        let py = y + 2 + n * 2;
+        dot(face, x - 1, py, PIN);
+        dot(face, x - 2, py, PIN_DARK);
+        dot(face, x + cw, py, PIN);
+        dot(face, x + cw + 1, py, PIN_DARK);
+    }
+    body(face, [x, y, cw, ch]);
+    disc(face, x + 4, y + ch - 5, 1, BODY_HI);
+
+    // the RAM, two long chips with their pins above and below, and the BIOS beside them
+    for rx in [84, 118] {
+        for n in 0..10 {
+            let px = rx + 1 + n * 3;
+            fill(face, [px, 12, 1, 2], PIN);
+            fill(face, [px, 22, 1, 2], PIN);
+        }
+        body(face, [rx, 14, 30, 8]);
+        dot(face, rx + 2, 19, BODY_HI);
+    }
+    for n in 0..5 {
+        let py = 13 + n * 2;
+        dot(face, 155, py, PIN);
+        dot(face, 168, py, PIN);
+    }
+    body(face, [156, 12, 12, 11]);
+    print(face, "BIOS", 152, 27, SILK);
+
+    // the crystal: a silver can, rounded at its ends, a shine along its top
+    fill(face, [86, 74, 16, 6], PIN_DARK);
+    fill(face, [87, 73, 14, 8], PIN_DARK);
+    fill(face, [88, 74, 12, 6], PIN);
+    fill(face, [89, 74, 10, 1], PART_END);
+
+    // the CD drive's ribbon connector: a cream housing, its row of contacts in it
+    fill(face, [14, 84, 58, 10], PS1_HEADER_EDGE);
+    fill(face, [15, 85, 56, 8], PS1_HEADER);
+    for n in 0..26 {
+        dot(face, 17 + n * 2, 88, GOLD_DARK);
+        dot(face, 17 + n * 2, 89, GOLD);
+    }
+    print(face, "CD", 74, 86, SILK);
+
+    // the controller ports' header: a black block, two rows of pins
+    body(face, [118, 82, 50, 12]);
+    for n in 0..12 {
+        dot(face, 121 + n * 4, 85, PIN);
+        dot(face, 121 + n * 4, 90, PIN);
+    }
+
+    capacitor(face, 108, 74);
+    capacitor(face, 20, 74);
+    print(face, "PU-18", 24, 12, SILK);
+}
+
+const PS1_PCB: Rgb = [0x2f, 0x7a, 0x45];
+const PS1_PCB_EDGE: Rgb = [0x23, 0x5e, 0x35];
+const PS1_TRACE: Rgb = [0x45, 0x92, 0x58];
+const PS1_HEADER: Rgb = [0xe8, 0xe0, 0xc8];
+const PS1_HEADER_EDGE: Rgb = [0xb8, 0xae, 0x92];
+
+const PS1_TRACES: &[&[(i32, i32)]] = &[
+    // the CPU's bus over to the RAM and the first socket
+    &[(78, 28), (82, 28), (86, 24)],
+    &[(78, 32), (84, 32), (88, 36), (88, 41)],
+    &[(78, 36), (82, 36), (85, 39), (85, 41)],
+    &[(114, 18), (118, 18)],
+    &[(148, 18), (155, 18)],
+    // the sockets down to the crystal and the ports
+    &[(95, 67), (95, 72)],
+    &[(140, 67), (140, 81)],
+    &[(150, 67), (150, 81)],
+    &[(160, 67), (160, 81)],
+    // the CPU's bottom pins down to the CD connector
+    &[(30, 71), (30, 83)],
+    &[(40, 71), (40, 76), (44, 80), (44, 83)],
+    &[(60, 71), (60, 83)],
+    &[(70, 71), (70, 74), (78, 82), (78, 90)],
+    // along the right edge
+    &[(172, 26), (176, 30), (176, 70), (170, 76)],
+];
+
+const PS1_VIAS: &[(i32, i32)] = &[(80, 50), (112, 34), (176, 50), (50, 78), (116, 70)];

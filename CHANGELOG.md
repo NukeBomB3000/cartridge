@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The core picker opens a PlayStation disc on the console's own mainboard, PU-18's look: the
+  game's title on the CPU, the RAM and the BIOS above the sockets, the CD drive's connector
+  below. A game named as one on another shelf, 007 on the Game Boy Color and on the
+  PlayStation, no longer opens on the other one's board.
 - PlayStation games can run on SwanStation (the libretro DuckStation) as well as PCSX-ReARMed:
   X on the shelf picks it, given `System/swanstation_libretro.so` and a real BIOS in BIOS/.
   It draws with the GPU: cores that ask for OpenGL ES get a GLES 3 context of their own on the

@@ -6,7 +6,7 @@ use cartridge_gfx::{Compositor, TexId};
 use cartridge_ui::UndoFace;
 
 use crate::app::App;
-use crate::face_builder::FaceBuilder;
+use crate::face_builder::{faces_key, FaceBuilder};
 use crate::frontend::faces::{upload_nearest, upload_rgba};
 
 pub(crate) fn sync_core_picker(
@@ -18,12 +18,10 @@ pub(crate) fn sync_core_picker(
     lid: &mut Option<TexId>,
     built: &mut Option<String>,
 ) {
-    let highlighted = app.selected_stem().map(str::to_string);
+    // asked by system and name, as a game of one name can be on two shelves
+    let highlighted = app.selected_cart().map(faces_key);
     if highlighted.is_some() && *asked != highlighted {
-        if let Some(cart) = app
-            .carts()
-            .find(|c| highlighted.as_deref() == Some(c.stem.as_str()))
-        {
+        if let Some(cart) = app.selected_cart() {
             builder.request(cart.clone());
         }
         *asked = highlighted.clone();
