@@ -23,7 +23,7 @@ pub enum BackdropStyle {
     ThreeDs,
     /// The PSP's: ribbons waving across a fade from the top.
     Psp,
-    /// The Switch's: a fade from the top and a band behind the row of games.
+    /// The Switch's: its grid of rounded tiles, as All Software lays out the games.
     Switch,
     /// The colour alone.
     Solid,
@@ -88,14 +88,10 @@ impl BackdropStyle {
         }
     }
 
-    /// A pattern that can drift: one that repeats across. The DS's lines, the PSP's waves and
-    /// the Switch's band stand still.
+    /// A pattern that can drift: one that repeats across. The DS's lines run across, so
+    /// drifting them would show nothing.
     pub fn moves(self) -> bool {
-        self.patterned()
-            && !matches!(
-                self,
-                BackdropStyle::Ds | BackdropStyle::Psp | BackdropStyle::Switch
-            )
+        self.patterned() && self != BackdropStyle::Ds
     }
 
     /// Drawn from a picture of a pattern, rather than the colour alone or the card's picture.

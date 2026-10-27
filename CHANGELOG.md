@@ -21,7 +21,8 @@
 - Theme: nine more colours (Black, Indigo, Sky, Mint, Olive, Rose, Coral, Brown, Wine), all in
   order round the colour wheel after the neutrals, and five
   backgrounds after real handhelds: Game Boy (its dot matrix), DS (the DS Lite menu's lines),
-  3DS (stripes), PSP (the XMB's waves) and Switch.
+  3DS (stripes), PSP (the XMB's waves, drifting round seamlessly) and Switch (its grid of rounded
+  tiles).
 - A 5-band equalizer (150 Hz, 400 Hz, 1 kHz, 2.5 kHz, 6 kHz, ±12 dB) in Settings, in Colour
   Correction's place (SELECT+A still switches that): one setting for the speaker and one for
   headphones, presets Flat, Speaker, Bass and Clear on Y, and a test sound on A, the card's

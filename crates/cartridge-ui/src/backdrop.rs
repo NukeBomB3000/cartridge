@@ -85,9 +85,12 @@ pub fn backdrop_rgb(colour: u8) -> [u8; 3] {
 /// How far a pattern goes before it looks the same again: a tiled pattern's square, the bits'
 /// scatter.
 /// Both divide 640, 720 and 480, so a still pattern sits square on every canvas.
+/// The PSP's waves are one picture the canvas wide, so they come round again only once the
+/// canvas has gone by.
 pub fn backdrop_period(style: BackdropStyle) -> u32 {
     match style {
-        BackdropStyle::Bits => 80,
+        BackdropStyle::Bits | BackdropStyle::Switch => 80,
+        BackdropStyle::Psp => out_w(),
         _ => 40,
     }
 }
@@ -228,7 +231,8 @@ fn picture_lift(style: BackdropStyle, ax: u32, ay: u32, aw: u32, ah: u32) -> f32
         // the PSP's: two ribbons rising and falling across, each a soft band with a bright edge
         BackdropStyle::Psp => {
             let fade = 0.08 * (1.0 - down);
-            let x = ax as f32 / aw.max(1) as f32;
+            // across the canvas once, so the picture meets itself where it wraps
+            let x = (ax % aw.max(1)) as f32 / aw.max(1) as f32;
             let tau = std::f32::consts::TAU;
             let ribbon = |mid: f32, amp: f32, waves: f32, phase: f32, width: f32| {
                 let at = mid + amp * (tau * waves * x + phase).sin();
@@ -240,20 +244,26 @@ fn picture_lift(style: BackdropStyle, ax: u32, ay: u32, aw: u32, ah: u32) -> f32
                     0.0
                 }
             };
-            fade + ribbon(0.58, 0.06, 1.0, 0.6, 0.12) + ribbon(0.66, 0.05, 1.5, 2.4, 0.08)
+            fade + ribbon(0.58, 0.06, 1.0, 0.6, 0.12) + ribbon(0.66, 0.05, 2.0, 2.4, 0.08)
         }
-        // the Switch's: lighter on top, a band behind the games across the middle
+        // the Switch's: rounded tiles 36 art pixels square in a grid of 40, a rim round
+        // each, the whole a little lighter on top
         BackdropStyle::Switch => {
-            let fade = 0.07 * (1.0 - down);
-            let band = (0.24..0.76).contains(&down);
-            let rim = band
-                && ((down - 0.24).abs() < 1.0 / ah as f32 || (down - 0.76).abs() < 1.0 / ah as f32);
-            fade + if rim {
-                0.1
-            } else if band {
-                0.035
-            } else {
+            let fade = 0.06 * (1.0 - down);
+            let (tx, ty) = (ax % 40, ay % 40);
+            let inside = |x: u32, y: u32| {
+                let (x, y) = (x as f32 - 19.5, y as f32 - 19.5);
+                let (qx, qy) = (x.abs() - 12.0, y.abs() - 12.0);
+                let corner = qx.max(0.0).hypot(qy.max(0.0));
+                corner + qx.max(qy).min(0.0) - 6.0
+            };
+            let d = inside(tx, ty);
+            fade + if d > 0.0 {
                 0.0
+            } else if d > -1.0 {
+                0.1
+            } else {
+                0.035
             }
         }
         _ => 0.0,
@@ -295,7 +305,7 @@ pub fn backdrop_pattern_face(style: BackdropStyle, colour: u8) -> Option<UndoFac
                 BackdropStyle::Solid | BackdropStyle::Wallpaper => return None,
                 BackdropStyle::Ds | BackdropStyle::Psp | BackdropStyle::Switch => tint(
                     base,
-                    picture_lift(style, x / ART, y / ART, w / ART, h / ART),
+                    picture_lift(style, x / ART, y / ART, out_w() / ART, h / ART),
                 ),
                 tiled => tint(base, tile_lift(tiled, (x / ART) % TILE, (y / ART) % TILE)),
             };

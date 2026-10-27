@@ -180,9 +180,14 @@ fn left_and_right_go_round_the_styles_and_each_shows_only_the_rows_it_uses() {
             "{style:?} lost a row"
         );
     }
-    for still in [BackdropStyle::Psp, BackdropStyle::Switch] {
+    for drifting in [BackdropStyle::Psp, BackdropStyle::Switch] {
         r.press(Btn::Right);
-        assert_eq!(r.a.backdrop().style, still);
+        assert_eq!(r.a.backdrop().style, drifting);
+        assert_eq!(
+            r.rows()[1],
+            choice("Motion", "Moving"),
+            "{drifting:?} stood still"
+        );
     }
     r.press(Btn::Right);
     assert_eq!(r.a.backdrop().style, BackdropStyle::Solid);
@@ -449,7 +454,7 @@ fn up_and_down_go_round_all_four_rows() {
 
 #[test]
 fn a_still_picture_pattern_is_drawn_rather_than_the_colour_alone() {
-    for style in [BackdropStyle::Ds, BackdropStyle::Psp, BackdropStyle::Switch] {
+    for style in [BackdropStyle::Ds] {
         let mut r = Rig::with(AppState {
             backdrop: Some(style),
             ..AppState::default()

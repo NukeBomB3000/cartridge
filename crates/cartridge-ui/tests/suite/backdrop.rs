@@ -29,7 +29,9 @@ fn a_pattern_repeats_every_period_so_drifting_it_never_shows_a_seam() {
 
 #[test]
 fn every_period_divides_every_canvas_so_a_still_pattern_sits_square() {
-    for style in patterns() {
+    // the PSP's waves are a picture the canvas wide, whatever the canvas
+    assert_eq!(backdrop_period(BackdropStyle::Psp), out_w());
+    for style in patterns().filter(|s| *s != BackdropStyle::Psp) {
         let p = backdrop_period(style);
         for size in [480, 640, 720] {
             assert_eq!(size % p, 0, "{style:?}'s {p} does not divide {size}");
