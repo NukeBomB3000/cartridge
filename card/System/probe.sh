@@ -1,7 +1,7 @@
 #!/bin/sh
 set -u
 
-SD="${AGS_CARD:-${OMEGA_ROOT:-/mnt/sdcard}}"
+SD="${AGS_CARD:-${CARTRIDGE_ROOT:-/mnt/sdcard}}"
 ETC="${AGS_ETC:-/etc}"
 VENDOR="${AGS_VENDOR:-/mnt/vendor}"
 SYSFS="${AGS_SYSFS:-/sys}"
@@ -169,7 +169,7 @@ card() {
 }
 
 report() {
-	printf '# omega-zero probe %s\n' "$(date '+%F %T' 2>/dev/null)"
+	printf '# cartridge probe %s\n' "$(date '+%F %T' 2>/dev/null)"
 	identity
 	display
 	input

@@ -1,5 +1,5 @@
 /*
-  omega-zero's site, laid out the way the kit's rules ask (kit/README.md): every size a whole
+  cartridge's site, laid out the way the kit's rules ask (kit/README.md): every size a whole
   number of art pixels (--u, 2px), every box and every word on a whole pixel, and only the --oz-*
   colours palette.js makes from the Theme colour, so the whole page turns with it.
 */
@@ -14,7 +14,7 @@
   --screen: calc(340 * var(--u));
 }
 * { box-sizing: border-box; }
-/* a tab's part is hidden by omega-tabs; nothing on the page may show it again */
+/* a tab's part is hidden by cartridge-tabs; nothing on the page may show it again */
 [hidden] { display: none !important; }
 
 html { background-color: var(--oz-bg); scroll-padding-bottom: calc(30 * var(--u)); }
@@ -83,16 +83,16 @@ section, .part { min-width: 0; }
 
 /* ---- the tabs, along the top ---- */
 .masthead { margin-bottom: calc(14 * var(--u)); }
-/* With scripts on, only the first part until omega-tabs has picked the one to show, so the page
+/* With scripts on, only the first part until cartridge-tabs has picked the one to show, so the page
    never shows every part for a moment; without scripts every part shows, one under the other. */
 .js main > .part:not([role]):not(:first-child) { display: none; }
 /* each part a column of its own blocks */
 .part { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(16 * var(--u)); align-content: start; }
 
 /* a modal as tall as what is in it: its panels take their own height instead of sharing its */
-omega-modal > omega-panel { flex: none; }
+cartridge-modal > cartridge-panel { flex: none; }
 
-/* ---- HOME: the logo and what omega-zero is, the featured loop under it or, on a wide page,
+/* ---- HOME: the logo and what cartridge is, the featured loop under it or, on a wide page,
    beside it ---- */
 .home-top { display: grid; grid-template-columns: minmax(0, 1fr); gap: calc(16 * var(--u)); }
 @media (min-width: 1032px) {
@@ -147,7 +147,7 @@ video.clip {
 .viewer { align-items: start; gap: calc(12 * var(--u)); }
 .shots { display: grid; gap: calc(16 * var(--u)); }
 .shot { margin: 0; display: grid; gap: calc(6 * var(--u)); max-width: var(--screen); }
-.shot omega-screen { width: 100%; }
+.shot cartridge-screen { width: 100%; }
 .shot figcaption { color: var(--oz-label); }
 /* with scripts on, the first screen only until site.js shows the one picked */
 .js .shots:not(.ready) .shot:not(:first-child),
@@ -180,7 +180,7 @@ video.clip {
 .prose { display: grid; gap: calc(7 * var(--u)); max-width: calc(300 * var(--u)); align-content: start; }
 .prose h3 { color: var(--oz-frame-hi); text-transform: uppercase; }
 .prose * + h3 { margin-top: calc(7 * var(--u)); }
-.split > omega-modal { max-width: var(--screen); }
+.split > cartridge-modal { max-width: var(--screen); }
 @media (min-width: 840px) {
   .split { grid-template-columns: calc(200 * var(--u)) minmax(0, 1fr); gap: calc(16 * var(--u)); }
 }

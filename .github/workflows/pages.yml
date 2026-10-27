@@ -37,7 +37,7 @@ jobs:
         run: |
           cp -RL site _site
           test -f _site/kit/foundation/pixel.js
-          test -f _site/logo/omega-zero-logo.png
+          test -f _site/logo/cartridge-logo.png
 
       - uses: actions/configure-pages@v5
 

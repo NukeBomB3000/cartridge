@@ -1,4 +1,4 @@
-omega-zero's screen looks (SELECT+X in a game) are, but for the scanlines and the CRT, slot's ports
+cartridge's screen looks (SELECT+X in a game) are, but for the scanlines and the CRT, slot's ports
 of shaders from the libretro shader collection
 https://github.com/libretro/glsl-shaders
 by way of slot, https://github.com/BrandonKowalski/slot
@@ -13,17 +13,17 @@ GNU General Public License version 2 or later.
 
 Simpletex, simpletex_lcd by jdgleaver, its grid the line weighting of zfast_lcd_standard as
 above. GNU General Public License version 2 or later.
-Changes in omega-zero: its preset's parameters fixed, and the paper texture drawn as grain
+Changes in cartridge: its preset's parameters fixed, and the paper texture drawn as grain
 rather than read from textured_paper.png.
 
 The paper's grain is Dave Hoskins' "Hash without Sine", MIT License, copyright (c) 2014.
 
 Transparent, zfast_lcd by Greg Hogan (SoltanGris42), copyright (C) 2017, GNU General Public
-License version 2 or later, under omega-zero's own code after the effect of mattakins' Pixel
+License version 2 or later, under cartridge's own code after the effect of mattakins' Pixel
 Transparency (bright pixels letting the unlit LCD's backing through, the dark ones casting a
 shadow on it), written without its code.
 
-The scanlines, the CRT, the curved CRT and DMG are omega-zero's own. DMG is after the Game Boy's four-green
+The scanlines, the CRT, the curved CRT and DMG are cartridge's own. DMG is after the Game Boy's four-green
 palette over Grid's line weighting.
 
-omega-zero itself is GNU General Public License version 3 or later, which these licenses permit.
+cartridge itself is GNU General Public License version 3 or later, which these licenses permit.

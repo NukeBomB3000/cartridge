@@ -2,7 +2,7 @@
 # Bluetooth. BaseOS boots with the radio blocked and nothing driving it: up unblocks it, loads
 # the Realtek chip's firmware over its UART with rtk_hciattach, and starts bluetoothd; down
 # undoes all of it. Pairings are bluetoothd's own, kept in /data/bluetooth. status prints the
-# devices the radio knows one to a line, a tab between each field, for omega-zero to read:
+# devices the radio knows one to a line, a tab between each field, for cartridge to read:
 #
 #   device=<MAC>	<audio|gamepad|keyboard|other>	<paired>	<trusted>	<connected>	<name>
 #
@@ -35,11 +35,11 @@ TIMEOUT="${AGS_TIMEOUT:-timeout}"
 PIDOF="${AGS_PIDOF:-pidof}"
 
 HCI=hci0
-UP_MARK="$RUN/omega-bt.up"
-ATTACH_PID="$RUN/omega-bt-attach.pid"
-SCAN_PID="$RUN/omega-bt-scan.pid"
-PAIR_FIFO="$RUN/omega-bt-pair.fifo"
-PAIR_LOG="$RUN/omega-bt-pair.log"
+UP_MARK="$RUN/cartridge-bt.up"
+ATTACH_PID="$RUN/cartridge-bt-attach.pid"
+SCAN_PID="$RUN/cartridge-bt-scan.pid"
+PAIR_FIFO="$RUN/cartridge-bt-pair.fifo"
+PAIR_LOG="$RUN/cartridge-bt-pair.log"
 
 nap() {
 	sleep 0.25 2>/dev/null || sleep 1
@@ -158,7 +158,7 @@ bt_down() {
 		$HCICONFIG "$HCI" down >/dev/null 2>&1
 	fi
 	stop_pid "$ATTACH_PID"
-	# one started by hand, outside omega-zero, would keep the radio too
+	# one started by hand, outside cartridge, would keep the radio too
 	name="$(basename "$HCIATTACH")"
 	pids="$($PIDOF "$name" 2>/dev/null)"
 	if [ -n "$pids" ]; then
@@ -219,7 +219,7 @@ bt_status() {
 	bt_devices
 }
 
-# Discovery lasts as long as the bluetoothctl that asked for it: until omega-zero turns it off,
+# Discovery lasts as long as the bluetoothctl that asked for it: until cartridge turns it off,
 # which it does once it has looked for long enough, and at most SCAN_S, so a frontend that is
 # gone stops it too.
 bt_scan() {
@@ -290,7 +290,7 @@ until_yes() {
 }
 
 # bluetoothd forgets a device only found within half a minute of discovery stopping, while
-# omega-zero still offers it: the pairing bluetoothctl looks for $1 again, for up to $2 seconds,
+# cartridge still offers it: the pairing bluetoothctl looks for $1 again, for up to $2 seconds,
 # until it is back.
 refind() {
 	known "$1" && return 0
@@ -309,7 +309,7 @@ refind() {
 bt_pair() {
 	mac_ok "${1:-}" || return 2
 	running || return 1
-	# discovery slows a pairing down; omega-zero looks again only when asked
+	# discovery slows a pairing down; cartridge looks again only when asked
 	stop_pid "$SCAN_PID"
 	/bin/rm -f "$PAIR_FIFO" "$PAIR_LOG"
 	mkfifo "$PAIR_FIFO" || return 1

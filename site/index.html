@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>omega-zero</title>
+<title>Cartridge</title>
 <meta name="description" content="A Game Boy-centric frontend for Anbernic H700 handhelds running BaseOS, for GBA, GBC, GB, NES, SNES, Mega Drive, PC Engine and PlayStation games.">
 <meta name="author" content="Otávio (@oauramos)">
 <link rel="author" href="https://github.com/oauramos">
 <meta name="theme-color" content="#050508">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://oauramos.github.io/omega-zero/">
-<meta property="og:title" content="omega-zero">
+<meta property="og:title" content="Cartridge">
 <meta property="og:description" content="A Game Boy-centric frontend for Anbernic H700 handhelds running BaseOS, for GBA, GBC, GB, NES, SNES, Mega Drive, PC Engine and PlayStation games.">
 <meta property="og:image" content="https://oauramos.github.io/omega-zero/logo/bootlogo-pixel-640x480.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -18,7 +18,7 @@
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "omega-zero",
+  "name": "cartridge",
   "description": "A Game Boy-centric frontend for Anbernic H700 handhelds running BaseOS, for GBA, GBC, GB, NES, SNES, Mega Drive, PC Engine and PlayStation games.",
   "url": "https://oauramos.github.io/omega-zero/",
   "applicationCategory": "GameApplication",
@@ -28,7 +28,7 @@
 }
 </script>
 <!--
-  omega-zero's site, drawn with the UI kit the console's menus are drawn from: kit/ is
+  Cartridge's site, drawn with the UI kit the console's menus are drawn from: kit/ is
   assets/ui and logo/ is assets/logo, linked here so the page opens straight from disk, and
   copied in whole when .github/workflows/pages.yml publishes the site. site.css lays the page
   out on the kit's art pixels and site.js drives what moves. The page is six tabs, one part of
@@ -44,34 +44,34 @@
 <script src="kit/foundation/pixel.js"></script>
 <script src="kit/foundation/backdrop.js"></script>
 <script src="kit/foundation/palette.js"></script>
-<script src="kit/components/omega-modal.js"></script>
-<script src="kit/components/omega-panel.js"></script>
-<script src="kit/components/omega-row.js"></script>
+<script src="kit/components/cartridge-modal.js"></script>
+<script src="kit/components/cartridge-panel.js"></script>
+<script src="kit/components/cartridge-row.js"></script>
 <script src="kit/components/action-left.js"></script>
 <script src="kit/components/action-right.js"></script>
-<script src="kit/components/omega-bar.js"></script>
-<script src="kit/components/omega-button.js"></script>
-<script src="kit/components/omega-screen.js"></script>
-<script src="kit/components/omega-card.js"></script>
-<script src="kit/components/omega-code.js"></script>
-<script src="kit/components/omega-tabs.js"></script>
+<script src="kit/components/cartridge-bar.js"></script>
+<script src="kit/components/cartridge-button.js"></script>
+<script src="kit/components/cartridge-screen.js"></script>
+<script src="kit/components/cartridge-card.js"></script>
+<script src="kit/components/cartridge-code.js"></script>
+<script src="kit/components/cartridge-tabs.js"></script>
 <script src="site.js" defer></script>
 </head>
 <body>
-<div class="omega-backdrop page-backdrop" data-moving aria-hidden="true"></div>
+<div class="cartridge-backdrop page-backdrop" data-moving aria-hidden="true"></div>
 <a class="skip" href="#content">Skip to the content</a>
 
 <header class="column masthead">
-  <h1 class="sr-only">omega-zero</h1>
+  <h1 class="sr-only">Cartridge</h1>
   <nav aria-label="Site">
-    <omega-tabs label="omega-zero" hash>
+    <cartridge-tabs label="cartridge" hash>
       <a href="#home">HOME</a>
       <a href="#screens">SCREENS</a>
       <a href="#install">INSTALL</a>
       <a href="#devices">DEVICES</a>
       <a href="#features">FEATURES</a>
       <a href="#credits">CREDITS</a>
-    </omega-tabs>
+    </cartridge-tabs>
   </nav>
 </header>
 
@@ -83,68 +83,68 @@
     <div class="home-top">
       <div class="hero">
         <p class="logo"><picture>
-          <source media="(max-width: 451px)" srcset="logo/omega-zero-logo-small.png" width="324" height="180">
-          <img src="logo/omega-zero-logo.png" width="420" height="232" alt="omega-zero">
+          <source media="(max-width: 451px)" srcset="logo/cartridge-logo-small.png" width="324" height="180">
+          <img src="logo/cartridge-logo.png" width="420" height="232" alt="cartridge">
         </picture></p>
         <p class="tagline">A Game Boy-centric frontend for Anbernic H700 handhelds running
           <a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>. It plays GBA, GBC and GB games, and
           NES, SNES, Mega Drive, PC Engine and PlayStation games too, on a shelf of cartridges and discs that go down into the
           handheld when you play them.</p>
         <div class="buttons">
-          <omega-button primary><a href="https://github.com/oauramos/omega-zero/releases/latest">DOWNLOAD</a></omega-button>
-          <omega-button><a href="#install">INSTALL</a></omega-button>
-          <omega-button><a href="https://github.com/oauramos/omega-zero">SOURCE</a></omega-button>
+          <cartridge-button primary><a href="https://github.com/oauramos/omega-zero/releases/latest">DOWNLOAD</a></cartridge-button>
+          <cartridge-button><a href="#install">INSTALL</a></cartridge-button>
+          <cartridge-button><a href="https://github.com/oauramos/omega-zero">SOURCE</a></cartridge-button>
         </div>
         <p class="dim">Made for the RG35XX SP first; the rest of the H700 family follows.</p>
       </div>
 
       <figure class="loop loop-featured">
-        <omega-modal>
-          <omega-panel label="RG35XX SP" active>
+        <cartridge-modal>
+          <cartridge-panel label="RG35XX SP" active>
             <video class="clip" controls muted loop playsinline preload="none" width="1280" height="960"
               poster="media/loops/lid.webp"
               aria-label="An RG35XX SP drawn in 3D, open on the shelf of GBA carts, closes its lid, rests shut, then opens again, its screen showing the BIOS screen, the opening after Mega Man X5's boot terminal and the shelf fading in">
               <source src="media/loops/lid.webm" type='video/webm; codecs="vp9"'>
               <source src="media/loops/lid.mp4" type="video/mp4">
             </video>
-          </omega-panel>
-        </omega-modal>
+          </cartridge-panel>
+        </cartridge-modal>
         <figcaption>At boot a BIOS screen, then an opening after Mega Man X5's boot terminal, then the
           shelf fades in, already moving.</figcaption>
       </figure>
     </div>
 
-    <omega-modal>
-      <omega-panel label="HIGHLIGHTS" active>
+    <cartridge-modal>
+      <cartridge-panel label="HIGHLIGHTS" active>
         <div class="cards cards-four">
-          <omega-card icon="cart">
+          <cartridge-card icon="cart">
             <h3 slot="title">The shelf</h3>
             <p>Game Boy carts in their own plastics, NES and Famicom carts, SNES carts, Mega Drive and Genesis carts, PC Engine HuCards and PlayStation discs, with real
               label scans. The one you are on floats and sways, and goes down into the handheld as
               the game comes on like a tube TV.</p>
-          </omega-card>
-          <omega-card icon="window">
+          </cartridge-card>
+          <cartridge-card icon="window">
             <h3 slot="title">Settings</h3>
             <p>On START, in windows in the style of Mega Man Zero's menus that slide from screen
               to screen.</p>
-          </omega-card>
-          <omega-card icon="chip">
+          </cartridge-card>
+          <cartridge-card icon="chip">
             <h3 slot="title">Eight cores</h3>
             <p>mGBA and gpSP for the GBA, Snes9x and Supafaust for the SNES, chosen per cart,
               FCEUmm for the NES, Genesis Plus GX for the Mega Drive, Beetle PCE Fast for the PC Engine and PCSX ReARMed for the PlayStation.</p>
-          </omega-card>
-          <omega-card icon="wifi">
+          </cartridge-card>
+          <cartridge-card icon="wifi">
             <h3 slot="title">Network</h3>
             <p>Home Wi-Fi with SSH and SFTP, network time, and cart labels from
               ScreenScraper.</p>
-          </omega-card>
+          </cartridge-card>
         </div>
         <div class="buttons panel-buttons">
-          <omega-button><a href="#features">ALL FEATURES</a></omega-button>
-          <omega-button><a href="#screens">SCREENS</a></omega-button>
+          <cartridge-button><a href="#features">ALL FEATURES</a></cartridge-button>
+          <cartridge-button><a href="#screens">SCREENS</a></cartridge-button>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
   </section>
 
   <!-- ==== SCREENS ==== -->
@@ -152,81 +152,81 @@
     <h2 id="screens-title" class="sr-only">Screens</h2>
     <div class="shots">
       <figure class="shot" id="shot-shelf" data-label="SHELF">
-        <omega-screen led><img src="media/shelf.png" width="640" height="480"
-          alt="The shelf: a row of GBA carts with Emerald in the middle, the top bar with Wi-Fi, ssh, the clock and the battery, and the bottom bar with SELECT CONTROLS, a GBA pill and START SETTINGS"></omega-screen>
+        <cartridge-screen led><img src="media/shelf.png" width="640" height="480"
+          alt="The shelf: a row of GBA carts with Emerald in the middle, the top bar with Wi-Fi, ssh, the clock and the battery, and the bottom bar with SELECT CONTROLS, a GBA pill and START SETTINGS"></cartridge-screen>
         <figcaption>The shelf. The cart you are on floats and sways; A sends it down into the
           handheld and the game starts. SELECT opens CONTROLS, START opens Settings.</figcaption>
       </figure>
       <figure class="shot" id="shot-insert" data-label="INSERT">
-        <omega-screen led><picture>
+        <cartridge-screen led><picture>
           <source media="(prefers-reduced-motion: reduce)" srcset="media/insert-still.png">
           <img src="media/insert.webp" width="640" height="480" loading="lazy"
             alt="Emerald rising a little, then pulled down out of the bottom of the screen, and the game's screen coming on like a tube TV">
-        </picture></omega-screen>
+        </picture></cartridge-screen>
         <figcaption>A cart going in: it rises a little, is pulled down out of the screen into the
           handheld, and the game comes on like a tube TV.</figcaption>
       </figure>
       <figure class="shot" id="shot-game" data-label="IN GAME">
-        <omega-screen led><img src="media/game.png" width="640" height="480" loading="lazy"
-          alt="A test pattern standing in for a GBA game, filling the width of the screen over the console's body with the GAME BOY ADVANCE logo, and the VOLUME gauge over its top"></omega-screen>
+        <cartridge-screen led><img src="media/game.png" width="640" height="480" loading="lazy"
+          alt="A test pattern standing in for a GBA game, filling the width of the screen over the console's body with the GAME BOY ADVANCE logo, and the VOLUME gauge over its top"></cartridge-screen>
         <figcaption>In a game. GBA fills the width of a 640x480 screen through a sharp scaler, over
           the console's body; Game Boy stays at 3x through an LCD mask. The NES, SNES, Mega Drive
           and PC Engine are drawn at twice their size and the PlayStation at 4:3, all through the sharp scaler;
           SELECT+Y goes round integer, 4:3 and stretched, and SELECT+X through screen looks.</figcaption>
       </figure>
       <figure class="shot" id="shot-settings" data-label="SETTINGS">
-        <omega-screen led><img src="media/settings.png" width="640" height="480" loading="lazy"
-          alt="Settings: a window with two panels, CONFIGS (Fast Forward 6X, Fast Forward Sound, Colour Correction, Rumble, Labels) and GENERAL (Date and Time, Network, Bluetooth, Theme, About), over the grid"></omega-screen>
+        <cartridge-screen led><img src="media/settings.png" width="640" height="480" loading="lazy"
+          alt="Settings: a window with two panels, CONFIGS (Fast Forward 6X, Fast Forward Sound, Colour Correction, Rumble, Labels) and GENERAL (Date and Time, Network, Bluetooth, Theme, About), over the grid"></cartridge-screen>
         <figcaption>Settings, on START, in the style of Mega Man Zero's menus. CONFIGS holds Fast
           Forward, Fast Forward Sound, Colour Correction, Rumble and Labels; GENERAL holds Date &amp;
           Time, Network, Bluetooth, Theme and About.</figcaption>
       </figure>
       <figure class="shot" id="shot-controls" data-label="CONTROLS">
-        <omega-screen led><img src="media/controls.png" width="640" height="480" loading="lazy"
-          alt="CONTROLS: what every button does on the shelf and in a game, in two columns on one panel"></omega-screen>
+        <cartridge-screen led><img src="media/controls.png" width="640" height="480" loading="lazy"
+          alt="CONTROLS: what every button does on the shelf and in a game, in two columns on one panel"></cartridge-screen>
         <figcaption>A tap of SELECT on the shelf lists what every button does, on the shelf and in
           a game, on one panel.</figcaption>
       </figure>
       <figure class="shot" id="shot-network" data-label="NETWORK">
-        <omega-screen led><img src="media/network.png" width="640" height="480" loading="lazy"
-          alt="Network: Wi-Fi, Network Time and SSH all ON, and AVAILABLE NETWORKS listing Home (connected), Café Wi-Fi, Upstairs 5G and PrinterSetup with their padlocks and signal"></omega-screen>
+        <cartridge-screen led><img src="media/network.png" width="640" height="480" loading="lazy"
+          alt="Network: Wi-Fi, Network Time and SSH all ON, and AVAILABLE NETWORKS listing Home (connected), Café Wi-Fi, Upstairs 5G and PrinterSetup with their padlocks and signal"></cartridge-screen>
         <figcaption>Network switches Wi-Fi, Network Time and SSH, ON or OFF; Y on one opens its
           panel, and X scans. Each network shows its signal, a padlock if it has a passphrase, and
           CONNECTED, JOINING or SAVED.</figcaption>
       </figure>
       <figure class="shot" id="shot-bluetooth" data-label="BLUETOOTH">
-        <omega-screen led><img src="media/bluetooth.png" width="640" height="480" loading="lazy"
-          alt="Bluetooth: the radio ON, and DEVICES listing a gamepad (connected), headphones (paired), a keyboard and a smart band"></omega-screen>
+        <cartridge-screen led><img src="media/bluetooth.png" width="640" height="480" loading="lazy"
+          alt="Bluetooth: the radio ON, and DEVICES listing a gamepad (connected), headphones (paired), a keyboard and a smart band"></cartridge-screen>
         <figcaption>Bluetooth lists the devices paired, then those it finds. A pairs a new one and
           connects it; Y forgets a paired one.</figcaption>
       </figure>
       <figure class="shot" id="shot-theme" data-label="THEME">
-        <omega-screen led><img src="media/theme.png" width="640" height="480" loading="lazy"
-          alt="Theme: Background (Plates, lit), Motion Moving, Colour Night and Font Bold, over the plates pattern"></omega-screen>
+        <cartridge-screen led><img src="media/theme.png" width="640" height="480" loading="lazy"
+          alt="Theme: Background (Plates, lit), Motion Moving, Colour Night and Font Bold, over the plates pattern"></cartridge-screen>
         <figcaption>Theme picks the background's pattern, its motion and its colour, and the font
           of the bottom bar's big words, Bold or Thin.</figcaption>
       </figure>
       <figure class="shot" id="shot-amber" data-label="AMBER">
-        <omega-screen led><img src="media/amber.png" width="640" height="480" loading="lazy"
-          alt="Settings again, in Amber: the window, its panels and the bottom bar in Mega Man Zero's own orange and brown"></omega-screen>
+        <cartridge-screen led><img src="media/amber.png" width="640" height="480" loading="lazy"
+          alt="Settings again, in Amber: the window, its panels and the bottom bar in Mega Man Zero's own orange and brown"></cartridge-screen>
         <figcaption>The menus and both bars take their colours from Theme's colour. Night is grey;
           Amber is Mega Man Zero's own.</figcaption>
       </figure>
       <figure class="shot" id="shot-slide" data-label="SLIDES">
-        <omega-screen led><img src="media/slide.png" width="640" height="480" loading="lazy"
-          alt="Halfway from the shelf to Settings: the carts going out to the left as the Settings window comes in from the right"></omega-screen>
+        <cartridge-screen led><img src="media/slide.png" width="640" height="480" loading="lazy"
+          alt="Halfway from the shelf to Settings: the carts going out to the left as the Settings window comes in from the right"></cartridge-screen>
         <figcaption>Every move between screens slides, over a background that keeps moving. From
           the shelf, the carts go out to the left as Settings comes in from the right.</figcaption>
       </figure>
     </div>
     <div class="picker-side">
-      <omega-modal class="picker-modal">
-        <omega-panel label="SCREENS" active>
+      <cartridge-modal class="picker-modal">
+        <cartridge-panel label="SCREENS" active>
           <div class="picker" role="tablist" aria-orientation="vertical" aria-label="Screens"></div>
-        </omega-panel>
-      </omega-modal>
+        </cartridge-panel>
+      </cartridge-modal>
       <div class="buttons auto-buttons" hidden>
-        <omega-button><button type="button" class="auto-toggle" aria-pressed="false">PAUSE</button></omega-button>
+        <cartridge-button><button type="button" class="auto-toggle" aria-pressed="false">PAUSE</button></cartridge-button>
       </div>
     </div>
   </section>
@@ -236,28 +236,28 @@
     <h2 id="install-title" class="sr-only">Install</h2>
 
     <div class="split">
-      <omega-modal class="side-modal">
-        <omega-panel label="WHAT YOU NEED" active>
-          <omega-row label="BASEOS" value="FOR YOUR MODEL"></omega-row>
-          <omega-row label="MICROSD" value="ONE OR TWO"></omega-row>
-          <omega-row label="OMEGA-ZERO" value="LATEST"></omega-row>
-          <omega-row label="GAMES" value="GBA GB GBC NES SNES MD PCE PS1"></omega-row>
-        </omega-panel>
-      </omega-modal>
+      <cartridge-modal class="side-modal">
+        <cartridge-panel label="WHAT YOU NEED" active>
+          <cartridge-row label="BASEOS" value="FOR YOUR MODEL"></cartridge-row>
+          <cartridge-row label="MICROSD" value="ONE OR TWO"></cartridge-row>
+          <cartridge-row label="CARTRIDGE" value="LATEST"></cartridge-row>
+          <cartridge-row label="GAMES" value="GBA GB GBC NES SNES MD PCE PS1"></cartridge-row>
+        </cartridge-panel>
+      </cartridge-modal>
       <div class="prose">
-        <p>omega-zero runs on <a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>, a minimal
+        <p>Cartridge runs on <a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>, a minimal
           Linux for H700 handhelds. You need the BaseOS image for your exact model.</p>
         <p>It runs from the card BaseOS is on, in SD1, or from a second card in SD2 beside
           it.</p>
         <div class="buttons">
-          <omega-button primary><a href="https://github.com/oauramos/omega-zero/releases/latest">DOWNLOAD</a></omega-button>
-          <omega-button><a href="https://github.com/pvaibhav/BaseOS/releases/latest">BASEOS</a></omega-button>
+          <cartridge-button primary><a href="https://github.com/oauramos/omega-zero/releases/latest">DOWNLOAD</a></cartridge-button>
+          <cartridge-button><a href="https://github.com/pvaibhav/BaseOS/releases/latest">BASEOS</a></cartridge-button>
         </div>
       </div>
     </div>
 
-    <omega-modal>
-      <omega-panel label="ON ONE CARD" active id="one-card">
+    <cartridge-modal>
+      <cartridge-panel label="ON ONE CARD" active id="one-card">
         <div class="steps">
           <ol>
             <li>Download the BaseOS image for your device from the
@@ -268,41 +268,41 @@
             <li>Put the card in the slot marked SD1 (TF1) and power on. BaseOS expands its storage,
               then says no frontend was found. Power off.</li>
             <li>Download the latest
-              <a href="https://github.com/oauramos/omega-zero/releases/latest">omega-zero
-              release</a>, unzip it, and copy the contents of the <code>omega-zero-vX.Y.Z/</code>
+              <a href="https://github.com/oauramos/omega-zero/releases/latest">cartridge
+              release</a>, unzip it, and copy the contents of the <code>cartridge-vX.Y.Z/</code>
               folder to the root of the card.</li>
             <li>Put your games in <code>Games/GBA</code>, <code>Games/GB</code>,
               <code>Games/GBC</code>, <code>Games/NES</code>, <code>Games/SNES</code>,
               <code>Games/MD</code>, <code>Games/PCE</code> and
               <code>Games/PS1</code>. Labels
-              are optional: omega-zero can fetch them itself over Wi-Fi.</li>
+              are optional: Cartridge can fetch them itself over Wi-Fi.</li>
             <li>Put the card back in SD1 and boot. On the shelf, START opens Settings and a tap of
               SELECT shows every button.</li>
           </ol>
-          <omega-code label="THE RELEASE"><pre>omega-zero-vX.Y.Z-h700.zip
-  omega-zero-vX.Y.Z/      copy its contents to the card's root</pre></omega-code>
+          <cartridge-code label="THE RELEASE"><pre>cartridge-vX.Y.Z-h700.zip
+  cartridge-vX.Y.Z/      copy its contents to the card's root</pre></cartridge-code>
         </div>
-      </omega-panel>
-      <omega-panel label="ON TWO CARDS" id="two-cards">
+      </cartridge-panel>
+      <cartridge-panel label="ON TWO CARDS" id="two-cards">
         <div class="steps">
           <ol>
             <li>Write BaseOS to the card in SD1 as above.</li>
             <li>Format a second card as FAT32 or exFAT with an MBR partition table, and copy the
-              contents of the release's <code>omega-zero-vX.Y.Z/</code> folder to it.</li>
-            <li>Add your games to the second card and put it in SD2. BaseOS runs omega-zero from
+              contents of the release's <code>cartridge-vX.Y.Z/</code> folder to it.</li>
+            <li>Add your games to the second card and put it in SD2. BaseOS runs Cartridge from
               SD2 whenever one is there.</li>
           </ol>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
 
-    <omega-modal>
-      <omega-panel label="THE CARD" active id="the-card">
+    <cartridge-modal>
+      <cartridge-panel label="THE CARD" active id="the-card">
         <div class="steps">
-          <p>omega-zero creates these folders on first boot. Nothing loose at the top of
+          <p>Cartridge creates these folders on first boot. Nothing loose at the top of
             <code>Games/</code>, <code>Saves/</code>, <code>Labels/</code> or <code>States/</code>
             reaches the shelf.</p>
-          <omega-code label="FOLDERS"><pre>Games/GBA/     your legally obtained games,
+          <cartridge-code label="FOLDERS"><pre>Games/GBA/     your legally obtained games,
 Games/GB/      a folder for each platform
 Games/GBC/
 Games/NES/     .nes
@@ -322,8 +322,8 @@ Wallpapers/    .png wallpapers for the shelf
 Overlays/...   your overlays, per platform
 Config/        settings, wifi.conf with the networks
                you have joined, your ScreenScraper account
-System/        omega-zero itself, its cores and its
-               licences; replaced on every update</pre></omega-code>
+System/        Cartridge itself, its cores and its
+               licences; replaced on every update</pre></cartridge-code>
           <p>A label for <code>Games/GBA/Metroid Fusion.gba</code> is
             <code>Labels/GBA/Metroid Fusion.png</code>. Per-cart shell colours go in
             <code>Config/cart_shell.ini</code>, which can also stand a SNES cart in the American
@@ -334,31 +334,31 @@ System/        omega-zero itself, its cores and its
             <code>(Disc 1)</code>, <code>(Disc 2)</code> and so on are put together, or list them
             in an <code>.m3u</code> yourself.</p>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
 
-    <omega-modal>
-      <omega-panel label="UPDATING" active id="updating">
+    <cartridge-modal>
+      <cartridge-panel label="UPDATING" active id="updating">
         <div class="steps">
-          <p>Replace the <code>System/</code> folder on the card omega-zero runs from with the one
+          <p>Replace the <code>System/</code> folder on the card Cartridge runs from with the one
             from the new release. Your games, saves, save states, labels, wallpapers, overlays and
             settings all live outside <code>System/</code>.</p>
           <p>Once Wi-Fi is set up, you can also copy the new <code>System/</code> over SFTP.</p>
         </div>
-      </omega-panel>
-      <omega-panel label="OVER WI-FI" id="sftp">
+      </cartridge-panel>
+      <cartridge-panel label="OVER WI-FI" id="sftp">
         <div class="steps">
           <p>BaseOS runs an SSH server with SFTP. On Settings &gt; Network, the SSH row switches
             it ON or OFF, and Y on that row shows how to log in: the handheld's address, its name
             such as <code>rg35xxsp.local</code>, user <code>root</code>, the password and port 22.
             SFTP uses the same login.</p>
-          <p>The card omega-zero runs from is <code>/mnt/sdcard</code>, so games go in
+          <p>The card Cartridge runs from is <code>/mnt/sdcard</code>, so games go in
             <code>/mnt/sdcard/Games/GBA</code> and so on. Use any SFTP client, such as
             <a href="https://cyberduck.io">Cyberduck</a>,
             <a href="https://filezilla-project.org">FileZilla</a> or <code>scp</code>.</p>
-          <omega-code label="TERMINAL" copy><pre>scp "Metroid Fusion.gba" root@rg35xxsp.local:/mnt/sdcard/Games/GBA/</pre></omega-code>
+          <cartridge-code label="TERMINAL" copy><pre>scp "Metroid Fusion.gba" root@rg35xxsp.local:/mnt/sdcard/Games/GBA/</pre></cartridge-code>
           <ul>
-            <li>The password is six random digits omega-zero gives root the first time it runs on
+            <li>The password is six random digits Cartridge gives root the first time it runs on
               a card, kept as <code>ssh_password=</code> in <code>baseos.conf</code> at the root
               of the card in SD1. A password you set there yourself is kept.</li>
             <li>The name is the model's own (<code>rg35xxsp</code>, <code>rgsp</code>, ...)
@@ -368,8 +368,8 @@ System/        omega-zero itself, its cores and its
             <li>The RG35XX 2024 shares its BaseOS image with the Plus but has no radio.</li>
           </ul>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
 
     <p class="more">Controls, overlays, link play, cart labels and everything else are in the
       <a href="https://github.com/oauramos/omega-zero/wiki">wiki</a>.</p>
@@ -381,66 +381,66 @@ System/        omega-zero itself, its cores and its
 
     <div class="split split-wide">
       <figure class="loop">
-        <omega-modal>
-          <omega-panel label="RG35XX SP" active>
+        <cartridge-modal>
+          <cartridge-panel label="RG35XX SP" active>
             <video class="clip" controls muted loop playsinline preload="none" width="1280" height="960"
               data-poster="media/loops/orbit.webp"
               aria-label="An RG35XX SP drawn in 3D turns slowly from side to side while its shelf slides from cart to cart: Emerald, Fire Red, Minish Cap and Zelda, twice round">
               <source src="media/loops/orbit.webm" type='video/webm; codecs="vp9"'>
               <source src="media/loops/orbit.mp4" type="video/mp4">
             </video>
-          </omega-panel>
-        </omega-modal>
+          </cartridge-panel>
+        </cartridge-modal>
       </figure>
       <div class="prose">
         <h3>The main target</h3>
-        <p>The RG35XX SP is the main target, in daily use: omega-zero is laid out for its 640x480
+        <p>The RG35XX SP is the main target, in daily use: Cartridge is laid out for its 640x480
           panel, with GBA filling the width.</p>
-        <p>One build runs on all of them: omega-zero reads the model from BaseOS at boot and lays
+        <p>One build runs on all of them: Cartridge reads the model from BaseOS at boot and lays
           itself out for its panel.</p>
       </div>
     </div>
 
     <div class="split">
-      <omega-modal class="side-modal">
-        <omega-panel label="SUPPORTED" active>
-          <omega-row label="RG35XX SP" value="640X480" lit></omega-row>
-          <omega-row label="RG SP" value="720X480"></omega-row>
-        </omega-panel>
-        <omega-panel label="UNTESTED">
-          <omega-row label="RG34XX SP" value="720X480"></omega-row>
-          <omega-row label="RG34XX" value="720X480"></omega-row>
-          <omega-row label="RG35XX PLUS" value="640X480"></omega-row>
-          <omega-row label="RG35XX 2024" value="640X480"></omega-row>
-          <omega-row label="RG35XX H" value="640X480"></omega-row>
-          <omega-row label="RG35XX PRO" value="640X480"></omega-row>
-          <omega-row label="RG40XX H" value="640X480"></omega-row>
-          <omega-row label="RG40XX V" value="640X480"></omega-row>
-        </omega-panel>
-        <omega-panel label="EXPERIMENTAL">
-          <omega-row label="RG CUBEXX" value="720X720"></omega-row>
-          <omega-row label="RG28XX" value="480X640"></omega-row>
-        </omega-panel>
-      </omega-modal>
+      <cartridge-modal class="side-modal">
+        <cartridge-panel label="SUPPORTED" active>
+          <cartridge-row label="RG35XX SP" value="640X480" lit></cartridge-row>
+          <cartridge-row label="RG SP" value="720X480"></cartridge-row>
+        </cartridge-panel>
+        <cartridge-panel label="UNTESTED">
+          <cartridge-row label="RG34XX SP" value="720X480"></cartridge-row>
+          <cartridge-row label="RG34XX" value="720X480"></cartridge-row>
+          <cartridge-row label="RG35XX PLUS" value="640X480"></cartridge-row>
+          <cartridge-row label="RG35XX 2024" value="640X480"></cartridge-row>
+          <cartridge-row label="RG35XX H" value="640X480"></cartridge-row>
+          <cartridge-row label="RG35XX PRO" value="640X480"></cartridge-row>
+          <cartridge-row label="RG40XX H" value="640X480"></cartridge-row>
+          <cartridge-row label="RG40XX V" value="640X480"></cartridge-row>
+        </cartridge-panel>
+        <cartridge-panel label="EXPERIMENTAL">
+          <cartridge-row label="RG CUBEXX" value="720X720"></cartridge-row>
+          <cartridge-row label="RG28XX" value="480X640"></cartridge-row>
+        </cartridge-panel>
+      </cartridge-modal>
       <div class="prose">
         <p>The RG SP is supported, not yet retested on hardware. The RG28XX's panel is mounted
-          turned, and omega-zero turns it back.</p>
+          turned, and Cartridge turns it back.</p>
         <p>"Untested" means nobody has reported back yet. Own one? A device report is the most
           useful thing you can send.</p>
         <h3 id="device-report">A device report</h3>
         <div class="steps">
           <ol>
             <li>Create an empty file named <code>RUN_PROBE</code> at the root of the card
-              omega-zero runs from.</li>
-            <li>Boot. omega-zero writes <code>probe-&lt;device&gt;-&lt;date&gt;.txt</code> next
+              Cartridge runs from.</li>
+            <li>Boot. Cartridge writes <code>probe-&lt;device&gt;-&lt;date&gt;.txt</code> next
               to it and deletes <code>RUN_PROBE</code>.</li>
             <li>Open a device report with the file attached, and say what worked.</li>
           </ol>
           <p>Over SSH, this does the same:</p>
-          <omega-code label="TERMINAL" copy><pre>sh /mnt/sdcard/System/probe.sh</pre></omega-code>
+          <cartridge-code label="TERMINAL" copy><pre>sh /mnt/sdcard/System/probe.sh</pre></cartridge-code>
         </div>
         <div class="buttons">
-          <omega-button primary><a href="https://github.com/oauramos/omega-zero/issues/new?template=device-report.yml">DEVICE REPORT</a></omega-button>
+          <cartridge-button primary><a href="https://github.com/oauramos/omega-zero/issues/new?template=device-report.yml">DEVICE REPORT</a></cartridge-button>
         </div>
       </div>
     </div>
@@ -452,16 +452,16 @@ System/        omega-zero itself, its cores and its
 
     <div class="split split-wide">
       <figure class="loop">
-        <omega-modal>
-          <omega-panel label="A CART GOING IN" active>
+        <cartridge-modal>
+          <cartridge-panel label="A CART GOING IN" active>
             <video class="clip" controls muted loop playsinline preload="none" width="1280" height="960"
               data-poster="media/loops/cart.webp"
               aria-label="An RG35XX SP drawn in 3D: A pulls Emerald down out of the screen into the handheld, the screen comes on like a tube TV with a test pattern standing in for the game, and holding MENU turns it off and brings the cart back up onto the shelf">
               <source src="media/loops/cart.webm" type='video/webm; codecs="vp9"'>
               <source src="media/loops/cart.mp4" type="video/mp4">
             </video>
-          </omega-panel>
-        </omega-modal>
+          </cartridge-panel>
+        </cartridge-modal>
       </figure>
       <div class="prose">
         <h3>The shelf</h3>
@@ -485,16 +485,16 @@ System/        omega-zero itself, its cores and its
 
     <div class="split split-wide">
       <figure class="loop">
-        <omega-modal>
-          <omega-panel label="SETTINGS" active>
+        <cartridge-modal>
+          <cartridge-panel label="SETTINGS" active>
             <video class="clip" controls muted loop playsinline preload="none" width="1280" height="960"
               data-poster="media/loops/settings.webp"
               aria-label="An RG35XX SP drawn in 3D, close on its screen: START slides Settings in over the shelf, the cursor goes down to Network and in, back, down to Theme and in, then back out to the shelf">
               <source src="media/loops/settings.webm" type='video/webm; codecs="vp9"'>
               <source src="media/loops/settings.mp4" type="video/mp4">
             </video>
-          </omega-panel>
-        </omega-modal>
+          </cartridge-panel>
+        </cartridge-modal>
       </figure>
       <div class="prose">
         <h3>Settings</h3>
@@ -508,16 +508,16 @@ System/        omega-zero itself, its cores and its
 
     <div class="split split-wide">
       <figure class="loop">
-        <omega-modal>
-          <omega-panel label="THEME" active>
+        <cartridge-modal>
+          <cartridge-panel label="THEME" active>
             <video class="clip" controls muted loop playsinline preload="none" width="1280" height="960"
               data-poster="media/loops/theme.webp"
               aria-label="An RG35XX SP drawn in 3D, close on its screen: on Settings, Theme, the Colour row steps through Night, Slate, Navy, Teal, Green, Plum, Crimson and Amber, and the window, the bars and the grid take each colour">
               <source src="media/loops/theme.webm" type='video/webm; codecs="vp9"'>
               <source src="media/loops/theme.mp4" type="video/mp4">
             </video>
-          </omega-panel>
-        </omega-modal>
+          </cartridge-panel>
+        </cartridge-modal>
       </figure>
       <div class="prose">
         <h3>Theme</h3>
@@ -528,25 +528,25 @@ System/        omega-zero itself, its cores and its
     </div>
 
     <div id="theme" class="split">
-      <omega-modal class="side-modal theme-modal">
-        <omega-panel label="THEME" active>
+      <cartridge-modal class="side-modal theme-modal">
+        <cartridge-panel label="THEME" active>
           <h3 class="sr-only">Theme this page</h3>
           <div class="settings">
             <div class="setting" data-setting="style" role="slider" tabindex="0" aria-label="Background">
-              <omega-row label="BACKGROUND" carets></omega-row>
+              <cartridge-row label="BACKGROUND" carets></cartridge-row>
             </div>
             <div class="setting" data-setting="motion" role="slider" tabindex="0" aria-label="Motion">
-              <omega-row label="MOTION" carets></omega-row>
+              <cartridge-row label="MOTION" carets></cartridge-row>
             </div>
             <div class="setting" data-setting="colour" role="slider" tabindex="0" aria-label="Colour">
-              <omega-row label="COLOUR" carets></omega-row>
+              <cartridge-row label="COLOUR" carets></cartridge-row>
             </div>
             <div class="setting" data-setting="font" role="slider" tabindex="0" aria-label="Font">
-              <omega-row label="FONT" carets></omega-row>
+              <cartridge-row label="FONT" carets></cartridge-row>
             </div>
           </div>
-        </omega-panel>
-      </omega-modal>
+        </cartridge-panel>
+      </cartridge-modal>
       <div class="prose">
         <p>This page takes its colours from the background's too. Pick a row and change it with
           Left and Right, as on the handheld.</p>
@@ -554,11 +554,11 @@ System/        omega-zero itself, its cores and its
       </div>
     </div>
 
-    <omega-modal id="highlights">
-      <omega-panel label="HIGHLIGHTS" active>
+    <cartridge-modal id="highlights">
+      <cartridge-panel label="HIGHLIGHTS" active>
         <h3 class="sr-only">Highlights</h3>
         <div class="cards">
-          <omega-card icon="cart">
+          <cartridge-card icon="cart">
             <h4 slot="title">The shelf</h4>
             <p>Game Boy carts in their own plastics, NES and Famicom carts, SNES carts in the American or the Super
               Famicom shape, Mega Drive and Genesis carts, PC Engine HuCards and PlayStation discs, with
@@ -566,77 +566,77 @@ System/        omega-zero itself, its cores and its
               drawn the way a PlayStation drew 3D. The one you are on floats and sways; A pulls it
               down out of the screen into the handheld, and the game comes on like a tube TV. At
               power-on, an opening after Mega Man X5's boot terminal fades into the shelf.</p>
-          </omega-card>
-          <omega-card icon="chip">
+          </cartridge-card>
+          <cartridge-card icon="chip">
             <h4 slot="title">Eight cores</h4>
             <p>mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
               FCEUmm for the NES; Genesis Plus GX for the Mega Drive; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, a BIOS of its own built in. GBA fills a 640x480
               screen and the PlayStation fills it at 4:3; the NES, SNES, Mega Drive and PC Engine
               are drawn at twice their size, and Game Boy stays at 3x. SELECT+Y goes round integer, 4:3 and
               stretched.</p>
-          </omega-card>
-          <omega-card icon="rewind">
+          </cartridge-card>
+          <cartridge-card icon="rewind">
             <h4 slot="title">Pick up, rewind</h4>
             <p>Resume on boot, save states with a switcher, rewind (not on the PlayStation),
               fast-forward, and turbo buttons on the Game Boys and the NES.</p>
-          </omega-card>
-          <omega-card icon="link">
+          </cartridge-card>
+          <cartridge-card icon="link">
             <h4 slot="title">Link play</h4>
             <p>Between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,
               Advance Wars, Mario Kart and Tetris.</p>
-          </omega-card>
-          <omega-card icon="window">
+          </cartridge-card>
+          <cartridge-card icon="window">
             <h4 slot="title">Settings</h4>
             <p>On START, in windows in the style of Mega Man Zero's menus that slide from screen
               to screen, over a background that keeps moving: CONFIGS and GENERAL.</p>
-          </omega-card>
-          <omega-card icon="gamepad">
+          </cartridge-card>
+          <cartridge-card icon="gamepad">
             <h4 slot="title">Controls</h4>
             <p>A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game,
               on one panel.</p>
-          </omega-card>
-          <omega-card icon="wifi">
+          </cartridge-card>
+          <cartridge-card icon="wifi">
             <h4 slot="title">Network</h4>
             <p>Home Wi-Fi, network time, and SSH and SFTP, each ON or OFF. Y on one opens its
               panel: SSH's shows the login and root's own random password. Cart labels are
               fetched from ScreenScraper.</p>
-          </omega-card>
-          <omega-card icon="bluetooth">
+          </cartridge-card>
+          <cartridge-card icon="bluetooth">
             <h4 slot="title">Bluetooth</h4>
             <p>On handhelds that have it: pair a device and connect it, or forget it. Game sound
               and gamepads over Bluetooth are still to come.</p>
-          </omega-card>
-          <omega-card icon="theme">
+          </cartridge-card>
+          <cartridge-card icon="theme">
             <h4 slot="title">Theme</h4>
             <p>The background's pattern, its motion and its colour, which the menus and both bars
               take, and the bottom bar's font, Bold or Thin.</p>
-          </omega-card>
-          <omega-card>
+          </cartridge-card>
+          <cartridge-card>
             <h4 slot="title">Pixel look</h4>
             <p>A pixel font, a top bar with the radios, clock and battery, and a bottom bar with
               the buttons.</p>
-          </omega-card>
+          </cartridge-card>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
   </section>
 
   <!-- ==== CREDITS ==== -->
   <section id="credits" class="part" aria-labelledby="credits-title">
     <h2 id="credits-title" class="sr-only">Credits and licence</h2>
-    <omega-modal>
-      <omega-panel label="AUTHOR" active>
+    <cartridge-modal>
+      <cartridge-panel label="AUTHOR" active>
         <div class="author">
-          <p class="author-name">omega-zero is made by
+          <p class="author-name">Cartridge is made by
             <a href="https://github.com/oauramos" rel="author">Otávio (@oauramos)</a>.</p>
           <p>It is written with Claude, and reviewed and tested by its maintainer.</p>
           <div class="buttons">
-            <omega-button primary><a href="https://github.com/oauramos">@OAURAMOS</a></omega-button>
-            <omega-button><a href="https://github.com/oauramos/omega-zero">SOURCE</a></omega-button>
+            <cartridge-button primary><a href="https://github.com/oauramos">@OAURAMOS</a></cartridge-button>
+            <cartridge-button><a href="https://github.com/oauramos/omega-zero">SOURCE</a></cartridge-button>
           </div>
         </div>
-      </omega-panel>
-      <omega-panel label="CREDITS">
+      </cartridge-panel>
+      <cartridge-panel label="CREDITS">
         <div class="steps">
           <ul>
             <li>Based on <a href="https://github.com/BrandonKowalski/slot">slot</a> by
@@ -663,10 +663,10 @@ System/        omega-zero itself, its cores and its
               fetched with your own account.</li>
           </ul>
         </div>
-      </omega-panel>
-      <omega-panel label="LICENCE">
+      </cartridge-panel>
+      <cartridge-panel label="LICENCE">
         <div class="steps">
-          <p>omega-zero is free software under the GPL-3.0-or-later. This page is drawn with its
+          <p>Cartridge is free software under the GPL-3.0-or-later. This page is drawn with its
             <a href="kit/storybook.html">UI kit</a>.</p>
           <p class="dim">Game Boy, Game Boy Color, Game Boy Advance, Nintendo Entertainment System,
             Famicom, Super Nintendo Entertainment System and Super Famicom are trademarks of
@@ -675,27 +675,27 @@ System/        omega-zero itself, its cores and its
             Interactive Entertainment. Anbernic is a trademark of its owner. This project is not
             affiliated with any of them.</p>
         </div>
-      </omega-panel>
-    </omega-modal>
+      </cartridge-panel>
+    </cartridge-modal>
   </section>
 </main>
 
 <footer class="column page-footer">
-  <p>omega-zero by <a href="https://github.com/oauramos" rel="author">Otávio (@oauramos)</a> ·
+  <p>Cartridge by <a href="https://github.com/oauramos" rel="author">Otávio (@oauramos)</a> ·
     GPL-3.0-or-later · <a href="https://github.com/oauramos/omega-zero">source</a></p>
-  <p class="fine">omega-zero began in October 2026 as a modified version of
+  <p class="fine">Cartridge began in October 2026 as a modified version of
     <a href="https://github.com/BrandonKowalski/slot">slot</a> by
     <a href="https://github.com/BrandonKowalski">Brandon T. Kowalski</a>, released under the GPL-3.0.</p>
 </footer>
 
 <footer class="site-bar">
-  <div class="omega-backdrop bar-strip" data-moving aria-hidden="true"></div>
-  <omega-bar>
+  <div class="cartridge-backdrop bar-strip" data-moving aria-hidden="true"></div>
+  <cartridge-bar>
     <a slot="left" class="bar-link" href="https://github.com/oauramos/omega-zero/wiki" aria-label="Wiki">
       <action-left label="WIKI" hint="B"></action-left></a>
     <a slot="right" class="bar-link" href="https://github.com/oauramos/omega-zero/releases/latest" aria-label="Download">
       <action-right label="DOWNLOAD" hint="A"></action-right></a>
-  </omega-bar>
+  </cartridge-bar>
 </footer>
 </body>
 </html>

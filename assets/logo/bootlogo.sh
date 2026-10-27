@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Renders omega-zero-logo.html into a boot logo for a W x H panel.
+# Renders cartridge-logo.html into a boot logo for a W x H panel.
 #
 #   bootlogo.sh STYLE W H OUT [LOGO_WIDTH]
 #
-# STYLE is `pixel`, the one omega-zero ships: pixel art on a half-size canvas, each pixel blown
+# STYLE is `pixel`, the one cartridge ships: pixel art on a half-size canvas, each pixel blown
 # up to 2x2, in a palette of the logo's own colours, with a one-pixel white border and the
 # shelf's grid behind it. Or `smooth`: the logo drawn straight at the panel's pixels, lightly
 # sharpened. LOGO_WIDTH is how wide the logo is on the panel, in pixels (414 by default). OUT
@@ -13,7 +13,7 @@ set -euo pipefail
 
 style=$1 w=$2 h=$3 out=$4 width=${5:-414}
 here=$(cd "$(dirname "$0")" && pwd)
-logo="$here/omega-zero-logo.html"
+logo="$here/cartridge-logo.html"
 chrome=${CHROME:-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

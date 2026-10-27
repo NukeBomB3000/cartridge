@@ -1,6 +1,6 @@
 # cart: Mario Kart - Super Circuit (USA)
 # The host of a linked pair; see link-join.txt. Not run by record.sh: the two run at once
-# on OMEGA_LINK_PORT, each on its own card copy, and are trimmed into link.mp4 by hand.
+# on CARTRIDGE_LINK_PORT, each on its own card copy, and are trimmed into link.mp4 by hand.
 rec
 wait 1300
 down select

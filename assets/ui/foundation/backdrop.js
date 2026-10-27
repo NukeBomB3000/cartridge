@@ -1,15 +1,15 @@
 /*
-  The shelf's backdrops, as crates/omega-ui/src/backdrop.rs draws them. Each pattern is painted as
+  The shelf's backdrops, as crates/cartridge-ui/src/backdrop.rs draws them. Each pattern is painted as
   one tile, a period of it, one image pixel to an art pixel (to a 2x2 bit for Bits), in the
   backdrop colour palette.js picks, and handed to tokens.css as --oz-pattern-<style>. A page shows
-  one with the omega-backdrop class and data-style, Grid without one:
+  one with the cartridge-backdrop class and data-style, Grid without one:
 
-    <div class="omega-backdrop" data-style="rivets" data-moving></div>
+    <div class="cartridge-backdrop" data-style="rivets" data-moving></div>
 
   palette.js paints the tiles again whenever it changes the colour. Load it after pixel.js and
   before palette.js.
 */
-window.OmegaBackdrop = (() => {
+window.CartridgeBackdrop = (() => {
   // Settings > Theme > Background in the device's order, less Wallpaper, a picture of the player's.
   const STYLES = ['grid', 'plates', 'dotted', 'dither', 'rivets', 'bits', 'solid'];
   // A tiled pattern's square in art pixels, one period: 40px.

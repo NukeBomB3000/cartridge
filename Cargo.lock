@@ -213,6 +213,81 @@ dependencies = [
 ]
 
 [[package]]
+name = "cartridge"
+version = "1.3.0"
+dependencies = [
+ "cartridge-gfx",
+ "cartridge-input",
+ "cartridge-power",
+ "cartridge-retro",
+ "cartridge-store",
+ "cartridge-ui",
+ "cpal",
+ "gilrs",
+ "libloading",
+ "lz4_flex",
+ "png 0.17.16",
+ "tempfile",
+ "winit",
+]
+
+[[package]]
+name = "cartridge-gfx"
+version = "1.3.0"
+dependencies = [
+ "gl",
+ "glutin",
+ "glutin-winit",
+ "libloading",
+ "raw-window-handle",
+ "winit",
+]
+
+[[package]]
+name = "cartridge-input"
+version = "1.3.0"
+
+[[package]]
+name = "cartridge-power"
+version = "1.3.0"
+dependencies = [
+ "tempfile",
+]
+
+[[package]]
+name = "cartridge-retro"
+version = "1.3.0"
+dependencies = [
+ "libloading",
+]
+
+[[package]]
+name = "cartridge-sfxcut"
+version = "1.3.0"
+
+[[package]]
+name = "cartridge-store"
+version = "1.3.0"
+dependencies = [
+ "tempfile",
+ "unicode-normalization",
+]
+
+[[package]]
+name = "cartridge-ui"
+version = "1.3.0"
+dependencies = [
+ "cartridge-gfx",
+ "cartridge-power",
+ "cartridge-store",
+ "fontdue",
+ "png 0.17.16",
+ "resvg",
+ "tempfile",
+ "usvg",
+]
+
+[[package]]
 name = "cc"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1436,81 +1511,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c8bb09a4a2b1d668170cfe0a7d5bc103f8999fb316c98099b6a9939c9f2e79d"
 dependencies = [
  "cc",
-]
-
-[[package]]
-name = "omega-gfx"
-version = "1.3.0"
-dependencies = [
- "gl",
- "glutin",
- "glutin-winit",
- "libloading",
- "raw-window-handle",
- "winit",
-]
-
-[[package]]
-name = "omega-input"
-version = "1.3.0"
-
-[[package]]
-name = "omega-power"
-version = "1.3.0"
-dependencies = [
- "tempfile",
-]
-
-[[package]]
-name = "omega-retro"
-version = "1.3.0"
-dependencies = [
- "libloading",
-]
-
-[[package]]
-name = "omega-sfxcut"
-version = "1.3.0"
-
-[[package]]
-name = "omega-store"
-version = "1.3.0"
-dependencies = [
- "tempfile",
- "unicode-normalization",
-]
-
-[[package]]
-name = "omega-ui"
-version = "1.3.0"
-dependencies = [
- "fontdue",
- "omega-gfx",
- "omega-power",
- "omega-store",
- "png 0.17.16",
- "resvg",
- "tempfile",
- "usvg",
-]
-
-[[package]]
-name = "omega-zero"
-version = "1.3.0"
-dependencies = [
- "cpal",
- "gilrs",
- "libloading",
- "lz4_flex",
- "omega-gfx",
- "omega-input",
- "omega-power",
- "omega-retro",
- "omega-store",
- "omega-ui",
- "png 0.17.16",
- "tempfile",
- "winit",
 ]
 
 [[package]]

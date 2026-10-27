@@ -4,8 +4,8 @@ set -u
 NET="${AGS_NET_SYS:-/sys/class/net}"
 RUN="${AGS_RUN:-/run}"
 
-LINK_SSID="${AGS_LINK_SSID:-omega-link}"
-LINK_PSK="${AGS_LINK_PSK:-omega-link0}"
+LINK_SSID="${AGS_LINK_SSID:-cartridge-link}"
+LINK_PSK="${AGS_LINK_PSK:-cartridge-link0}"
 LINK_FREQ="${AGS_LINK_FREQ:-5745}"
 LINK_HOST_IP="${AGS_LINK_HOST_IP:-10.42.0.1/24}"
 LINK_PEER_IP="${AGS_LINK_PEER_IP:-10.42.0.2/24}"
@@ -14,8 +14,8 @@ LINK_PIN_WAIT_S="${AGS_LINK_PIN_WAIT_S:-20}"
 LINK_RESCAN="${AGS_LINK_RESCAN:-2}"
 LINK_AP_GLOBAL="${AGS_LINK_AP_GLOBAL:-}"
 LINK_TRACE="${AGS_LINK_TRACE:-}"
-LINK_MARK="$RUN/omega-link.session"
-AP_MARK="$RUN/omega-link.ap"
+LINK_MARK="$RUN/cartridge-link.session"
+AP_MARK="$RUN/cartridge-link.ap"
 
 HOME_WIFI="${AGS_HOME_WIFI:-$(dirname "$0")/wifi.sh}"
 
@@ -27,7 +27,7 @@ CTRL_DIR="${AGS_CTRL_DIR:-/var/run/wpa_supplicant}"
 
 trace() {
 	[ -n "$LINK_TRACE" ] || return 0
-	echo "omega-link: $(cut -d' ' -f1 "$UPTIME" 2>/dev/null) $*" >> "$LINK_TRACE" 2>/dev/null
+	echo "cartridge-link: $(cut -d' ' -f1 "$UPTIME" 2>/dev/null) $*" >> "$LINK_TRACE" 2>/dev/null
 	return 0
 }
 
@@ -72,11 +72,11 @@ link_clear() {
 	ap="$(ap_if)"
 	supplicant_stop "$RUN/wpa_ap" "$ap"
 	$IP addr flush dev "$ap" 2>/dev/null || true
-	/bin/rm -f "$RUN/omega-link-ap.conf" "$AP_MARK"
-	if [ -f "$RUN/omega-link-sta.conf" ]; then
+	/bin/rm -f "$RUN/cartridge-link-ap.conf" "$AP_MARK"
+	if [ -f "$RUN/cartridge-link-sta.conf" ]; then
 		supplicant_stop "$CTRL_DIR" wlan0
 		$IP addr flush dev wlan0 2>/dev/null || true
-		/bin/rm -f "$RUN/omega-link-sta.conf"
+		/bin/rm -f "$RUN/cartridge-link-sta.conf"
 	fi
 }
 
@@ -138,11 +138,11 @@ link_host() {
 		echo '	pairwise=CCMP'
 		echo "	psk=\"$LINK_PSK\""
 		echo '}'
-	} > "$RUN/omega-link-ap.conf"
-	/bin/chmod 600 "$RUN/omega-link-ap.conf"
+	} > "$RUN/cartridge-link-ap.conf"
+	/bin/chmod 600 "$RUN/cartridge-link-ap.conf"
 
 	$IP link set "$ap" up 2>/dev/null || true
-	$WPA_SUPPLICANT -B -i "$ap" -c "$RUN/omega-link-ap.conf" -Dnl80211 >/dev/null 2>&1 || return 1
+	$WPA_SUPPLICANT -B -i "$ap" -c "$RUN/cartridge-link-ap.conf" -Dnl80211 >/dev/null 2>&1 || return 1
 	link_wait "$RUN/wpa_ap" "$ap" "$LINK_WAIT_S" 0 "" || return 1
 	$IP addr add "$LINK_HOST_IP" dev "$ap" 2>/dev/null || true
 	trace "host: addressed"
@@ -160,8 +160,8 @@ link_sta_conf() {
 			echo "	freq_list=$1"
 		fi
 		echo '}'
-	} > "$RUN/omega-link-sta.conf"
-	/bin/chmod 600 "$RUN/omega-link-sta.conf"
+	} > "$RUN/cartridge-link-sta.conf"
+	/bin/chmod 600 "$RUN/cartridge-link-sta.conf"
 }
 
 link_join() {
@@ -185,7 +185,7 @@ link_join() {
 		fi
 		link_sta_conf "$freq"
 		supplicant_stop "$CTRL_DIR" wlan0
-		$WPA_SUPPLICANT -B -i wlan0 -c "$RUN/omega-link-sta.conf" -Dnl80211 >/dev/null 2>&1 \
+		$WPA_SUPPLICANT -B -i wlan0 -c "$RUN/cartridge-link-sta.conf" -Dnl80211 >/dev/null 2>&1 \
 			|| { attempt=$((attempt + 1)); continue; }
 		trace "join: attempt $attempt on ${freq:-every channel}"
 		if link_wait "$CTRL_DIR" wlan0 "$bound" "$LINK_RESCAN" "$freq"; then

@@ -1,0 +1,41 @@
+use crate::common;
+
+use cartridge_input::Action;
+use cartridge_ui::{Toast, HUD_MS};
+use common::{app_playing_in, tmp_root_with_carts};
+
+#[test]
+fn a_save_hotkey_says_state_saved() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.apply(Action::SaveState);
+    assert_eq!(a.toast(), Some(Toast::StateSaved));
+}
+
+#[test]
+fn a_load_says_state_loaded() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.apply(Action::SaveState);
+    a.apply(Action::LoadState);
+    assert_eq!(a.toast(), Some(Toast::StateLoaded));
+}
+
+#[test]
+fn a_refused_load_says_nothing() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.apply(Action::LoadState);
+    assert_eq!(a.toast(), None, "it announced a load with an empty ring");
+    assert!(a.refusal_active(a.now()), "and it did not shake either");
+}
+
+#[test]
+fn a_toast_goes_away_on_its_own() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.apply_at(Action::SaveState, 1_000);
+    assert_eq!(a.toast(), Some(Toast::StateSaved));
+    a.tick_ms(1_000 + HUD_MS);
+    assert_eq!(a.toast(), None);
+}

@@ -13,7 +13,7 @@
          or "thin", in Pixel Code's own one-pixel strokes, its letters a pixel closer.
   hint   the smaller word in the button pill, in Pixel Code.
   room   how wide the label's box and the hint's box are at least, in art pixels: "54 30". Each
-         word stays in the middle of its box. <omega-bar> gives both its actions the room of the
+         word stays in the middle of its box. <cartridge-bar> gives both its actions the room of the
          wider label and the wider hint, so the two come out one width.
 
   Everything is pixel art at one art pixel to --u, text included. It is 15 art pixels tall and as
@@ -122,8 +122,8 @@
   // tall; and a shadow one pixel down and right of all of it, in the well's colour. 11 rows: the
   // capitals and the shadow's row under them.
   function word(value, font) {
-    const { ACCENT, CAP } = OmegaPixel;
-    const ink = OmegaPixel.letters(value, advance(font));
+    const { ACCENT, CAP } = CartridgePixel;
+    const ink = CartridgePixel.letters(value, advance(font));
     const rows = Array.from({ length: CAP }, (_, i) => Array(BAR_ROWS.includes(i) ? 2 : 1).fill(ACCENT + i)).flat();
     const inked = (x, y) => ink[rows[y]]?.[x] === '#';
     const at = (x, y) => inked(x, y) || (font !== 'thin' && inked(x - 1, y));
@@ -203,7 +203,7 @@
       </div>
     </div>`;
 
-  customElements.define('action-left', class extends OmegaPixel.Element {
+  customElements.define('action-left', class extends CartridgePixel.Element {
     static observedAttributes = ['label', 'font', 'hint', 'room'];
 
     constructor() {
@@ -213,7 +213,7 @@
     }
 
     paint() {
-      const { sprite } = OmegaPixel;
+      const { sprite } = CartridgePixel;
       const part = name => this.shadowRoot.querySelector(`.${name}`);
       part('icon .art').style.backgroundImage = sprite(notch(), this);
       part('button').style.borderImageSource = sprite(PILL, this);
@@ -221,7 +221,7 @@
     }
 
     // How wide the label's box and the hint's box are for this action's own text, in art pixels:
-    // what <omega-bar> works out its two actions' room from.
+    // what <cartridge-bar> works out its two actions' room from.
     boxes() {
       const length = name => [...(this.getAttribute(name) ?? '')].length;
       const label = length('label');
@@ -253,14 +253,14 @@
       const value = this.getAttribute('label') ?? '';
       const art = this.shadowRoot.querySelector('.word');
       art.setAttribute('aria-label', value);
-      if (!value || !OmegaPixel.fontReady(() => this.paintLabel())) {
+      if (!value || !CartridgePixel.fontReady(() => this.paintLabel())) {
         art.style.width = art.style.height = art.style.backgroundImage = '';
         return;
       }
       const rows = word(value, this.getAttribute('font'));
       art.style.width = `calc(${rows[0].length} * var(--u))`;
       art.style.height = `calc(${rows.length} * var(--u))`;
-      art.style.backgroundImage = OmegaPixel.sprite(rows, this);
+      art.style.backgroundImage = CartridgePixel.sprite(rows, this);
     }
 
     attributeChangedCallback(name, _old, value) {

@@ -76,7 +76,7 @@ build() {
 		;;
 	esac
 
-	# The Makefile asks git for the version, which here would name omega-zero's commit.
+	# The Makefile asks git for the version, which here would name Cartridge's commit.
 	CXXFLAGS="$cflags" LDFLAGS="$ldflags" make -C "$src" platform="$platform" \
 		GIT_VERSION="\" $(printf %s "$commit" | cut -c1-7)\"" \
 		-j"$(getconf _NPROCESSORS_ONLN)"

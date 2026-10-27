@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- omega-zero is now Cartridge: the program is `System/cartridge`, its log `cartridge.log`, its
+  settings `Config/cartridge.state` (taken over from `Config/omega-zero.state` at the first
+  start), with a new logo on the boot screen. Copy the new `System/` over the old one; the old
+  `System/omega-zero` can be deleted.
 - Game guides: a short MENU press in a game opens its walkthrough over the paused game, from
   `GUIDES/<system>/<game>.txt` (or `.html`/`.htm`), matched by name with brackets and case left
   out; several guides go in a folder named as the game, X steps through them. L1/R1 or

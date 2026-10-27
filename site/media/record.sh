@@ -5,7 +5,7 @@ card=$(cd "$1" && pwd)
 shift
 [ $# -gt 0 ] || set -- $(cd "$here/clips" && ls *.txt | grep -v '^link-' | sed 's/\.txt$//')
 cd "$here/../.."
-cargo build -q --release --example record -p omega-zero
+cargo build -q --release --example record -p cartridge
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 for name in "$@"; do
@@ -24,13 +24,13 @@ for f in os.listdir(sys.argv[2]):
         break' "$cart" "$card/Games/$(echo "$platform" | tr a-z A-Z)")
 	fi
 	sed -i.bak "s|^cart=.*|cart=$cart|; s|^cart_platform=.*|cart_platform=$platform|" \
-		"$work/card/Config/omega-zero.state"
+		"$work/card/Config/cartridge.state"
 	core=$(sed -n 's/^# core: *//p' "$here/clips/$name.txt")
 	[ -n "$core" ] && echo "$cart = $core" >> "$work/card/Config/selected_core.ini"
 	clips=$(sed -n 's/^rec \([a-z0-9-]*\)$/\1/p' "$here/clips/$name.txt")
 	out="$here/$name.mp4"
 	[ -n "$clips" ] && out="$here"
-	OMEGA_SILENT=1 target/release/examples/record "$work/card" "$here/clips/$name.txt" "$out"
+	CARTRIDGE_SILENT=1 target/release/examples/record "$work/card" "$here/clips/$name.txt" "$out"
 	for clip in ${clips:-$name}; do
 		ffmpeg -v error -y -i "$here/$clip.mp4" -vf "select=eq(n\,0)" -vframes 1 \
 			-c:v libwebp -quality 82 "$here/$clip.webp"

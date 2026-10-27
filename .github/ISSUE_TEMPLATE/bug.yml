@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in omega-zero does not work the way it should.
+description: Something in Cartridge does not work the way it should.
 labels: [bug]
 body:
   - type: dropdown
@@ -23,21 +23,21 @@ body:
   - type: input
     id: versions
     attributes:
-      label: omega-zero and BaseOS versions
-      description: omega-zero's version is on the About label. BaseOS's is in /etc/baseos-release.
-      placeholder: omega-zero v0.1.0, BaseOS v1.3.0
+      label: Cartridge and BaseOS versions
+      description: Cartridge's version is on the About label. BaseOS's is in /etc/baseos-release.
+      placeholder: Cartridge v0.1.0, BaseOS v1.3.0
     validations:
       required: true
   - type: textarea
     id: what
     attributes:
       label: What happened
-      description: What you did, what you expected, and what omega-zero did instead.
+      description: What you did, what you expected, and what Cartridge did instead.
     validations:
       required: true
   - type: textarea
     id: log
     attributes:
-      label: omega-zero.log
-      description: Paste omega-zero.log from the root of the card omega-zero runs from.
+      label: cartridge.log
+      description: Paste cartridge.log from the root of the card Cartridge runs from.
       render: text

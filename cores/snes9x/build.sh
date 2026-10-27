@@ -55,7 +55,7 @@ build() {
 
 	apply_patches "$src"
 
-	# The Makefile asks git for the version, which here would name omega-zero's commit.
+	# The Makefile asks git for the version, which here would name Cartridge's commit.
 	CFLAGS="$device_cflags" CXXFLAGS="$device_cflags" LDFLAGS="$device_ldflags" \
 		make -C "$src/libretro" platform=unix \
 		GIT_VERSION="\" $(printf %s "$commit" | cut -c1-7)\"" \

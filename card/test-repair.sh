@@ -55,7 +55,7 @@ repair() {
 }
 
 result() {
-	cat "$TMP/data/omega-repair.result" 2>/dev/null
+	cat "$TMP/data/cartridge-repair.result" 2>/dev/null
 }
 
 called() {
@@ -81,7 +81,7 @@ before "rmmod 8821cs" "reboot " || fail "rebooted with the WiFi driver loaded, w
 	|| fail "the screen did not walk through the job: $(grep '^splash' "$TMP/calls" | tr '\n' '|')"
 before "splash --important -1 UNMOUNTING DISK" "umount /mnt/sdcard" || fail "unmounted before saying so"
 before "fsck.fat -a /dev/mmcblk0p7" "splash --important -1 REPAIR COMPLETE" || fail "said complete before fsck ran"
-grep -q "fsck.fat -a /dev/mmcblk0p7 pass 1 exit 1" "$TMP/data/omega-repair.log" || fail "the log did not keep fsck's exit"
+grep -q "fsck.fat -a /dev/mmcblk0p7 pass 1 exit 1" "$TMP/data/cartridge-repair.log" || fail "the log did not keep fsck's exit"
 [ "$(grep -c '^sleep 2.00$' "$TMP/calls")" = 3 ] && called "sleep 2" \
 	|| fail "a step was not held for two seconds: $(grep '^sleep' "$TMP/calls" | tr '\n' '|')"
 
@@ -140,7 +140,7 @@ repair
 called "reboot " || fail "a busy card did not reboot"
 
 setup
-echo 4242 > "$TMP/run/omega-led.pid"
+echo 4242 > "$TMP/run/cartridge-led.pid"
 codes 0 0
 repair
 [ "$(result)" = clean ] || fail "a stale LED pid broke the repair"

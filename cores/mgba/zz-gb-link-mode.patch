@@ -3,7 +3,7 @@ index afbff7b..620ab41 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1032,6 +1032,9 @@ if(BUILD_LIBRETRO)
- 	# omega-zero's link mode joins two GBAs with mGBA's lockstep link driver, which MINIMAL_CORE
+ 	# Cartridge's link mode joins two GBAs with mGBA's lockstep link driver, which MINIMAL_CORE
  	# leaves out of CORE_SRC. The Dolphin driver beside it stays out.
  	list(APPEND LIBRETRO_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
 +	# The Game Boy's own lockstep, which MINIMAL_CORE leaves out for the same reason. The Game

@@ -6,7 +6,7 @@ index 9d528e7..afbff7b 100644
  	file(GLOB RETRO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/libretro/*.c)
  	set(LIBRETRO_CORE_SRC ${CORE_SRC})
  	list(APPEND LIBRETRO_CORE_SRC ${VFS_SRC})
-+	# omega-zero's link mode joins two GBAs with mGBA's lockstep link driver, which MINIMAL_CORE
++	# Cartridge's link mode joins two GBAs with mGBA's lockstep link driver, which MINIMAL_CORE
 +	# leaves out of CORE_SRC. The Dolphin driver beside it stays out.
 +	list(APPEND LIBRETRO_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/sio/lockstep.c)
  	list(FILTER LIBRETRO_CORE_SRC EXCLUDE REGEX "/core/(scripting|library|mem-search|rewind|input)\\.c$")
@@ -20,7 +20,7 @@ index 1f870cf..9b52892 100644
  	uint8_t time[7];
  	time_t lastLatch;
  	time_t offset;
-+	/* omega-zero's link mode: read the RTC source's time as UTC rather than the device's local time, so
++	/* Cartridge's link mode: read the RTC source's time as UTC rather than the device's local time, so
 +	 * two devices in different timezones give a game the same date. Never saved in a state: link
 +	 * mode sets it each time it plugs the cable in. */
 +	bool utc;
@@ -75,7 +75,7 @@ index d4de13f..754846e 100644
  static int32_t audioLowPassLeftPrev = 0;
  static int32_t audioLowPassRightPrev = 0;
  
-+/* Link mode (omega-zero): a second GBA from the same game, joined to `core` by mGBA's lockstep link
++/* Link mode (Cartridge): a second GBA from the same game, joined to `core` by mGBA's lockstep link
 + * cable and stepped with it on this thread. `core` stays the local player's GBA, so video,
 + * audio, save RAM and everything else that reads `core` is that player's. */
 +static bool linkMode;
@@ -108,7 +108,7 @@ index d4de13f..754846e 100644
  	mCoreLoadConfig(core);
  }
  
-+/* omega-zero's link mode options, read at load like every "(Restart)" option. */
++/* Cartridge's link mode options, read at load like every "(Restart)" option. */
 +static void _loadLinkSettings(void) {
 +	struct retro_variable var = {
 +		.key = "mgba_link",

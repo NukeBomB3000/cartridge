@@ -1,5 +1,5 @@
 /*
-  flow.html's styles: the page around the screen in omega-zero's site colours (the storybook's),
+  flow.html's styles: the page around the screen in cartridge's site colours (the storybook's),
   then the screen itself, every size in art pixels (--u). Whatever slides is placed by player.js
   with left and top in whole pixels, never with a transform or a transition.
 */
@@ -109,7 +109,7 @@ body.shot .screen-scroll { padding: 0; overflow: visible; }
 .shelf-carts { top: 36px; height: calc(100% - 36px - 15 * var(--u)); z-index: 1; }
 .shelf-top { height: 36px; z-index: 1; }
 .page { height: calc(100% - 15 * var(--u)); z-index: 2; }
-.screen > omega-bar { position: absolute; left: 0; bottom: 0; width: 100%; z-index: 3; }
+.screen > cartridge-bar { position: absolute; left: 0; bottom: 0; width: 100%; z-index: 3; }
 
 /* ---- the shelf: what Rust draws, as flat placeholders ---- */
 
@@ -162,9 +162,9 @@ body.shot .screen-scroll { padding: 0; overflow: visible; }
   position: absolute; inset: 0; display: flex;
   padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(5 * var(--u));
 }
-.modal-area > omega-modal { flex: 1; min-width: 0; }
+.modal-area > cartridge-modal { flex: 1; min-width: 0; }
 /* a panel as tall as its rows; the panel after it takes the rest of the modal */
-omega-panel.hug { flex: none; }
+cartridge-panel.hug { flex: none; }
 
 /* a panel on its own, without a modal: as tall as what it holds, centred on whole art
    pixels by player.js */

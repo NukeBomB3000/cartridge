@@ -1,16 +1,16 @@
 /*
-  The pixel-art kit the omega-zero components draw with. A sprite is written as rows of colour
+  The pixel-art kit the cartridge components draw with. A sprite is written as rows of colour
   keys, one character to an art pixel; the kit paints it into a PNG one pixel at a time, and the
   components show it at --u per pixel with image-rendering: pixelated, so every edge is a whole art
   pixel and nothing is ever smoothed. A sprite that has to fit any size is used as a border image
   (a 9-slice): its corners stay exactly as drawn and the row and column between them stretch.
 
   Sprites are drawn in the --oz-* colours palette.js sets, read off the component; a component
-  built on OmegaPixel.Element draws its sprites again whenever palette.js changes them.
+  built on CartridgePixel.Element draws its sprites again whenever palette.js changes them.
 
   Load it after tokens.css and before palette.js and the components.
 */
-window.OmegaPixel = (() => {
+window.CartridgePixel = (() => {
   // what each key is drawn in; '.' is left empty
   const KEYS = {
     k: '--oz-dark',
@@ -89,11 +89,11 @@ window.OmegaPixel = (() => {
   class Element extends HTMLElement {
     connectedCallback() {
       this.paint();
-      document.addEventListener('omega-palette', this);
+      document.addEventListener('cartridge-palette', this);
     }
 
     disconnectedCallback() {
-      document.removeEventListener('omega-palette', this);
+      document.removeEventListener('cartridge-palette', this);
     }
 
     handleEvent(event) {

@@ -226,12 +226,12 @@ ODD=4C:4C:6B:1A:80:D3
 reset
 run up && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "up exited $rc"
-[ -f "$TMP/run/omega-bt.up" ] || fail "up left no mark that Bluetooth is wanted"
+[ -f "$TMP/run/cartridge-bt.up" ] || fail "up left no mark that Bluetooth is wanted"
 [ "$(cat "$TMP/rfkill/rfkill1/soft")" = 0 ] || fail "up left the radio blocked"
 [ "$(cat "$TMP/rfkill/rfkill0/soft")" = 0 ] || fail "up touched Wi-Fi's switch"
 grep -qx -- '-n -s 115200 /dev/ttyS1 rtk_h5' "$TMP/rtk_hciattach.log" \
 	|| fail "the firmware was not loaded over the UART"
-[ -s "$TMP/run/omega-bt-attach.pid" ] || fail "up did not keep rtk_hciattach's pid"
+[ -s "$TMP/run/cartridge-bt-attach.pid" ] || fail "up did not keep rtk_hciattach's pid"
 grep -qx 'hci0 up' "$TMP/hciconfig.log" || fail "up did not bring hci0 up"
 grep -qx 'start bluetooth' "$TMP/systemctl.log" || fail "up did not start bluetoothd"
 grep -qx 'power on' "$TMP/bluetoothctl.log" && fail "up powered a controller that AutoEnable had"
@@ -303,7 +303,7 @@ run scan on
 [ "$(grep -c '^--timeout 30 scan on$' "$TMP/bluetoothctl.log")" = 1 ] || fail "a second scan on started a second discovery"
 run scan off
 settle gone "$TMP/discovering" || fail "scan off left discovery running"
-[ -e "$TMP/run/omega-bt-scan.pid" ] && fail "scan off left its pid"
+[ -e "$TMP/run/cartridge-bt-scan.pid" ] && fail "scan off left its pid"
 run scan && rc=0 || rc=$?
 [ "$rc" = 2 ] || fail "scan with neither on nor off exited $rc"
 SCAN_S=1 run scan on
@@ -342,7 +342,7 @@ FAKE_PIN=1 run pair "$KEYS" && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "pair asked for a PIN exited $rc"
 grep -qx 0000 "$TMP/agent.log" || fail "the PIN asked for was not 0000"
 
-# a device omega-zero still offers, which bluetoothd forgot after it stopped looking
+# a device cartridge still offers, which bluetoothd forgot after it stopped looking
 reset
 up
 reach "$KEYS" 'Keychron K3' input-keyboard no no no
@@ -399,11 +399,11 @@ settle there "$TMP/discovering"
 attach="$(cat "$TMP/hciattach.pid")"
 run down && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "down exited $rc"
-[ -f "$TMP/run/omega-bt.up" ] && fail "down left the mark"
+[ -f "$TMP/run/cartridge-bt.up" ] && fail "down left the mark"
 grep -qx 'stop bluetooth' "$TMP/systemctl.log" || fail "down left bluetoothd running"
 grep -qx 'hci0 down' "$TMP/hciconfig.log" || fail "down did not take hci0 down"
 kill -0 "$attach" 2>/dev/null && fail "down left rtk_hciattach running"
-[ -e "$TMP/run/omega-bt-attach.pid" ] && fail "down left rtk_hciattach's pid"
+[ -e "$TMP/run/cartridge-bt-attach.pid" ] && fail "down left rtk_hciattach's pid"
 settle gone "$TMP/discovering" || fail "down left discovery running"
 [ "$(cat "$TMP/rfkill/rfkill1/soft")" = 1 ] || fail "down left the radio unblocked"
 [ "$(cat "$TMP/rfkill/rfkill0/soft")" = 0 ] || fail "down blocked Wi-Fi"
@@ -412,7 +412,7 @@ run status | grep -qx enabled=no || fail "status after down still says enabled"
 reset
 up
 attach="$(cat "$TMP/hciattach.pid")"
-rm -f "$TMP/run/omega-bt-attach.pid"
+rm -f "$TMP/run/cartridge-bt-attach.pid"
 run down
 kill -0 "$attach" 2>/dev/null && fail "down left an rtk_hciattach it had not started running"
 

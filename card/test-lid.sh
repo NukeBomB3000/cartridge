@@ -46,14 +46,14 @@ at 100
 tick
 at 339
 tick
-off && fail "powered off before omega-zero's 3 minutes and a minute's grace"
+off && fail "powered off before cartridge's 3 minutes and a minute's grace"
 at 340
 tick
 off || fail "did not power off 4 minutes after the lid closed"
 [ "$(sed 's/ *$//' "$TMP/calls.log")" = "rmmod 8821cs
 sync
 poweroff" ] || fail "power off did not unload the WiFi driver and sync first: $(cat "$TMP/calls.log")"
-grep -q 'lid: closed 240s and omega-zero has not powered off' "$TMP/trace.log" || fail "the power off left no trace"
+grep -q 'lid: closed 240s and cartridge has not powered off' "$TMP/trace.log" || fail "the power off left no trace"
 
 setup
 lid 0

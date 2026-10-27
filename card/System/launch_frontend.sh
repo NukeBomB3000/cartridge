@@ -1,26 +1,26 @@
 #!/bin/sh
-SD="${OMEGA_ROOT:-/mnt/sdcard}"
+SD="${CARTRIDGE_ROOT:-/mnt/sdcard}"
 SYS="$SD/System"
 RUN="${AGS_RUN:-/run}"
 LOADER="${AGS_LOADER:-/lib/ld-linux-aarch64.so.1}"
 TMPDIR_RO="${AGS_TMP:-/tmp}"
-export OMEGA_ROOT="$SD"
+export CARTRIDGE_ROOT="$SD"
 
 log() {
-	(echo "$(date '+%H:%M:%S') $*" >> "$SD/omega-zero-session.log") 2>/dev/null
+	(echo "$(date '+%H:%M:%S') $*" >> "$SD/cartridge-session.log") 2>/dev/null
 }
 
-pid="$(cat "$RUN/omega-led.pid" 2>/dev/null)"
+pid="$(cat "$RUN/cartridge-led.pid" 2>/dev/null)"
 if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
 	sh "$SYS/led.sh" once
 	sh "$SYS/led.sh" loop > /dev/null 2>&1 &
-	echo $! > "$RUN/omega-led.pid"
+	echo $! > "$RUN/cartridge-led.pid"
 fi
 
-pid="$(cat "$RUN/omega-lid.pid" 2>/dev/null)"
+pid="$(cat "$RUN/cartridge-lid.pid" 2>/dev/null)"
 if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
 	sh "$SYS/lid.sh" loop > /dev/null 2>&1 &
-	echo $! > "$RUN/omega-lid.pid"
+	echo $! > "$RUN/cartridge-lid.pid"
 fi
 
 (echo "|/bin/sh $SYS/coresave.sh %p %s %e %t" > /proc/sys/kernel/core_pattern) 2>/dev/null
@@ -31,13 +31,13 @@ if [ -f "$SD/RUN_PROBE" ]; then
 fi
 
 # a card the kernel made read-only after an error takes no log, and the shell would refuse to
-# start omega-zero over a log it cannot open: omega-zero then logs to /tmp instead and still
+# start cartridge over a log it cannot open: cartridge then logs to /tmp instead and still
 # starts, so it can say the card is read-only and offer to repair it
-out="$SD/omega-zero.log"
+out="$SD/cartridge.log"
 [ -f "$out" ] && mv -f "$out" "$out.1" 2>/dev/null
 if ! (: > "$out") 2>/dev/null; then
-	out="$TMPDIR_RO/omega-zero.log"
+	out="$TMPDIR_RO/cartridge.log"
 fi
-log "exec $SYS/omega-zero"
+log "exec $SYS/cartridge"
 
-exec "$LOADER" "$SYS/omega-zero" > "$out" 2>&1
+exec "$LOADER" "$SYS/cartridge" > "$out" 2>&1

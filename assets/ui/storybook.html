@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>omega-zero UI</title>
+<title>cartridge UI</title>
 <!--
-  The storybook of omega-zero's UI kit: every component it has, what each does and how to use it,
+  The storybook of cartridge's UI kit: every component it has, what each does and how to use it,
   and screens put together from them. Open it straight from disk; it needs no server or build.
   README.md next to it has the rules for adding to the kit.
 -->
@@ -14,27 +14,27 @@
 <script src="foundation/pixel.js"></script>
 <script src="foundation/backdrop.js"></script>
 <script src="foundation/palette.js"></script>
-<script src="components/omega-modal.js"></script>
-<script src="components/omega-panel.js"></script>
+<script src="components/cartridge-modal.js"></script>
+<script src="components/cartridge-panel.js"></script>
 <script src="components/action-left.js"></script>
 <script src="components/action-right.js"></script>
-<script src="components/omega-row.js"></script>
-<script src="components/omega-list-row.js"></script>
-<script src="components/omega-bar.js"></script>
-<script src="components/omega-pill.js"></script>
-<script src="components/omega-gauge.js"></script>
-<script src="components/omega-hints.js"></script>
-<script src="components/omega-toast.js"></script>
-<script src="components/omega-badge.js"></script>
-<script src="components/omega-saves.js"></script>
-<script src="components/omega-link.js"></script>
-<script src="components/omega-button.js"></script>
-<script src="components/omega-screen.js"></script>
-<script src="components/omega-card.js"></script>
-<script src="components/omega-code.js"></script>
-<script src="components/omega-tabs.js"></script>
+<script src="components/cartridge-row.js"></script>
+<script src="components/cartridge-list-row.js"></script>
+<script src="components/cartridge-bar.js"></script>
+<script src="components/cartridge-pill.js"></script>
+<script src="components/cartridge-gauge.js"></script>
+<script src="components/cartridge-hints.js"></script>
+<script src="components/cartridge-toast.js"></script>
+<script src="components/cartridge-badge.js"></script>
+<script src="components/cartridge-saves.js"></script>
+<script src="components/cartridge-link.js"></script>
+<script src="components/cartridge-button.js"></script>
+<script src="components/cartridge-screen.js"></script>
+<script src="components/cartridge-card.js"></script>
+<script src="components/cartridge-code.js"></script>
+<script src="components/cartridge-tabs.js"></script>
 <style>
-  /* the page around the components: omega-zero's site colours */
+  /* the page around the components: cartridge's site colours */
   :root {
     color-scheme: dark;
     --ground: #0b0e11;
@@ -100,7 +100,7 @@
 
   .patterns { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   .patterns figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
-  .patterns .omega-backdrop { height: 80px; border-radius: 4px; }
+  .patterns .cartridge-backdrop { height: 80px; border-radius: 4px; }
   .patterns figcaption { font: 0.75rem var(--mono); color: var(--dim); }
 
   .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
@@ -143,32 +143,32 @@
     flex: 1; min-height: 0; display: flex;
     padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(5 * var(--u));
   }
-  .modal-area > omega-modal { flex: 1; min-width: 0; }
+  .modal-area > cartridge-modal { flex: 1; min-width: 0; }
 
   /* the first panel takes 4/7 of the modal, rounded to a whole art pixel, the second the rest */
-  .split > omega-panel:first-child { flex: 0 0 round(down, 57%, var(--u)); }
+  .split > cartridge-panel:first-child { flex: 0 0 round(down, 57%, var(--u)); }
 
   /* "outline areas": every div outlined, the page's and the components' own (through ::part) */
   .outlined .modal-area,
-  .outlined omega-modal::part(frame), .outlined omega-modal::part(content),
-  .outlined omega-panel::part(header), .outlined omega-panel::part(tab), .outlined omega-panel::part(label),
-  .outlined omega-panel::part(slant), .outlined omega-panel::part(strip), .outlined omega-panel::part(body),
+  .outlined cartridge-modal::part(frame), .outlined cartridge-modal::part(content),
+  .outlined cartridge-panel::part(header), .outlined cartridge-panel::part(tab), .outlined cartridge-panel::part(label),
+  .outlined cartridge-panel::part(slant), .outlined cartridge-panel::part(strip), .outlined cartridge-panel::part(body),
   .outlined action-left::part(icon), .outlined action-left::part(label), .outlined action-left::part(word),
   .outlined action-left::part(button), .outlined action-left::part(hint),
   .outlined action-right::part(icon), .outlined action-right::part(label), .outlined action-right::part(word),
   .outlined action-right::part(button), .outlined action-right::part(hint),
-  .outlined omega-row::part(row), .outlined omega-row::part(label), .outlined omega-row::part(caret-left),
-  .outlined omega-row::part(value), .outlined omega-row::part(caret-right), .outlined omega-row::part(opens),
-  .outlined omega-bar::part(bar), .outlined omega-bar::part(middle), .outlined omega-bar::part(hints),
-  .outlined omega-bar::part(key), .outlined omega-bar::part(word),
-  .outlined omega-gauge::part(tab), .outlined omega-gauge::part(label), .outlined omega-gauge::part(slant),
-  .outlined omega-gauge::part(strip), .outlined omega-gauge::part(well), .outlined omega-gauge::part(cells),
-  .outlined omega-gauge::part(icon),
-  .outlined omega-hints::part(tab), .outlined omega-hints::part(label), .outlined omega-hints::part(slant),
-  .outlined omega-hints::part(strip), .outlined omega-hints::part(well), .outlined omega-hints::part(hints),
-  .outlined omega-hints::part(key), .outlined omega-hints::part(word),
-  .outlined omega-toast::part(line), .outlined omega-badge::part(icon), .outlined omega-badge::part(word),
-  .outlined omega-saves::part(panel), .outlined omega-saves::part(age), .outlined omega-saves::part(dots) {
+  .outlined cartridge-row::part(row), .outlined cartridge-row::part(label), .outlined cartridge-row::part(caret-left),
+  .outlined cartridge-row::part(value), .outlined cartridge-row::part(caret-right), .outlined cartridge-row::part(opens),
+  .outlined cartridge-bar::part(bar), .outlined cartridge-bar::part(middle), .outlined cartridge-bar::part(hints),
+  .outlined cartridge-bar::part(key), .outlined cartridge-bar::part(word),
+  .outlined cartridge-gauge::part(tab), .outlined cartridge-gauge::part(label), .outlined cartridge-gauge::part(slant),
+  .outlined cartridge-gauge::part(strip), .outlined cartridge-gauge::part(well), .outlined cartridge-gauge::part(cells),
+  .outlined cartridge-gauge::part(icon),
+  .outlined cartridge-hints::part(tab), .outlined cartridge-hints::part(label), .outlined cartridge-hints::part(slant),
+  .outlined cartridge-hints::part(strip), .outlined cartridge-hints::part(well), .outlined cartridge-hints::part(hints),
+  .outlined cartridge-hints::part(key), .outlined cartridge-hints::part(word),
+  .outlined cartridge-toast::part(line), .outlined cartridge-badge::part(icon), .outlined cartridge-badge::part(word),
+  .outlined cartridge-saves::part(panel), .outlined cartridge-saves::part(age), .outlined cartridge-saves::part(dots) {
     outline: 1px dashed var(--area); outline-offset: -1px;
   }
 
@@ -181,7 +181,7 @@
   .screen-small { width: calc(160 * var(--u)); max-width: 100%; }
   /* the link screen's art, its pieces placed in art pixels as the screen places them */
   .link-scene { position: relative; max-width: 100%; }
-  .link-scene > omega-link { position: absolute; }
+  .link-scene > cartridge-link { position: absolute; }
   /* the DISC screen on a 640×480 screen, placed in art pixels as disc_screen.rs places it: the
      panel where the LINK panel goes, three discs 96 by 56 between it and the bar, 8 apart, the
      picked one 6 higher and the others faded back a step */
@@ -208,8 +208,8 @@
 <body>
 <main>
   <div class="intro">
-    <h1>omega-zero UI</h1>
-    <p class="dim">The kit omega-zero's menus are drawn from: pixel-art components rebuilt in HTML as
+    <h1>cartridge UI</h1>
+    <p class="dim">The kit cartridge's menus are drawn from: pixel-art components rebuilt in HTML as
       the reference for each screen, before and while it is drawn on the device. Every shape is a
       sprite written pixel by pixel, every word lands on whole pixels, and every colour follows the
       backdrop colour the player picks in Settings › Theme › Colour, over the pattern picked in
@@ -237,7 +237,7 @@
 
       <article class="card">
         <header><h3>The art pixel</h3><code>foundation/tokens.css</code></header>
-        <p class="dim">One art pixel is <code>--u</code>, 2px: omega-zero draws its pixel art 2×2, so
+        <p class="dim">One art pixel is <code>--u</code>, 2px: cartridge draws its pixel art 2×2, so
           a 640×480 panel is 320×240 art pixels. Every size in every component is a whole number of
           them, and nothing is ever smoothed: sprites are shown with
           <code>image-rendering: pixelated</code>.</p>
@@ -246,10 +246,10 @@
       <article class="card">
         <header><h3>Sprites</h3><code>foundation/pixel.js</code></header>
         <p class="dim">A shape is written in its component as rows of colour keys, one character to
-          an art pixel, and <code>OmegaPixel.sprite()</code> paints it. A shape that must fit any size
+          an art pixel, and <code>CartridgePixel.sprite()</code> paints it. A shape that must fit any size
           is a 9-slice: only its top-left quarter is drawn, <code>mirror()</code> makes the rest, and
           its corners stay as drawn while its edges stretch.</p>
-<pre><code>const CORNER = [       // omega-modal's frame
+<pre><code>const CORNER = [       // cartridge-modal's frame
   '...kk',             // k dark, H bright, s stripe,
   '.kkHH',             // A frame colour, . nothing
   '.kHss',
@@ -263,7 +263,7 @@
         <p class="dim">Pixel Code Regular at 18px, one face pixel to an art pixel, on a 20px line so its
           capitals sit on whole pixels. Pixel Code Bold is fattened off the grid, so it is not used:
           bold is drawn by setting the word again one pixel to the right. Bigger words (an action's
-          label) are drawn into a sprite with <code>OmegaPixel.letters()</code> and stretched there,
+          label) are drawn into a sprite with <code>CartridgePixel.letters()</code> and stretched there,
           never with a CSS transform. Components draw it with
           <code>text-rendering: geometricPrecision</code>: the browser's default hinting smears its
           edges by part of a pixel.</p>
@@ -274,18 +274,18 @@
         <p class="dim">The shelf's backdrop: the backdrop colour under one of the patterns in
           Settings › Theme › Background, each a tile drawn in whole art pixels and drifting left with
           <code>data-moving</code> (16px a second, Bits 10), as
-          <code>crates/omega-ui/src/backdrop.rs</code> draws them. The Style picked above puts the
+          <code>crates/cartridge-ui/src/backdrop.rs</code> draws them. The Style picked above puts the
           same pattern behind every example on this page.</p>
         <div class="patterns" id="patterns"></div>
         <div class="table">
           <table>
             <tr><th>API</th><th>What it does</th></tr>
-            <tr><td>.omega-backdrop</td><td>Draws the backdrop over the element, in the colour <code>palette.js</code> set.</td></tr>
+            <tr><td>.cartridge-backdrop</td><td>Draws the backdrop over the element, in the colour <code>palette.js</code> set.</td></tr>
             <tr><td>data-style</td><td><code>grid</code> (without one), <code>plates</code>, <code>dotted</code>, <code>dither</code>, <code>rivets</code>, <code>bits</code> or <code>solid</code>.</td></tr>
             <tr><td>data-moving</td><td>Drifts the pattern left, as the device does with Motion on Moving.</td></tr>
           </table>
         </div>
-<pre><code>&lt;div class="omega-backdrop" data-style="rivets" data-moving&gt;&lt;/div&gt;</code></pre>
+<pre><code>&lt;div class="cartridge-backdrop" data-style="rivets" data-moving&gt;&lt;/div&gt;</code></pre>
       </article>
 
       <article class="card wide">
@@ -293,7 +293,7 @@
         <p class="dim">The palette is made from the backdrop colour. Its ramp is Mega Man Zero's own
           menu colours, which is what Amber gives; any other colour keeps how light each step is and
           turns the ramp to its own hue, taking as much colour as it has itself. Night, the default,
-          gives plain greys. <code>OmegaPalette.apply(name)</code> sets these properties and every
+          gives plain greys. <code>CartridgePalette.apply(name)</code> sets these properties and every
           component draws itself again. The swatches follow the colour picked above.</p>
         <div class="swatches" id="swatches"></div>
       </article>
@@ -306,16 +306,16 @@
     <div class="cards">
 
       <article class="card wide">
-        <header><h3>&lt;omega-modal&gt;</h3><code>components/omega-modal.js</code></header>
+        <header><h3>&lt;cartridge-modal&gt;</h3><code>components/cartridge-modal.js</code></header>
         <p class="dim">The menu window and nothing else: a double-lined frame that stacks what it is
           given top to bottom. It knows nothing of what it holds; usually that is
-          <code>&lt;omega-panel&gt;</code>s, which grow to share its height and share one stripe where
+          <code>&lt;cartridge-panel&gt;</code>s, which grow to share its height and share one stripe where
           they meet. It fills the box the page gives it.</p>
-        <div class="preview omega-backdrop">
-          <omega-modal class="split" style="height: 260px">
-            <omega-panel label="BUTTON SETTING" active></omega-panel>
-            <omega-panel label="ATTACK MODE"></omega-panel>
-          </omega-modal>
+        <div class="preview cartridge-backdrop">
+          <cartridge-modal class="split" style="height: 260px">
+            <cartridge-panel label="BUTTON SETTING" active></cartridge-panel>
+            <cartridge-panel label="ATTACK MODE"></cartridge-panel>
+          </cartridge-modal>
         </div>
         <div class="table">
           <table>
@@ -324,21 +324,21 @@
             <tr><td>::part</td><td><code>frame</code>, <code>content</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-modal&gt;
-  &lt;omega-panel label="BUTTON SETTING" active&gt;&lt;/omega-panel&gt;
-  &lt;omega-panel label="ATTACK MODE"&gt;&lt;/omega-panel&gt;
-&lt;/omega-modal&gt;</code></pre>
+<pre><code>&lt;cartridge-modal&gt;
+  &lt;cartridge-panel label="BUTTON SETTING" active&gt;&lt;/cartridge-panel&gt;
+  &lt;cartridge-panel label="ATTACK MODE"&gt;&lt;/cartridge-panel&gt;
+&lt;/cartridge-modal&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-panel&gt;</h3><code>components/omega-panel.js</code></header>
+        <header><h3>&lt;cartridge-panel&gt;</h3><code>components/cartridge-panel.js</code></header>
         <p class="dim">A titled section for inside a modal: a dark tab with the title from its left
           edge and a slanted end, the bright strip beside it, and a well below for the content.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">active</span>
-          <omega-panel label="BUTTON SETTING" active style="height: 110px"></omega-panel>
+          <cartridge-panel label="BUTTON SETTING" active style="height: 110px"></cartridge-panel>
           <span class="tag">not active</span>
-          <omega-panel label="ATTACK MODE" style="height: 110px"></omega-panel>
+          <cartridge-panel label="ATTACK MODE" style="height: 110px"></cartridge-panel>
         </div>
         <div class="table">
           <table>
@@ -346,13 +346,13 @@
             <tr><td>label</td><td>The title in the tab, from its left edge.</td></tr>
             <tr><td>active</td><td>Draws the title light, as the section the cursor is in; without it the title is dimmed.</td></tr>
             <tr><td>slot</td><td>The section's content, in the well.</td></tr>
-            <tr><td>--omega-tab-width</td><td>How wide the tab is: 121 art pixels by default, never narrower than its title.</td></tr>
+            <tr><td>--cartridge-tab-width</td><td>How wide the tab is: 121 art pixels by default, never narrower than its title.</td></tr>
             <tr><td>::part</td><td><code>panel</code>, <code>header</code>, <code>tab</code>, <code>label</code>, <code>slant</code>, <code>strip</code>, <code>body</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-panel label="BUTTON SETTING" active&gt;
+<pre><code>&lt;cartridge-panel label="BUTTON SETTING" active&gt;
   …the section's content…
-&lt;/omega-panel&gt;</code></pre>
+&lt;/cartridge-panel&gt;</code></pre>
       </article>
 
       <article class="card">
@@ -360,7 +360,7 @@
         <p class="dim">The bottom bar's left action: a return arrow in a notch at the screen's edge, a
           big label, and a button pill with a hint. 15 art pixels tall; the notch rises 4 above it.
           Without attributes it is empty, with room kept for its label.</p>
-        <div class="preview actions omega-backdrop">
+        <div class="preview actions cartridge-backdrop">
           <span class="tag">empty</span>
           <action-left></action-left>
           <span class="tag">with text</span>
@@ -374,7 +374,7 @@
             <tr><td>label</td><td>The big word: a sprite, bold, its capitals 10 pixels tall, with a shadow.</td></tr>
             <tr><td>font</td><td><code>bold</code> (or none) or <code>thin</code>: the label drawn again a pixel to the right, or in Pixel Code's own strokes. See The bar's font.</td></tr>
             <tr><td>hint</td><td>The smaller word in the pill.</td></tr>
-            <tr><td>room</td><td>How wide the label's box and the hint's box are at least, in art pixels: <code>54 30</code>. Each word stays in the middle of its box, rounded down to a whole pixel. <code>&lt;omega-bar&gt;</code> sets it on both its actions.</td></tr>
+            <tr><td>room</td><td>How wide the label's box and the hint's box are at least, in art pixels: <code>54 30</code>. Each word stays in the middle of its box, rounded down to a whole pixel. <code>&lt;cartridge-bar&gt;</code> sets it on both its actions.</td></tr>
             <tr><td>::part</td><td><code>action</code>, <code>icon</code>, <code>label</code>, <code>word</code>, <code>button</code>, <code>hint</code></td></tr>
           </table>
         </div>
@@ -386,7 +386,7 @@
         <p class="dim"><code>&lt;action-left&gt;</code> mirrored, for the right end of the bar: the
           button pill, the label, then the arrow in its notch at the screen's edge. Same attributes
           and parts.</p>
-        <div class="preview actions omega-backdrop" style="justify-items: end">
+        <div class="preview actions cartridge-backdrop" style="justify-items: end">
           <span class="tag">empty</span>
           <action-right></action-right>
           <span class="tag">with text</span>
@@ -406,7 +406,7 @@
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-row&gt;</h3><code>components/omega-row.js</code></header>
+        <header><h3>&lt;cartridge-row&gt;</h3><code>components/cartridge-row.js</code></header>
         <p class="dim">One setting in a panel's well: its name on the left, its value on the right,
           13 art pixels tall, as tall as a panel's header. The row under the cursor is lit the way a
           title tab is drawn, a band in the tab colour inside a frame line with its corner pixels left
@@ -414,43 +414,43 @@
           while lit, a row that opens another screen a › at its end. Without any of that it is a plain
           name and value line. Five rows and four fit, with their two headers, in the modal of a
           640×480 screen.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">in a modal as big as a 640×480 screen's</span>
-          <omega-modal style="width: calc(288 * var(--u)); height: calc(200 * var(--u)); max-width: 100%">
-            <omega-panel label="CONFIGS" active style="flex: 0 0 calc(104 * var(--u))">
-              <omega-row label="FAST FORWARD" value="6X" lit carets></omega-row>
-              <omega-row label="REWIND" value="ON" carets></omega-row>
-              <omega-row label="SHADER" value="LCD GRID" carets></omega-row>
-              <omega-row label="SAVE SLOT" value="AUTO" carets dim></omega-row>
-              <omega-row label="CONTROLS" opens></omega-row>
-            </omega-panel>
-            <omega-panel label="GENERAL">
-              <omega-row label="LANGUAGE" value="ENGLISH" carets></omega-row>
-              <omega-row label="SLEEP AFTER" value="5 MIN" carets></omega-row>
-              <omega-row label="WI-FI" value="Home" opens></omega-row>
-              <omega-row label="ABOUT" opens></omega-row>
-            </omega-panel>
-          </omega-modal>
+          <cartridge-modal style="width: calc(288 * var(--u)); height: calc(200 * var(--u)); max-width: 100%">
+            <cartridge-panel label="CONFIGS" active style="flex: 0 0 calc(104 * var(--u))">
+              <cartridge-row label="FAST FORWARD" value="6X" lit carets></cartridge-row>
+              <cartridge-row label="REWIND" value="ON" carets></cartridge-row>
+              <cartridge-row label="SHADER" value="LCD GRID" carets></cartridge-row>
+              <cartridge-row label="SAVE SLOT" value="AUTO" carets dim></cartridge-row>
+              <cartridge-row label="CONTROLS" opens></cartridge-row>
+            </cartridge-panel>
+            <cartridge-panel label="GENERAL">
+              <cartridge-row label="LANGUAGE" value="ENGLISH" carets></cartridge-row>
+              <cartridge-row label="SLEEP AFTER" value="5 MIN" carets></cartridge-row>
+              <cartridge-row label="WI-FI" value="Home" opens></cartridge-row>
+              <cartridge-row label="ABOUT" opens></cartridge-row>
+            </cartridge-panel>
+          </cartridge-modal>
           <div class="side">
             <figure>
               <span class="tag">unlit: plain, carets, opens, dim, empty</span>
-              <omega-panel label="UNLIT" style="height: calc(88 * var(--u))">
-                <omega-row label="IP" value="192.168.1.20"></omega-row>
-                <omega-row label="FAST FORWARD" value="6X" carets></omega-row>
-                <omega-row label="CONTROLS" opens></omega-row>
-                <omega-row label="SAVE SLOT" value="AUTO" carets dim></omega-row>
-                <omega-row></omega-row>
-              </omega-panel>
+              <cartridge-panel label="UNLIT" style="height: calc(88 * var(--u))">
+                <cartridge-row label="IP" value="192.168.1.20"></cartridge-row>
+                <cartridge-row label="FAST FORWARD" value="6X" carets></cartridge-row>
+                <cartridge-row label="CONTROLS" opens></cartridge-row>
+                <cartridge-row label="SAVE SLOT" value="AUTO" carets dim></cartridge-row>
+                <cartridge-row></cartridge-row>
+              </cartridge-panel>
             </figure>
             <figure>
               <span class="tag">the same, lit</span>
-              <omega-panel label="LIT" active style="height: calc(88 * var(--u))">
-                <omega-row label="IP" value="192.168.1.20" lit></omega-row>
-                <omega-row label="FAST FORWARD" value="6X" carets lit></omega-row>
-                <omega-row label="CONTROLS" opens lit></omega-row>
-                <omega-row label="SAVE SLOT" value="AUTO" carets dim lit></omega-row>
-                <omega-row lit></omega-row>
-              </omega-panel>
+              <cartridge-panel label="LIT" active style="height: calc(88 * var(--u))">
+                <cartridge-row label="IP" value="192.168.1.20" lit></cartridge-row>
+                <cartridge-row label="FAST FORWARD" value="6X" carets lit></cartridge-row>
+                <cartridge-row label="CONTROLS" opens lit></cartridge-row>
+                <cartridge-row label="SAVE SLOT" value="AUTO" carets dim lit></cartridge-row>
+                <cartridge-row lit></cartridge-row>
+              </cartridge-panel>
             </figure>
           </div>
         </div>
@@ -466,73 +466,73 @@
             <tr><td>::part</td><td><code>row</code>, <code>label</code>, <code>caret-left</code>, <code>value</code>, <code>caret-right</code>, <code>opens</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-panel label="CONFIGS" active&gt;
-  &lt;omega-row label="FAST FORWARD" value="6X" lit carets&gt;&lt;/omega-row&gt;
-  &lt;omega-row label="CONTROLS" opens&gt;&lt;/omega-row&gt;
-  &lt;omega-row label="SAVE SLOT" value="AUTO" carets dim&gt;&lt;/omega-row&gt;
-&lt;/omega-panel&gt;
+<pre><code>&lt;cartridge-panel label="CONFIGS" active&gt;
+  &lt;cartridge-row label="FAST FORWARD" value="6X" lit carets&gt;&lt;/cartridge-row&gt;
+  &lt;cartridge-row label="CONTROLS" opens&gt;&lt;/cartridge-row&gt;
+  &lt;cartridge-row label="SAVE SLOT" value="AUTO" carets dim&gt;&lt;/cartridge-row&gt;
+&lt;/cartridge-panel&gt;
 
-&lt;omega-row label="IP" value="192.168.1.20"&gt;&lt;/omega-row&gt;   &lt;!-- a plain line --&gt;</code></pre>
+&lt;cartridge-row label="IP" value="192.168.1.20"&gt;&lt;/cartridge-row&gt;   &lt;!-- a plain line --&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-list-row&gt;</h3><code>components/omega-list-row.js</code></header>
-        <p class="dim">A Wi-Fi network or a Bluetooth device in a list: an <code>&lt;omega-row&gt;</code>
+        <header><h3>&lt;cartridge-list-row&gt;</h3><code>components/cartridge-list-row.js</code></header>
+        <p class="dim">A Wi-Fi network or a Bluetooth device in a list: an <code>&lt;cartridge-row&gt;</code>
           whose name keeps its own case, with what it is to the handheld on the right. A network's
           row then has a padlock if it needs a password and the top bar's Wi-Fi icon, as many of its
           three parts lit as the signal is strong; room is kept for the padlock and the bars on every
           row, so they line up down the list. A device's row has its kind's icon where the bars end,
           in the middle of a room 9 art pixels wide, and keeps no room for a padlock or bars, so a
           list of devices lines its values and icons up the same way. Lit and dim as
-          <code>&lt;omega-row&gt;</code>.</p>
-        <div class="preview omega-backdrop">
+          <code>&lt;cartridge-row&gt;</code>.</p>
+        <div class="preview cartridge-backdrop">
           <div class="side">
             <figure>
               <span class="tag">a list</span>
-              <omega-panel label="NETWORKS" active style="height: calc(88 * var(--u))">
-                <omega-list-row label="Home" value="CONNECTED" signal="3" lock lit></omega-list-row>
-                <omega-list-row label="Pixel Lab" value="JOINING" signal="2" lock></omega-list-row>
-                <omega-list-row label="Office" value="SAVED" signal="1" lock></omega-list-row>
-                <omega-list-row label="Café Guest" signal="2"></omega-list-row>
-                <omega-list-row label="Neighbour_5G" signal="0" lock dim></omega-list-row>
-              </omega-panel>
+              <cartridge-panel label="NETWORKS" active style="height: calc(88 * var(--u))">
+                <cartridge-list-row label="Home" value="CONNECTED" signal="3" lock lit></cartridge-list-row>
+                <cartridge-list-row label="Pixel Lab" value="JOINING" signal="2" lock></cartridge-list-row>
+                <cartridge-list-row label="Office" value="SAVED" signal="1" lock></cartridge-list-row>
+                <cartridge-list-row label="Café Guest" signal="2"></cartridge-list-row>
+                <cartridge-list-row label="Neighbour_5G" signal="0" lock dim></cartridge-list-row>
+              </cartridge-panel>
             </figure>
             <figure>
               <span class="tag">signal 3 to 0, unlit and lit</span>
-              <omega-panel label="SIGNAL" style="height: calc(127 * var(--u))">
-                <omega-list-row label="signal 3, lock" signal="3" lock></omega-list-row>
-                <omega-list-row label="signal 2" signal="2"></omega-list-row>
-                <omega-list-row label="signal 1, lock" signal="1" lock></omega-list-row>
-                <omega-list-row label="signal 0" signal="0"></omega-list-row>
-                <omega-list-row label="signal 3, lock" signal="3" lock lit></omega-list-row>
-                <omega-list-row label="signal 2" signal="2" lit></omega-list-row>
-                <omega-list-row label="signal 1, lock" signal="1" lock lit></omega-list-row>
-                <omega-list-row label="signal 0" signal="0" lit></omega-list-row>
-              </omega-panel>
+              <cartridge-panel label="SIGNAL" style="height: calc(127 * var(--u))">
+                <cartridge-list-row label="signal 3, lock" signal="3" lock></cartridge-list-row>
+                <cartridge-list-row label="signal 2" signal="2"></cartridge-list-row>
+                <cartridge-list-row label="signal 1, lock" signal="1" lock></cartridge-list-row>
+                <cartridge-list-row label="signal 0" signal="0"></cartridge-list-row>
+                <cartridge-list-row label="signal 3, lock" signal="3" lock lit></cartridge-list-row>
+                <cartridge-list-row label="signal 2" signal="2" lit></cartridge-list-row>
+                <cartridge-list-row label="signal 1, lock" signal="1" lock lit></cartridge-list-row>
+                <cartridge-list-row label="signal 0" signal="0" lit></cartridge-list-row>
+              </cartridge-panel>
             </figure>
           </div>
           <div class="side">
             <figure>
               <span class="tag">Bluetooth devices</span>
-              <omega-panel label="DEVICES" active style="height: calc(75 * var(--u))">
-                <omega-list-row label="8BitDo SN30 Pro" value="CONNECTED" device="gamepad"></omega-list-row>
-                <omega-list-row label="WH-1000XM4" value="PAIRED" device="audio" lit></omega-list-row>
-                <omega-list-row label="Keychron K3" value="PAIRING" device="keyboard"></omega-list-row>
-                <omega-list-row label="Mi Smart Band 4" device="other"></omega-list-row>
-              </omega-panel>
+              <cartridge-panel label="DEVICES" active style="height: calc(75 * var(--u))">
+                <cartridge-list-row label="8BitDo SN30 Pro" value="CONNECTED" device="gamepad"></cartridge-list-row>
+                <cartridge-list-row label="WH-1000XM4" value="PAIRED" device="audio" lit></cartridge-list-row>
+                <cartridge-list-row label="Keychron K3" value="PAIRING" device="keyboard"></cartridge-list-row>
+                <cartridge-list-row label="Mi Smart Band 4" device="other"></cartridge-list-row>
+              </cartridge-panel>
             </figure>
             <figure>
               <span class="tag">each kind, unlit and lit</span>
-              <omega-panel label="KINDS" style="height: calc(127 * var(--u))">
-                <omega-list-row label="audio" device="audio"></omega-list-row>
-                <omega-list-row label="gamepad" device="gamepad"></omega-list-row>
-                <omega-list-row label="keyboard" device="keyboard"></omega-list-row>
-                <omega-list-row label="other" device="other"></omega-list-row>
-                <omega-list-row label="audio" device="audio" lit></omega-list-row>
-                <omega-list-row label="gamepad" device="gamepad" lit></omega-list-row>
-                <omega-list-row label="keyboard" device="keyboard" lit></omega-list-row>
-                <omega-list-row label="other" device="other" lit></omega-list-row>
-              </omega-panel>
+              <cartridge-panel label="KINDS" style="height: calc(127 * var(--u))">
+                <cartridge-list-row label="audio" device="audio"></cartridge-list-row>
+                <cartridge-list-row label="gamepad" device="gamepad"></cartridge-list-row>
+                <cartridge-list-row label="keyboard" device="keyboard"></cartridge-list-row>
+                <cartridge-list-row label="other" device="other"></cartridge-list-row>
+                <cartridge-list-row label="audio" device="audio" lit></cartridge-list-row>
+                <cartridge-list-row label="gamepad" device="gamepad" lit></cartridge-list-row>
+                <cartridge-list-row label="keyboard" device="keyboard" lit></cartridge-list-row>
+                <cartridge-list-row label="other" device="other" lit></cartridge-list-row>
+              </cartridge-panel>
             </figure>
           </div>
         </div>
@@ -544,42 +544,42 @@
             <tr><td>signal</td><td><code>0</code> to <code>3</code>: the Wi-Fi bars, that many of their three parts lit (dot, small arc, big arc), the rest faint. No bars without it.</td></tr>
             <tr><td>lock</td><td>A padlock beside the bars, for a network with a password.</td></tr>
             <tr><td>device</td><td><code>audio</code>, <code>gamepad</code>, <code>keyboard</code> or <code>other</code>: a Bluetooth device's row, with headphones, a gamepad, a keyboard or the Bluetooth rune (also for a kind not known) where the bars end, 7 art pixels tall like the capitals. Its row has no padlock or bars and keeps no room for them.</td></tr>
-            <tr><td>lit, dim</td><td>As <code>&lt;omega-row&gt;</code>'s. The icons are drawn in the name's colour.</td></tr>
+            <tr><td>lit, dim</td><td>As <code>&lt;cartridge-row&gt;</code>'s. The icons are drawn in the name's colour.</td></tr>
             <tr><td>::part</td><td><code>row</code>, <code>label</code>, <code>value</code>, <code>lock</code>, <code>signal</code>, <code>device</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-list-row label="Home" value="CONNECTED" signal="3" lock lit&gt;&lt;/omega-list-row&gt;
-&lt;omega-list-row label="Café Guest" signal="2"&gt;&lt;/omega-list-row&gt;
+<pre><code>&lt;cartridge-list-row label="Home" value="CONNECTED" signal="3" lock lit&gt;&lt;/cartridge-list-row&gt;
+&lt;cartridge-list-row label="Café Guest" signal="2"&gt;&lt;/cartridge-list-row&gt;
 
-&lt;omega-list-row label="8BitDo SN30 Pro" value="CONNECTED" device="gamepad"&gt;&lt;/omega-list-row&gt;
-&lt;omega-list-row label="Mi Smart Band 4" device="other"&gt;&lt;/omega-list-row&gt;   &lt;!-- found only: no value --&gt;</code></pre>
+&lt;cartridge-list-row label="8BitDo SN30 Pro" value="CONNECTED" device="gamepad"&gt;&lt;/cartridge-list-row&gt;
+&lt;cartridge-list-row label="Mi Smart Band 4" device="other"&gt;&lt;/cartridge-list-row&gt;   &lt;!-- found only: no value --&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-gauge&gt;</h3><code>components/omega-gauge.js</code></header>
+        <header><h3>&lt;cartridge-gauge&gt;</h3><code>components/cartridge-gauge.js</code></header>
         <p class="dim">A level on one line, like Mega Man Zero's life gauge: a title tab naming it, then
           a well of cells, as many lit as the level reaches, and an icon at its end. It is a panel's
           header with the strip beside the tab made the gauge, 15 art pixels tall like the bottom bar,
           so it sits with the menus and on its own over a game: the volume, the brightness, the blue
           light and the rewind left. One cell to a step reads best, 9 for a level of 0 to 9; 20 cells
           of 5% each for 0 to 100. The cells stand on the title's capitals' rows.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">the four over a game, and the volume muted</span>
           <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-            <omega-gauge label="VOLUME" value="55" max="100" cells="20" icon="volume"></omega-gauge>
-            <omega-gauge label="BRIGHTNESS" value="6" max="9" cells="9" icon="brightness"></omega-gauge>
-            <omega-gauge label="BLUE LIGHT" value="3" max="9" cells="9" icon="bluelight"></omega-gauge>
-            <omega-gauge label="REWIND" value="70" max="100" cells="20" icon="rewind"></omega-gauge>
-            <omega-gauge label="VOLUME" value="0" max="100" cells="20" icon="muted"></omega-gauge>
+            <cartridge-gauge label="VOLUME" value="55" max="100" cells="20" icon="volume"></cartridge-gauge>
+            <cartridge-gauge label="BRIGHTNESS" value="6" max="9" cells="9" icon="brightness"></cartridge-gauge>
+            <cartridge-gauge label="BLUE LIGHT" value="3" max="9" cells="9" icon="bluelight"></cartridge-gauge>
+            <cartridge-gauge label="REWIND" value="70" max="100" cells="20" icon="rewind"></cartridge-gauge>
+            <cartridge-gauge label="VOLUME" value="0" max="100" cells="20" icon="muted"></cartridge-gauge>
           </div>
           <div class="side">
             <figure>
               <span class="tag">empty, full, no icon, headphones</span>
               <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-                <omega-gauge label="LEVEL" value="0" max="9" cells="9"></omega-gauge>
-                <omega-gauge label="LEVEL" value="9" max="9" cells="9"></omega-gauge>
-                <omega-gauge label="VOLUME" value="35" max="100" cells="20" icon="headphones"></omega-gauge>
-                <omega-gauge label="SPEED" value="4" max="8" cells="8" icon="fastforward"></omega-gauge>
+                <cartridge-gauge label="LEVEL" value="0" max="9" cells="9"></cartridge-gauge>
+                <cartridge-gauge label="LEVEL" value="9" max="9" cells="9"></cartridge-gauge>
+                <cartridge-gauge label="VOLUME" value="35" max="100" cells="20" icon="headphones"></cartridge-gauge>
+                <cartridge-gauge label="SPEED" value="4" max="8" cells="8" icon="fastforward"></cartridge-gauge>
               </div>
             </figure>
           </div>
@@ -595,34 +595,34 @@
             <tr><td>::part</td><td><code>gauge</code>, <code>tab</code>, <code>label</code>, <code>slant</code>, <code>strip</code>, <code>well</code>, <code>cells</code>, <code>icon</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-gauge label="VOLUME" value="55" max="100" cells="20" icon="volume"&gt;&lt;/omega-gauge&gt;
-&lt;omega-gauge label="BRIGHTNESS" value="6" max="9" cells="9" icon="brightness"&gt;&lt;/omega-gauge&gt;</code></pre>
+<pre><code>&lt;cartridge-gauge label="VOLUME" value="55" max="100" cells="20" icon="volume"&gt;&lt;/cartridge-gauge&gt;
+&lt;cartridge-gauge label="BRIGHTNESS" value="6" max="9" cells="9" icon="brightness"&gt;&lt;/cartridge-gauge&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-toast&gt;</h3><code>components/omega-toast.js</code></header>
+        <header><h3>&lt;cartridge-toast&gt;</h3><code>components/cartridge-toast.js</code></header>
         <p class="dim">A word on what just happened, as a lone panel says it: the title tab names
           what it is about and the well holds one line. It comes and goes on its own, over a game,
           the shelf or a menu, where the gauges stand. The tab hugs its title and the strip takes
           whatever room the line leaves, so the toast is as wide as the wider of the two. The line
           starts in line with the title, in its own case, with 4 rows of well above its capitals
           and 4 below; 34 art pixels tall.</p>
-        <div class="preview omega-backdrop">
-          <span class="tag">what omega-zero says over a game</span>
+        <div class="preview cartridge-backdrop">
+          <span class="tag">what cartridge says over a game</span>
           <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-            <omega-toast label="SAVE STATE" text="State saved"></omega-toast>
-            <omega-toast label="SAVE STATE" text="State loaded"></omega-toast>
-            <omega-toast label="LINK" text="Link was ended"></omega-toast>
-            <omega-toast label="LINK" text="Please switch to gpSP"></omega-toast>
-            <omega-toast label="COLOUR" text="Correction on"></omega-toast>
+            <cartridge-toast label="SAVE STATE" text="State saved"></cartridge-toast>
+            <cartridge-toast label="SAVE STATE" text="State loaded"></cartridge-toast>
+            <cartridge-toast label="LINK" text="Link was ended"></cartridge-toast>
+            <cartridge-toast label="LINK" text="Please switch to gpSP"></cartridge-toast>
+            <cartridge-toast label="COLOUR" text="Correction on"></cartridge-toast>
           </div>
           <div class="side">
             <figure>
               <span class="tag">empty, a title alone, a line alone</span>
               <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-                <omega-toast></omega-toast>
-                <omega-toast label="SAVE STATE"></omega-toast>
-                <omega-toast text="No link support"></omega-toast>
+                <cartridge-toast></cartridge-toast>
+                <cartridge-toast label="SAVE STATE"></cartridge-toast>
+                <cartridge-toast text="No link support"></cartridge-toast>
               </div>
             </figure>
           </div>
@@ -632,35 +632,35 @@
             <tr><th>API</th><th>What it does</th></tr>
             <tr><td>label</td><td>What it is about, in the title tab, in capitals whatever case it is given in, lit in <code>--oz-cream</code>.</td></tr>
             <tr><td>text</td><td>The line, in its own case, in <code>--oz-cream</code>.</td></tr>
-            <tr><td>::part</td><td><code>toast</code> (its <code>&lt;omega-panel&gt;</code>), <code>line</code></td></tr>
+            <tr><td>::part</td><td><code>toast</code> (its <code>&lt;cartridge-panel&gt;</code>), <code>line</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-toast label="SAVE STATE" text="State saved"&gt;&lt;/omega-toast&gt;
-&lt;omega-toast label="LINK" text="Link was ended"&gt;&lt;/omega-toast&gt;</code></pre>
+<pre><code>&lt;cartridge-toast label="SAVE STATE" text="State saved"&gt;&lt;/cartridge-toast&gt;
+&lt;cartridge-toast label="LINK" text="Link was ended"&gt;&lt;/cartridge-toast&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-badge&gt;</h3><code>components/omega-badge.js</code></header>
+        <header><h3>&lt;cartridge-badge&gt;</h3><code>components/cartridge-badge.js</code></header>
         <p class="dim">What a game is doing that lasts, in the corner over it: the bottom bar's key cap
           holding a 7×7 sprite and a word after it. Fast forward shows how fast, dark while R2 is held
           and lit once it is latched; a link shows the link, lit while hosting and dark when joined,
           and the link broken once it is lost. Lit, it is drawn as a lit row's band: the tab colour
           with a frame line round it. 9 art pixels tall like a key cap, its sprite and word on the
           capitals' rows, two pixels clear of either end.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">fast forward held, latched, at each speed</span>
           <div style="display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)); align-items: start">
-            <omega-badge icon="fastforward" text="×2"></omega-badge>
-            <omega-badge icon="fastforward" text="×3"></omega-badge>
-            <omega-badge icon="fastforward" text="×4" lit></omega-badge>
-            <omega-badge icon="fastforward" text="×6" lit></omega-badge>
+            <cartridge-badge icon="fastforward" text="×2"></cartridge-badge>
+            <cartridge-badge icon="fastforward" text="×3"></cartridge-badge>
+            <cartridge-badge icon="fastforward" text="×4" lit></cartridge-badge>
+            <cartridge-badge icon="fastforward" text="×6" lit></cartridge-badge>
           </div>
           <span class="tag">a link: hosting, joined, lost while hosting, lost when joined</span>
           <div style="display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)); align-items: start">
-            <omega-badge icon="link" lit></omega-badge>
-            <omega-badge icon="link"></omega-badge>
-            <omega-badge icon="unlinked" lit></omega-badge>
-            <omega-badge icon="unlinked"></omega-badge>
+            <cartridge-badge icon="link" lit></cartridge-badge>
+            <cartridge-badge icon="link"></cartridge-badge>
+            <cartridge-badge icon="unlinked" lit></cartridge-badge>
+            <cartridge-badge icon="unlinked"></cartridge-badge>
           </div>
         </div>
         <div class="table">
@@ -672,13 +672,13 @@
             <tr><td>::part</td><td><code>badge</code>, <code>icon</code>, <code>word</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-badge icon="fastforward" text="×4"&gt;&lt;/omega-badge&gt;       &lt;!-- held --&gt;
-&lt;omega-badge icon="fastforward" text="×4" lit&gt;&lt;/omega-badge&gt;   &lt;!-- latched --&gt;
-&lt;omega-badge icon="link" lit&gt;&lt;/omega-badge&gt;                    &lt;!-- hosting a link --&gt;</code></pre>
+<pre><code>&lt;cartridge-badge icon="fastforward" text="×4"&gt;&lt;/cartridge-badge&gt;       &lt;!-- held --&gt;
+&lt;cartridge-badge icon="fastforward" text="×4" lit&gt;&lt;/cartridge-badge&gt;   &lt;!-- latched --&gt;
+&lt;cartridge-badge icon="link" lit&gt;&lt;/cartridge-badge&gt;                    &lt;!-- hosting a link --&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-saves&gt;</h3><code>components/omega-saves.js</code></header>
+        <header><h3>&lt;cartridge-saves&gt;</h3><code>components/cartridge-saves.js</code></header>
         <p class="dim">Which save state the switcher shows (MENU ×2 in a game), over its screenshot at
           the top in the middle, under the top bar: a panel titled SAVE STATES, how long ago the save
           shown was made in its well, and under that a dot for each save the cart has, newest first,
@@ -687,17 +687,17 @@
           age among its saves, so it holds still as the selection moves. The age starts in line with
           the title, the dots a row past its line, where a descender reaches, and the well shows as
           much under them as over the age's capitals.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">the newest of four, the third, the last of ten</span>
           <div style="display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)); align-items: flex-start">
-            <omega-saves age="Just now" count="4"></omega-saves>
-            <omega-saves age="4 min ago" count="4" at="2"></omega-saves>
-            <omega-saves age="3 hr ago" count="10" at="9"></omega-saves>
+            <cartridge-saves age="Just now" count="4"></cartridge-saves>
+            <cartridge-saves age="4 min ago" count="4" at="2"></cartridge-saves>
+            <cartridge-saves age="3 hr ago" count="10" at="9"></cartridge-saves>
           </div>
           <span class="tag">half a day old: its day and time; and one save, held as wide as that</span>
           <div style="display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)); align-items: flex-start">
-            <omega-saves age="2026-08-08 20:00" count="3" at="2"></omega-saves>
-            <omega-saves age="Just now" style="width: calc(108 * var(--u))"></omega-saves>
+            <cartridge-saves age="2026-08-08 20:00" count="3" at="2"></cartridge-saves>
+            <cartridge-saves age="Just now" style="width: calc(108 * var(--u))"></cartridge-saves>
           </div>
         </div>
         <div class="table">
@@ -707,37 +707,37 @@
             <tr><td>count</td><td>How many saves there are, a dot for each, 5 art pixels round and 3 apart; a cart keeps up to 10. Default 1.</td></tr>
             <tr><td>at</td><td>Which of them is shown, from 0, the newest: its dot is lit in <code>--oz-cream</code>, the rest are <code>--oz-plate</code>. Default 0.</td></tr>
             <tr><td>label</td><td>The title in the tab. Default <code>SAVE STATES</code>.</td></tr>
-            <tr><td>::part</td><td><code>panel</code> (the <code>&lt;omega-panel&gt;</code>), <code>age</code>, <code>dots</code></td></tr>
+            <tr><td>::part</td><td><code>panel</code> (the <code>&lt;cartridge-panel&gt;</code>), <code>age</code>, <code>dots</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-saves age="4 min ago" count="4" at="1"&gt;&lt;/omega-saves&gt;
-&lt;omega-saves age="Just now" count="2" style="width: calc(108 * var(--u))"&gt;&lt;/omega-saves&gt;</code></pre>
+<pre><code>&lt;cartridge-saves age="4 min ago" count="4" at="1"&gt;&lt;/cartridge-saves&gt;
+&lt;cartridge-saves age="Just now" count="2" style="width: calc(108 * var(--u))"&gt;&lt;/cartridge-saves&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-hints&gt;</h3><code>components/omega-hints.js</code></header>
+        <header><h3>&lt;cartridge-hints&gt;</h3><code>components/cartridge-hints.js</code></header>
         <p class="dim">A screen's keys on one line of the kit, on a ground of their own, for where the
           bottom bar's hints would sit on a picture: a title tab naming what they are for, then a
           well holding the keys, each its key in a small dark cap and then the word, as the bar draws
-          its hints. It is drawn as <code>&lt;omega-gauge&gt;</code> with the keys in the well for
+          its hints. It is drawn as <code>&lt;cartridge-gauge&gt;</code> with the keys in the well for
           its cells, 15 art pixels tall like the bar; their capitals stand on the title's rows, so
           each cap fills the well's inside from top to bottom, and the well shows 2 art pixels
           either side of them. Put one just above the bar over a game or a photo, where the bar's
           own hints would be hard to read. Given a width, the well takes what is over, the keys at
           its left, so a line can keep the room of its widest keys as one comes and goes.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">two keys, and one</span>
           <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-            <omega-hints label="NETWORK" hint="X SCAN | Y FORGET"></omega-hints>
-            <omega-hints label="NETWORK" hint="X SCAN"></omega-hints>
+            <cartridge-hints label="NETWORK" hint="X SCAN | Y FORGET"></cartridge-hints>
+            <cartridge-hints label="NETWORK" hint="X SCAN"></cartridge-hints>
           </div>
           <div class="side">
             <figure>
               <span class="tag">one key held as wide as two; none; three keys, one with no word</span>
               <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-                <omega-hints label="NETWORK" hint="X SCAN" style="width: calc(150 * var(--u))"></omega-hints>
-                <omega-hints label="KEYS"></omega-hints>
-                <omega-hints label="LABELS" hint="START FETCH | Y SIGN OUT | SELECT"></omega-hints>
+                <cartridge-hints label="NETWORK" hint="X SCAN" style="width: calc(150 * var(--u))"></cartridge-hints>
+                <cartridge-hints label="KEYS"></cartridge-hints>
+                <cartridge-hints label="LABELS" hint="START FETCH | Y SIGN OUT | SELECT"></cartridge-hints>
               </div>
             </figure>
           </div>
@@ -746,17 +746,17 @@
           <table>
             <tr><th>API</th><th>What it does</th></tr>
             <tr><td>label</td><td>The name in the tab, in capitals whatever case it is given in, lit in <code>--oz-cream</code>.</td></tr>
-            <tr><td>hint</td><td>The keys, as <code>&lt;omega-bar&gt;</code>'s: a key and what it does, the first word the key, <code>X SCAN</code>; more than one with a <code>|</code> between them, <code>X SCAN | Y FORGET</code>. Each cap is <code>--oz-dark</code>, its letters and the word <code>--oz-cream</code>, 8 art pixels from one key to the next.</td></tr>
+            <tr><td>hint</td><td>The keys, as <code>&lt;cartridge-bar&gt;</code>'s: a key and what it does, the first word the key, <code>X SCAN</code>; more than one with a <code>|</code> between them, <code>X SCAN | Y FORGET</code>. Each cap is <code>--oz-dark</code>, its letters and the word <code>--oz-cream</code>, 8 art pixels from one key to the next.</td></tr>
             <tr><td>width</td><td>As wide as the tab and the keys need; a wider one gives the well the rest, the keys at its left.</td></tr>
             <tr><td>::part</td><td><code>frame</code>, <code>tab</code>, <code>label</code>, <code>slant</code>, <code>strip</code>, <code>well</code>, <code>hints</code>, <code>hint</code>, <code>key</code>, <code>word</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-hints label="NETWORK" hint="X SCAN | Y FORGET"&gt;&lt;/omega-hints&gt;
-&lt;omega-hints label="NETWORK" hint="X SCAN" style="width: calc(150 * var(--u))"&gt;&lt;/omega-hints&gt;   &lt;!-- held as wide --&gt;</code></pre>
+<pre><code>&lt;cartridge-hints label="NETWORK" hint="X SCAN | Y FORGET"&gt;&lt;/cartridge-hints&gt;
+&lt;cartridge-hints label="NETWORK" hint="X SCAN" style="width: calc(150 * var(--u))"&gt;&lt;/cartridge-hints&gt;   &lt;!-- held as wide --&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-bar&gt;</h3><code>components/omega-bar.js</code></header>
+        <header><h3>&lt;cartridge-bar&gt;</h3><code>components/cartridge-bar.js</code></header>
         <p class="dim">The bar along the bottom of a screen, as wide as what holds it and 15 art pixels
           tall: an <code>&lt;action-left&gt;</code> and an <code>&lt;action-right&gt;</code> at its ends
           and, between them, nothing but the keys a screen has beyond the two actions, so whatever
@@ -764,51 +764,51 @@
           the <code>room</code> of the wider label and the wider hint, and an empty one takes the
           other's. The keys go between them as hints, each its key in a small dark cap and then the
           word, centred between the actions and on the same rows as the words in the buttons.</p>
-        <div class="preview actions omega-backdrop">
+        <div class="preview actions cartridge-backdrop">
           <span class="tag">empty</span>
-          <omega-bar class="bar-box">
+          <cartridge-bar class="bar-box">
             <action-left slot="left"></action-left>
             <action-right slot="right"></action-right>
-          </omega-bar>
+          </cartridge-bar>
           <span class="tag">one action, the empty one as wide</span>
-          <omega-bar class="bar-box">
+          <cartridge-bar class="bar-box">
             <action-left slot="left"></action-left>
             <action-right slot="right" label="CONFIRM" hint="A"></action-right>
-          </omega-bar>
+          </cartridge-bar>
           <span class="tag">with a hint</span>
-          <omega-bar class="bar-box" hint="START FETCH">
+          <cartridge-bar class="bar-box" hint="START FETCH">
             <action-left slot="left" label="BACK" hint="B"></action-left>
             <action-right slot="right" label="SAVE" hint="A"></action-right>
-          </omega-bar>
+          </cartridge-bar>
           <span class="tag">with two</span>
-          <omega-bar class="bar-box" hint="Y FORGET | X EDIT">
+          <cartridge-bar class="bar-box" hint="Y FORGET | X EDIT">
             <action-left slot="left" label="BACK" hint="B"></action-left>
             <action-right slot="right" label="JOIN" hint="A"></action-right>
-          </omega-bar>
+          </cartridge-bar>
           <span class="tag">the shelf's: its system in a pill between the actions, no hints</span>
-          <omega-bar class="bar-box">
+          <cartridge-bar class="bar-box">
             <action-left slot="left" label="CONTROLS" hint="SELECT"></action-left>
-            <omega-pill slot="middle" text="GBA" centred></omega-pill>
+            <cartridge-pill slot="middle" text="GBA" centred></cartridge-pill>
             <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-          </omega-bar>
+          </cartridge-bar>
         </div>
         <div class="table">
           <table>
             <tr><th>API</th><th>What it does</th></tr>
             <tr><td>hint</td><td>A key and what it does, the first word the key: <code>Y FORGET</code>, <code>START FETCH</code>. Two with a <code>|</code> between: <code>Y FORGET | X EDIT</code>.</td></tr>
             <tr><td>font</td><td><code>bold</code> (or none) or <code>thin</code>, given to both actions: see The bar's font.</td></tr>
-            <tr><td>slot</td><td><code>left</code> for the <code>&lt;action-left&gt;</code>, <code>right</code> for the <code>&lt;action-right&gt;</code>; <code>middle</code> for what stands between them in place of hints, the shelf's <code>&lt;omega-pill centred&gt;</code>, at the bar's top across the whole room between the actions. A bar with one has no hints.</td></tr>
+            <tr><td>slot</td><td><code>left</code> for the <code>&lt;action-left&gt;</code>, <code>right</code> for the <code>&lt;action-right&gt;</code>; <code>middle</code> for what stands between them in place of hints, the shelf's <code>&lt;cartridge-pill centred&gt;</code>, at the bar's top across the whole room between the actions. A bar with one has no hints.</td></tr>
             <tr><td>::part</td><td><code>bar</code>, <code>middle</code> (the room between the actions), <code>hints</code>, <code>hint</code>, <code>key</code>, <code>word</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-bar hint="Y FORGET | X EDIT"&gt;
+<pre><code>&lt;cartridge-bar hint="Y FORGET | X EDIT"&gt;
   &lt;action-left slot="left" label="BACK" hint="B"&gt;&lt;/action-left&gt;
   &lt;action-right slot="right" label="JOIN" hint="A"&gt;&lt;/action-right&gt;
-&lt;/omega-bar&gt;</code></pre>
+&lt;/cartridge-bar&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-pill&gt;</h3><code>components/omega-pill.js</code></header>
+        <header><h3>&lt;cartridge-pill&gt;</h3><code>components/cartridge-pill.js</code></header>
         <p class="dim">The bar's button pill standing on its own, both its ends rounded, a word in its
           dark middle: on the shelf, the shelf's system, GBA, GB or GBC, in the bar's
           <code>middle</code> between its two actions, in the middle of the screen. It is always
@@ -818,23 +818,23 @@
           the bar changes them, and is gone while the core picker is open. 15 art pixels tall, the
           bar's height, with 3 dark pixels either side of the word's ink, on the rows the buttons
           print their hints on: <code>pill_face</code> in
-          <code>crates/omega-ui/src/kit/action.rs</code> draws the same pixels.</p>
-        <div class="preview actions omega-backdrop">
+          <code>crates/cartridge-ui/src/kit/action.rs</code> draws the same pixels.</p>
+        <div class="preview actions cartridge-backdrop">
           <span class="tag">the five systems, and a letter jumped to</span>
           <div style="display: flex; flex-wrap: wrap; gap: calc(6 * var(--u)); align-items: start">
-            <omega-pill text="GBA"></omega-pill>
-            <omega-pill text="GB"></omega-pill>
-            <omega-pill text="GBC"></omega-pill>
-            <omega-pill text="SNES"></omega-pill>
-            <omega-pill text="PS1"></omega-pill>
-            <omega-pill text="M"></omega-pill>
+            <cartridge-pill text="GBA"></cartridge-pill>
+            <cartridge-pill text="GB"></cartridge-pill>
+            <cartridge-pill text="GBC"></cartridge-pill>
+            <cartridge-pill text="SNES"></cartridge-pill>
+            <cartridge-pill text="PS1"></cartridge-pill>
+            <cartridge-pill text="M"></cartridge-pill>
           </div>
           <span class="tag">on the shelf, between the bar's actions</span>
-          <omega-bar class="bar-box">
+          <cartridge-bar class="bar-box">
             <action-left slot="left" label="CONTROLS" hint="SELECT"></action-left>
-            <omega-pill slot="middle" text="GBC" centred></omega-pill>
+            <cartridge-pill slot="middle" text="GBC" centred></cartridge-pill>
             <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-          </omega-bar>
+          </cartridge-bar>
         </div>
         <div class="table">
           <table>
@@ -844,51 +844,51 @@
             <tr><td>::part</td><td><code>pill</code>, <code>text</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-pill text="GBA"&gt;&lt;/omega-pill&gt;
+<pre><code>&lt;cartridge-pill text="GBA"&gt;&lt;/cartridge-pill&gt;
 
-&lt;omega-bar&gt;
+&lt;cartridge-bar&gt;
   &lt;action-left slot="left" label="CONTROLS" hint="SELECT"&gt;&lt;/action-left&gt;
-  &lt;omega-pill slot="middle" text="GBA" centred&gt;&lt;/omega-pill&gt;
+  &lt;cartridge-pill slot="middle" text="GBA" centred&gt;&lt;/cartridge-pill&gt;
   &lt;action-right slot="right" label="SETTINGS" hint="START"&gt;&lt;/action-right&gt;
-&lt;/omega-bar&gt;</code></pre>
+&lt;/cartridge-bar&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>The bar's font</h3><code>omega-bar font="thin"</code></header>
+        <header><h3>The bar's font</h3><code>cartridge-bar font="thin"</code></header>
         <p class="dim">Settings › Theme › Font picks how the actions' labels are drawn. Bold, the
           default, draws each letter again a pixel to its right; thin draws Pixel Code's own
           one-pixel strokes, a pixel a letter narrower, over the same shadow and with the same 10
           rows of capitals. <code>font</code> on the bar gives it to both actions, which still come
           out one width: the shelf's two 107 art pixels wide in thin and 115 in bold, a menu's 90
           and 97.</p>
-        <div class="preview actions omega-backdrop">
+        <div class="preview actions cartridge-backdrop">
           <span class="tag">bold</span>
-          <omega-bar class="bar-box">
+          <cartridge-bar class="bar-box">
             <action-left slot="left" label="CONTROLS" hint="SELECT"></action-left>
             <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-          </omega-bar>
-          <omega-bar class="bar-box">
+          </cartridge-bar>
+          <cartridge-bar class="bar-box">
             <action-left slot="left" label="RETURN" hint="B"></action-left>
             <action-right slot="right" label="CONFIRM" hint="A"></action-right>
-          </omega-bar>
+          </cartridge-bar>
           <span class="tag">thin</span>
-          <omega-bar class="bar-box" font="thin">
+          <cartridge-bar class="bar-box" font="thin">
             <action-left slot="left" label="CONTROLS" hint="SELECT"></action-left>
             <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-          </omega-bar>
-          <omega-bar class="bar-box" font="thin">
+          </cartridge-bar>
+          <cartridge-bar class="bar-box" font="thin">
             <action-left slot="left" label="RETURN" hint="B"></action-left>
             <action-right slot="right" label="CONFIRM" hint="A"></action-right>
-          </omega-bar>
+          </cartridge-bar>
         </div>
-<pre><code>&lt;omega-bar font="thin"&gt;
+<pre><code>&lt;cartridge-bar font="thin"&gt;
   &lt;action-left slot="left" label="RETURN" hint="B"&gt;&lt;/action-left&gt;
   &lt;action-right slot="right" label="CONFIRM" hint="A"&gt;&lt;/action-right&gt;
-&lt;/omega-bar&gt;</code></pre>
+&lt;/cartridge-bar&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-link&gt;</h3><code>components/omega-link.js</code></header>
+        <header><h3>&lt;cartridge-link&gt;</h3><code>components/cartridge-link.js</code></header>
         <p class="dim">The art of the link screen a game opens with SELECT + MENU, one piece at a
           time: the link port along the console's top edge, the GBA link cable's plug on its cable,
           the wireless adapter, the radio arcs it calls out with and the clicks of a plug going
@@ -897,36 +897,36 @@
           steps of a fade. The plug and the adapter are real things and keep their own colours, the
           plug the purple of the real cable (the joiner's end grey, wider, with the socket a third
           player's cable goes into); the port, the arcs and the clicks follow the palette.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">the host's plug and the joiner's on their cable, and the adapter</span>
           <div class="link-scene" style="width: calc(200 * var(--u)); height: calc(70 * var(--u))">
-            <omega-link piece="cable" length="14" style="left: calc(12 * var(--u)); top: 0"></omega-link>
-            <omega-link piece="plug" role="host" style="left: 0; top: calc(14 * var(--u))"></omega-link>
-            <omega-link piece="cable" length="14" style="left: calc(57 * var(--u)); top: 0"></omega-link>
-            <omega-link piece="plug" role="join" style="left: calc(42 * var(--u)); top: calc(14 * var(--u))"></omega-link>
-            <omega-link piece="adapter" style="left: calc(100 * var(--u)); top: calc(10 * var(--u))"></omega-link>
+            <cartridge-link piece="cable" length="14" style="left: calc(12 * var(--u)); top: 0"></cartridge-link>
+            <cartridge-link piece="plug" role="host" style="left: 0; top: calc(14 * var(--u))"></cartridge-link>
+            <cartridge-link piece="cable" length="14" style="left: calc(57 * var(--u)); top: 0"></cartridge-link>
+            <cartridge-link piece="plug" role="join" style="left: calc(42 * var(--u)); top: calc(14 * var(--u))"></cartridge-link>
+            <cartridge-link piece="adapter" style="left: calc(100 * var(--u)); top: calc(10 * var(--u))"></cartridge-link>
           </div>
           <div class="side">
             <figure>
               <span class="tag">a plug home in the port, and its clicks</span>
               <div class="link-scene" style="width: calc(120 * var(--u)); height: calc(84 * var(--u))">
-                <omega-link piece="cable" length="14" style="left: calc(57 * var(--u)); top: 0"></omega-link>
-                <omega-link piece="plug" role="host" style="left: calc(45 * var(--u)); top: calc(14 * var(--u))"></omega-link>
-                <omega-link piece="port" width="120" height="28" style="left: 0; top: calc(56 * var(--u))"></omega-link>
-                <omega-link piece="clicks" style="left: calc(34 * var(--u)); top: calc(46 * var(--u))"></omega-link>
+                <cartridge-link piece="cable" length="14" style="left: calc(57 * var(--u)); top: 0"></cartridge-link>
+                <cartridge-link piece="plug" role="host" style="left: calc(45 * var(--u)); top: calc(14 * var(--u))"></cartridge-link>
+                <cartridge-link piece="port" width="120" height="28" style="left: 0; top: calc(56 * var(--u))"></cartridge-link>
+                <cartridge-link piece="clicks" style="left: calc(34 * var(--u)); top: calc(46 * var(--u))"></cartridge-link>
               </div>
             </figure>
             <figure>
               <span class="tag">the adapter on the port, calling out</span>
               <div class="link-scene" style="width: calc(180 * var(--u)); height: calc(76 * var(--u))">
-                <omega-link piece="port" width="180" height="24" style="left: 0; top: calc(52 * var(--u))"></omega-link>
-                <omega-link piece="adapter" style="left: calc(50 * var(--u)); top: calc(8 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="0" style="left: calc(134 * var(--u)); top: calc(23 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="1" style="left: calc(140 * var(--u)); top: calc(19 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="2" style="left: calc(146 * var(--u)); top: calc(15 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="0" side="left" style="left: calc(41 * var(--u)); top: calc(23 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="1" side="left" style="left: calc(33 * var(--u)); top: calc(19 * var(--u))"></omega-link>
-                <omega-link piece="arc" ring="2" side="left" style="left: calc(25 * var(--u)); top: calc(15 * var(--u))"></omega-link>
+                <cartridge-link piece="port" width="180" height="24" style="left: 0; top: calc(52 * var(--u))"></cartridge-link>
+                <cartridge-link piece="adapter" style="left: calc(50 * var(--u)); top: calc(8 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="0" style="left: calc(134 * var(--u)); top: calc(23 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="1" style="left: calc(140 * var(--u)); top: calc(19 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="2" style="left: calc(146 * var(--u)); top: calc(15 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="0" side="left" style="left: calc(41 * var(--u)); top: calc(23 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="1" side="left" style="left: calc(33 * var(--u)); top: calc(19 * var(--u))"></cartridge-link>
+                <cartridge-link piece="arc" ring="2" side="left" style="left: calc(25 * var(--u)); top: calc(15 * var(--u))"></cartridge-link>
               </div>
             </figure>
           </div>
@@ -942,13 +942,13 @@
             <tr><td>::part</td><td><code>art</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-link piece="plug" role="host"&gt;&lt;/omega-link&gt;
-&lt;omega-link piece="port" width="320" height="36"&gt;&lt;/omega-link&gt;
-&lt;omega-link piece="arc" ring="2" side="left"&gt;&lt;/omega-link&gt;</code></pre>
+<pre><code>&lt;cartridge-link piece="plug" role="host"&gt;&lt;/cartridge-link&gt;
+&lt;cartridge-link piece="port" width="320" height="36"&gt;&lt;/cartridge-link&gt;
+&lt;cartridge-link piece="arc" ring="2" side="left"&gt;&lt;/cartridge-link&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>The DISC screen</h3><code>omega-panel, omega-row, omega-bar</code></header>
+        <header><h3>The DISC screen</h3><code>cartridge-panel, cartridge-row, cartridge-bar</code></header>
         <p class="dim">What SELECT + MENU opens over a PlayStation game on several discs, where the
           link screen opens on a GBA or a Game Boy; the game is held under it. It is put together
           from the kit, over the backdrop: a lone DISC panel where the LINK panel goes, 200 art
@@ -960,26 +960,26 @@
           picked into the drive, closes the screen and says so in a DISC toast ("Disc 2
           inserted"); B, SELECT or SELECT + MENU again close it with the disc left in. A game on one
           disc opens nothing: its toast says "Only one disc".</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">disc 2 of 3 picked, disc 1 in the drive, on a 640×480 screen</span>
           <div class="disc-screen">
-            <omega-panel label="DISC" active class="disc-panel">
-              <omega-row label="DISC" value="2 OF 3" lit carets></omega-row>
-              <omega-row label="IN DRIVE" value="DISC 1"></omega-row>
+            <cartridge-panel label="DISC" active class="disc-panel">
+              <cartridge-row label="DISC" value="2 OF 3" lit carets></cartridge-row>
+              <cartridge-row label="IN DRIVE" value="DISC 1"></cartridge-row>
               <p class="disc-note">Final Fantasy VII</p>
-            </omega-panel>
+            </cartridge-panel>
             <div class="discs" aria-label="the game's three discs, the second picked">
               <i></i><i class="picked"></i><i></i>
             </div>
-            <omega-bar class="disc-bar" hint="◀▶ PICK">
+            <cartridge-bar class="disc-bar" hint="◀▶ PICK">
               <action-left slot="left" label="RETURN" hint="B"></action-left>
               <action-right slot="right" label="SWAP" hint="A"></action-right>
-            </omega-bar>
+            </cartridge-bar>
           </div>
           <span class="tag">the toasts it says</span>
           <div style="display: grid; gap: calc(6 * var(--u)); justify-items: start">
-            <omega-toast label="DISC" text="Disc 2 inserted"></omega-toast>
-            <omega-toast label="DISC" text="Only one disc"></omega-toast>
+            <cartridge-toast label="DISC" text="Disc 2 inserted"></cartridge-toast>
+            <cartridge-toast label="DISC" text="Only one disc"></cartridge-toast>
           </div>
         </div>
         <div class="table">
@@ -991,38 +991,38 @@
             <tr><td>discs</td><td>Each the shelf's face for it, drawn flat (a placeholder box here, as flow.html draws what Rust draws); the shelf's disc stack takes their place in <code>draw_disc_art</code>.</td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-panel label="DISC" active&gt;
-  &lt;omega-row label="DISC" value="2 OF 3" lit carets&gt;&lt;/omega-row&gt;
-  &lt;omega-row label="IN DRIVE" value="DISC 1"&gt;&lt;/omega-row&gt;
+<pre><code>&lt;cartridge-panel label="DISC" active&gt;
+  &lt;cartridge-row label="DISC" value="2 OF 3" lit carets&gt;&lt;/cartridge-row&gt;
+  &lt;cartridge-row label="IN DRIVE" value="DISC 1"&gt;&lt;/cartridge-row&gt;
   &lt;p class="disc-note"&gt;Final Fantasy VII&lt;/p&gt;
-&lt;/omega-panel&gt;
-&lt;omega-bar hint="◀▶ PICK"&gt;
+&lt;/cartridge-panel&gt;
+&lt;cartridge-bar hint="◀▶ PICK"&gt;
   &lt;action-left slot="left" label="RETURN" hint="B"&gt;&lt;/action-left&gt;
   &lt;action-right slot="right" label="SWAP" hint="A"&gt;&lt;/action-right&gt;
-&lt;/omega-bar&gt;</code></pre>
+&lt;/cartridge-bar&gt;</code></pre>
       </article>
 
       <article class="card">
-        <header><h3>&lt;omega-button&gt;</h3><code>components/omega-button.js</code></header>
+        <header><h3>&lt;cartridge-button&gt;</h3><code>components/cartridge-button.js</code></header>
         <p class="dim">A link or a button drawn as the bottom bar's button pill, both its ends
           rounded: for pages around the menus, like the site. The link or button is the page's own,
           put inside it, so it keeps its text, its focus and what it does, and it covers the whole
           pill. 15 art pixels tall, 6 dark pixels either side of the word's ink. On hover and while
           it has focus it is lit, as a row under the cursor; keyboard focus also draws a cream ring
           a pixel clear of it (Tab to one to see it).</p>
-        <div class="preview omega-backdrop" style="justify-items: start">
+        <div class="preview cartridge-backdrop" style="justify-items: start">
           <span class="tag">plain, and primary</span>
           <div class="buttons">
-            <omega-button><a href="#components">WIKI</a></omega-button>
-            <omega-button primary><a href="#components">DOWNLOAD</a></omega-button>
+            <cartridge-button><a href="#components">WIKI</a></cartridge-button>
+            <cartridge-button primary><a href="#components">DOWNLOAD</a></cartridge-button>
           </div>
           <span class="tag">lit: hovered, focused or given lit</span>
           <div class="buttons">
-            <omega-button lit><a href="#components">WIKI</a></omega-button>
-            <omega-button primary lit><a href="#components">DOWNLOAD</a></omega-button>
+            <cartridge-button lit><a href="#components">WIKI</a></cartridge-button>
+            <cartridge-button primary lit><a href="#components">DOWNLOAD</a></cartridge-button>
           </div>
           <span class="tag">a button</span>
-          <omega-button><button type="button">COPY</button></omega-button>
+          <cartridge-button><button type="button">COPY</button></cartridge-button>
         </div>
         <div class="table">
           <table>
@@ -1033,27 +1033,27 @@
             <tr><td>::part</td><td><code>pill</code>, <code>ring</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-button primary&gt;&lt;a href="…/releases/latest"&gt;DOWNLOAD&lt;/a&gt;&lt;/omega-button&gt;
-&lt;omega-button&gt;&lt;button type="button"&gt;COPY&lt;/button&gt;&lt;/omega-button&gt;</code></pre>
+<pre><code>&lt;cartridge-button primary&gt;&lt;a href="…/releases/latest"&gt;DOWNLOAD&lt;/a&gt;&lt;/cartridge-button&gt;
+&lt;cartridge-button&gt;&lt;button type="button"&gt;COPY&lt;/button&gt;&lt;/cartridge-button&gt;</code></pre>
       </article>
 
       <article class="card">
-        <header><h3>&lt;omega-code&gt;</h3><code>components/omega-code.js</code></header>
+        <header><h3>&lt;cartridge-code&gt;</h3><code>components/cartridge-code.js</code></header>
         <p class="dim">Lines to read or type exactly, like a card's folders or a command: a dark box
           inside an edge line with its corner pixels left out, the lines in cream on lines of 12
           art pixels, kept as written and scrolled sideways inside the box when one is too long, so
           the page never scrolls. The lines are the page's own <code>&lt;pre&gt;</code>. A label
           along the top names them; <code>copy</code> adds a key that puts them on the
           clipboard.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">label</span>
-          <omega-code label="THE CARD"><pre>Games/GBA/    your GBA games
+          <cartridge-code label="THE CARD"><pre>Games/GBA/    your GBA games
 Saves/        saves
-System/       omega-zero itself</pre></omega-code>
+System/       cartridge itself</pre></cartridge-code>
           <span class="tag">label and copy</span>
-          <omega-code label="TERMINAL" copy><pre>ssh root@rg35xxsp.local</pre></omega-code>
+          <cartridge-code label="TERMINAL" copy><pre>ssh root@rg35xxsp.local</pre></cartridge-code>
           <span class="tag">neither, one line longer than the box</span>
-          <omega-code><pre>task deploy:wifi PROFILE=device-dev   # builds in seconds, copies it over SSH, reboots</pre></omega-code>
+          <cartridge-code><pre>task deploy:wifi PROFILE=device-dev   # builds in seconds, copies it over SSH, reboots</pre></cartridge-code>
         </div>
         <div class="table">
           <table>
@@ -1064,27 +1064,27 @@ System/       omega-zero itself</pre></omega-code>
             <tr><td>::part</td><td><code>code</code>, <code>top</code>, <code>label</code>, <code>copy</code>, <code>lines</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-code label="TERMINAL" copy&gt;&lt;pre&gt;ssh root@rg35xxsp.local&lt;/pre&gt;&lt;/omega-code&gt;</code></pre>
+<pre><code>&lt;cartridge-code label="TERMINAL" copy&gt;&lt;pre&gt;ssh root@rg35xxsp.local&lt;/pre&gt;&lt;/cartridge-code&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-screen&gt;</h3><code>components/omega-screen.js</code></header>
+        <header><h3>&lt;cartridge-screen&gt;</h3><code>components/cartridge-screen.js</code></header>
         <p class="dim">A picture of a screen in a handheld's bezel: the shell (a dark outline, a rim
           in the frame colour, the plate colour), the black bezel with its corner pixels left out,
           and the glass's edge line round the picture, which is the page's own image or video, so it
           keeps its alt text. The bezel is 10 art pixels each side, so a 640×480 screenshot at its
-          own size makes a 680×500 screen and omega-zero's 2×2 art pixels stay 2×2. The picture is
+          own size makes a 680×500 screen and cartridge's 2×2 art pixels stay 2×2. The picture is
           a whole number of pixels tall, pixelated at its own size or bigger and smoothed smaller.
           <code>led</code> lights the power light under the picture.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <div class="screens">
             <figure>
               <span class="tag">led, at its own size: the boot logo</span>
-              <omega-screen led class="screen-own"><img src="../logo/bootlogo-pixel-640x480.png" width="640" height="480" alt="omega-zero's boot logo over the grid"></omega-screen>
+              <cartridge-screen led class="screen-own"><img src="../logo/bootlogo-pixel-640x480.png" width="640" height="480" alt="cartridge's boot logo over the grid"></cartridge-screen>
             </figure>
             <figure>
               <span class="tag">smaller, smoothed</span>
-              <omega-screen class="screen-small"><img src="../logo/bootlogo-pixel-640x480.png" width="640" height="480" alt="omega-zero's boot logo over the grid"></omega-screen>
+              <cartridge-screen class="screen-small"><img src="../logo/bootlogo-pixel-640x480.png" width="640" height="480" alt="cartridge's boot logo over the grid"></cartridge-screen>
             </figure>
           </div>
         </div>
@@ -1096,35 +1096,35 @@ System/       omega-zero itself</pre></omega-code>
             <tr><td>::part</td><td><code>shell</code>, <code>bezel</code>, <code>glass</code>, <code>led</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-screen led&gt;
+<pre><code>&lt;cartridge-screen led&gt;
   &lt;img src="media/shelf.png" alt="The shelf…" width="640" height="480"&gt;
-&lt;/omega-screen&gt;</code></pre>
+&lt;/cartridge-screen&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-card&gt;</h3><code>components/omega-card.js</code></header>
+        <header><h3>&lt;cartridge-card&gt;</h3><code>components/cartridge-card.js</code></header>
         <p class="dim">One thing told about in a few lines, like a feature: its icon in a dark box,
           its title beside it and its text under both, inside an edge line with its corner pixels
           left out. The title and the text are the page's own, so a title can be a real heading. The
           icons are sprites 11 art pixels square in the middle of a 17-pixel box, in the palette's
           colours; the theme icon is the palette's four lightest steps, which the Colour turns. In a
           panel's well, or straight on the backdrop.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">every icon, and none, in a panel</span>
-          <omega-panel label="HIGHLIGHTS" active style="flex: none">
+          <cartridge-panel label="HIGHLIGHTS" active style="flex: none">
             <div class="card-grid">
-              <omega-card icon="cart"><h4 slot="title">cart</h4><p>A Game Boy cart, its label and ridges.</p></omega-card>
-              <omega-card icon="chip"><h4 slot="title">chip</h4><p>A chip, its pins on every side.</p></omega-card>
-              <omega-card icon="rewind"><h4 slot="title">rewind</h4><p>Two heads pointing back.</p></omega-card>
-              <omega-card icon="link"><h4 slot="title">link</h4><p>Two arrows, there and back.</p></omega-card>
-              <omega-card icon="window"><h4 slot="title">window</h4><p>A menu window, its title tab and a lit row.</p></omega-card>
-              <omega-card icon="gamepad"><h4 slot="title">gamepad</h4><p>The d-pad's cross, two buttons, the grips.</p></omega-card>
-              <omega-card icon="wifi"><h4 slot="title">wifi</h4><p>Two arcs over the dot.</p></omega-card>
-              <omega-card icon="bluetooth"><h4 slot="title">bluetooth</h4><p>The Bluetooth rune.</p></omega-card>
-              <omega-card icon="theme"><h4 slot="title">theme</h4><p>The palette's four lightest steps.</p></omega-card>
-              <omega-card><h4 slot="title">No icon</h4><p>The title from the left.</p><p>A second paragraph, half a line down.</p></omega-card>
+              <cartridge-card icon="cart"><h4 slot="title">cart</h4><p>A Game Boy cart, its label and ridges.</p></cartridge-card>
+              <cartridge-card icon="chip"><h4 slot="title">chip</h4><p>A chip, its pins on every side.</p></cartridge-card>
+              <cartridge-card icon="rewind"><h4 slot="title">rewind</h4><p>Two heads pointing back.</p></cartridge-card>
+              <cartridge-card icon="link"><h4 slot="title">link</h4><p>Two arrows, there and back.</p></cartridge-card>
+              <cartridge-card icon="window"><h4 slot="title">window</h4><p>A menu window, its title tab and a lit row.</p></cartridge-card>
+              <cartridge-card icon="gamepad"><h4 slot="title">gamepad</h4><p>The d-pad's cross, two buttons, the grips.</p></cartridge-card>
+              <cartridge-card icon="wifi"><h4 slot="title">wifi</h4><p>Two arcs over the dot.</p></cartridge-card>
+              <cartridge-card icon="bluetooth"><h4 slot="title">bluetooth</h4><p>The Bluetooth rune.</p></cartridge-card>
+              <cartridge-card icon="theme"><h4 slot="title">theme</h4><p>The palette's four lightest steps.</p></cartridge-card>
+              <cartridge-card><h4 slot="title">No icon</h4><p>The title from the left.</p><p>A second paragraph, half a line down.</p></cartridge-card>
             </div>
-          </omega-panel>
+          </cartridge-panel>
         </div>
         <div class="table">
           <table>
@@ -1135,16 +1135,16 @@ System/       omega-zero itself</pre></omega-code>
             <tr><td>::part</td><td><code>card</code>, <code>icon</code>, <code>title</code>, <code>text</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-card icon="cart"&gt;
+<pre><code>&lt;cartridge-card icon="cart"&gt;
   &lt;h3 slot="title"&gt;The shelf&lt;/h3&gt;
   &lt;p&gt;Solid carts in their own plastics, with real label scans.&lt;/p&gt;
-&lt;/omega-card&gt;</code></pre>
+&lt;/cartridge-card&gt;</code></pre>
       </article>
 
       <article class="card wide">
-        <header><h3>&lt;omega-tabs&gt;</h3><code>components/omega-tabs.js</code></header>
+        <header><h3>&lt;cartridge-tabs&gt;</h3><code>components/cartridge-tabs.js</code></header>
         <p class="dim">A page's tabs, drawn as a row of panel titles: each tab the dark title tab of
-          an <code>&lt;omega-panel&gt;</code> with its slanted end, on the bright strip, the stripe
+          an <code>&lt;cartridge-panel&gt;</code> with its slanted end, on the bright strip, the stripe
           line under the row and the panel's edge line round it. The tab shown is an active panel's
           title, the tab colour and a cream word; the others are dark with a dim word, cream under
           the pointer. The tabs are the page's own links, each to the part it shows, so with scripts
@@ -1152,34 +1152,34 @@ System/       omega-zero itself</pre></omega-code>
           Right move to the tab before or after and show it, Home and End the first and last; a
           click, Enter or Space shows the tab pressed; keyboard focus underlines the word. Narrower
           than its tabs, it wraps them into rows, each on its own strip.</p>
-        <div class="preview omega-backdrop">
+        <div class="preview cartridge-backdrop">
           <span class="tag">three tabs, each showing the panel it links to (click, or Tab to one and use the arrows)</span>
-          <omega-tabs label="Tabs example">
+          <cartridge-tabs label="Tabs example">
             <a href="#tabs-shelf">SHELF</a>
             <a href="#tabs-settings">SETTINGS</a>
             <a href="#tabs-theme">THEME</a>
-          </omega-tabs>
-          <omega-panel id="tabs-shelf" label="SHELF" active style="flex: none">
-            <omega-row label="CART" value="EMERALD"></omega-row>
-            <omega-row label="CORE" value="MGBA"></omega-row>
-          </omega-panel>
-          <omega-panel id="tabs-settings" label="SETTINGS" active style="flex: none">
-            <omega-row label="FAST FORWARD" value="6X"></omega-row>
-            <omega-row label="RUMBLE" value="ON"></omega-row>
-          </omega-panel>
-          <omega-panel id="tabs-theme" label="THEME" active style="flex: none">
-            <omega-row label="COLOUR" value="NIGHT"></omega-row>
-            <omega-row label="FONT" value="BOLD"></omega-row>
-          </omega-panel>
+          </cartridge-tabs>
+          <cartridge-panel id="tabs-shelf" label="SHELF" active style="flex: none">
+            <cartridge-row label="CART" value="EMERALD"></cartridge-row>
+            <cartridge-row label="CORE" value="MGBA"></cartridge-row>
+          </cartridge-panel>
+          <cartridge-panel id="tabs-settings" label="SETTINGS" active style="flex: none">
+            <cartridge-row label="FAST FORWARD" value="6X"></cartridge-row>
+            <cartridge-row label="RUMBLE" value="ON"></cartridge-row>
+          </cartridge-panel>
+          <cartridge-panel id="tabs-theme" label="THEME" active style="flex: none">
+            <cartridge-row label="COLOUR" value="NIGHT"></cartridge-row>
+            <cartridge-row label="FONT" value="BOLD"></cartridge-row>
+          </cartridge-panel>
           <span class="tag">narrower than its tabs: they wrap into rows (buttons, no panels)</span>
           <div style="width: calc(150 * var(--u)); max-width: 100%">
-            <omega-tabs label="Wrapping example">
+            <cartridge-tabs label="Wrapping example">
               <button type="button">HOME</button>
               <button type="button">SCREENS</button>
               <button type="button">INSTALL</button>
               <button type="button">DEVICES</button>
               <button type="button">CREDITS</button>
-            </omega-tabs>
+            </cartridge-tabs>
           </div>
         </div>
         <div class="table">
@@ -1189,14 +1189,14 @@ System/       omega-zero itself</pre></omega-code>
             <tr><td>label</td><td>What the tabs are, for a screen reader (<code>aria-label</code>).</td></tr>
             <tr><td>hash</td><td>The URL's hash follows the tab shown (none for the first) and the tab follows the hash: links to <code>#part</code>, the back button, and links to something inside a part, which is scrolled to.</td></tr>
             <tr><td>select(i)</td><td>Shows tab <code>i</code>, an index or a part's id; <code>index</code> is the one shown.</td></tr>
-            <tr><td>omega-tab</td><td>The event each change sends, from the first tab shown: <code>detail</code> has <code>index</code>, <code>id</code>, <code>tab</code> and <code>panel</code>.</td></tr>
+            <tr><td>cartridge-tab</td><td>The event each change sends, from the first tab shown: <code>detail</code> has <code>index</code>, <code>id</code>, <code>tab</code> and <code>panel</code>.</td></tr>
             <tr><td>::part</td><td><code>bar</code></td></tr>
           </table>
         </div>
-<pre><code>&lt;omega-tabs label="omega-zero" hash&gt;
+<pre><code>&lt;cartridge-tabs label="cartridge" hash&gt;
   &lt;a href="#home"&gt;HOME&lt;/a&gt;
   &lt;a href="#install"&gt;INSTALL&lt;/a&gt;
-&lt;/omega-tabs&gt;
+&lt;/cartridge-tabs&gt;
 &lt;section id="home"&gt;…&lt;/section&gt;
 &lt;section id="install"&gt;…&lt;/section&gt;</code></pre>
       </article>
@@ -1207,7 +1207,7 @@ System/       omega-zero itself</pre></omega-code>
   <section id="screens" aria-labelledby="screens-title">
     <h2 id="screens-title">Screens</h2>
     <p class="dim">Components put together on a device-sized screen, each area its own div. Button
-      Setting rebuilds Mega Man Zero's menu of that name over omega-zero's backdrop.</p>
+      Setting rebuilds Mega Man Zero's menu of that name over cartridge's backdrop.</p>
 
     <h3>Button Setting</h3>
     <div class="controls">
@@ -1235,45 +1235,45 @@ System/       omega-zero itself</pre></omega-code>
     <div class="screen-row">
       <div class="screen-scroll">
         <div class="screen" data-size="640x480">
-          <div class="backdrop omega-backdrop" data-moving></div>
+          <div class="backdrop cartridge-backdrop" data-moving></div>
           <div class="stage">
             <div class="modal-area">
-              <omega-modal class="split">
-                <omega-panel label="BUTTON SETTING" active>
-                  <omega-row label="MAIN WEAPON" value="B" lit carets></omega-row>
-                  <omega-row label="SUB WEAPON" value="Y" carets></omega-row>
-                  <omega-row label="JUMP" value="A" carets></omega-row>
-                  <omega-row label="DASH" value="R1" carets></omega-row>
-                </omega-panel>
-                <omega-panel label="ATTACK MODE">
-                  <omega-row label="TYPE" value="A" carets></omega-row>
-                  <omega-row label="MOVE LIST" opens></omega-row>
-                </omega-panel>
-              </omega-modal>
+              <cartridge-modal class="split">
+                <cartridge-panel label="BUTTON SETTING" active>
+                  <cartridge-row label="MAIN WEAPON" value="B" lit carets></cartridge-row>
+                  <cartridge-row label="SUB WEAPON" value="Y" carets></cartridge-row>
+                  <cartridge-row label="JUMP" value="A" carets></cartridge-row>
+                  <cartridge-row label="DASH" value="R1" carets></cartridge-row>
+                </cartridge-panel>
+                <cartridge-panel label="ATTACK MODE">
+                  <cartridge-row label="TYPE" value="A" carets></cartridge-row>
+                  <cartridge-row label="MOVE LIST" opens></cartridge-row>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
-            <omega-bar hint="Y RESET">
+            <cartridge-bar hint="Y RESET">
               <action-left slot="left" label="MENU" hint="SELECT"></action-left>
               <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-            </omega-bar>
+            </cartridge-bar>
           </div>
         </div>
       </div>
 
       <div class="tree">
 <pre><code>.screen
-├─ .backdrop          omega-zero's backdrop
+├─ .backdrop          cartridge's backdrop
 └─ .stage
    ├─ .modal-area
-   │  └─ &lt;omega-modal&gt;   frame › content
-   │     ├─ &lt;omega-panel&gt;
+   │  └─ &lt;cartridge-modal&gt;   frame › content
+   │     ├─ &lt;cartridge-panel&gt;
    │     │  │ panel › header (tab › label,
    │     │  │ slant, strip) › body
-   │     │  └─ &lt;omega-row&gt; ×4
+   │     │  └─ &lt;cartridge-row&gt; ×4
    │     │       row › label, caret-left,
    │     │       value, caret-right, opens
-   │     └─ &lt;omega-panel&gt;
-   │        └─ &lt;omega-row&gt; ×2
-   └─ &lt;omega-bar&gt;
+   │     └─ &lt;cartridge-panel&gt;
+   │        └─ &lt;cartridge-row&gt; ×2
+   └─ &lt;cartridge-bar&gt;
       │ bar › middle › hints › hint › key, word
       ├─ &lt;action-left&gt;
       │    action › icon, label › word,
@@ -1294,19 +1294,19 @@ System/       omega-zero itself</pre></omega-code>
     solid: 'Solid',
   };
   const styles = document.getElementById('styles');
-  for (const style of OmegaBackdrop.STYLES) {
+  for (const style of CartridgeBackdrop.STYLES) {
     const label = document.createElement('label');
     label.innerHTML = `<input type="radio" name="style" value="${style}"${style === 'grid' ? ' checked' : ''}>` +
       `<span>${STYLE_NAMES[style]}</span>`;
     label.querySelector('input').addEventListener('change', () =>
-      document.querySelectorAll('.omega-backdrop:not(.pattern)').forEach(el => { el.dataset.style = style; }));
+      document.querySelectorAll('.cartridge-backdrop:not(.pattern)').forEach(el => { el.dataset.style = style; }));
     styles.append(label);
   }
 
   // the Backdrop card: every pattern at once, drifting
-  document.getElementById('patterns').replaceChildren(...OmegaBackdrop.STYLES.map(style => {
+  document.getElementById('patterns').replaceChildren(...CartridgeBackdrop.STYLES.map(style => {
     const figure = document.createElement('figure');
-    figure.innerHTML = `<div class="omega-backdrop pattern" data-style="${style}" data-moving></div>` +
+    figure.innerHTML = `<div class="cartridge-backdrop pattern" data-style="${style}" data-moving></div>` +
       `<figcaption>${STYLE_NAMES[style]}</figcaption>`;
     return figure;
   }));
@@ -1314,13 +1314,13 @@ System/       omega-zero itself</pre></omega-code>
   // Settings › Theme › Colour: one choice per backdrop colour, each showing the backdrop and
   // the frame colour it gives; picking one recolours the whole page
   const colours = document.getElementById('colours');
-  for (const name of OmegaPalette.COLOURS) {
-    const tones = OmegaPalette.palette(name);
+  for (const name of CartridgePalette.COLOURS) {
+    const tones = CartridgePalette.palette(name);
     const label = document.createElement('label');
     label.innerHTML = `<input type="radio" name="colour" value="${name}"${name === 'night' ? ' checked' : ''}>` +
       `<span><i class="chip" style="background: ${tones['--oz-bg']}; --chip-frame: ${tones['--oz-frame']}"></i>` +
       `${name[0].toUpperCase()}${name.slice(1)}</span>`;
-    label.querySelector('input').addEventListener('change', () => OmegaPalette.apply(name));
+    label.querySelector('input').addEventListener('change', () => CartridgePalette.apply(name));
     colours.append(label);
   }
 
@@ -1328,7 +1328,7 @@ System/       omega-zero itself</pre></omega-code>
   const swatches = document.getElementById('swatches');
   function drawSwatches() {
     const name = document.documentElement.dataset.colour;
-    swatches.replaceChildren(...Object.entries(OmegaPalette.palette(name)).map(([token, hex]) => {
+    swatches.replaceChildren(...Object.entries(CartridgePalette.palette(name)).map(([token, hex]) => {
       const row = document.createElement('div');
       row.className = 'swatch-row';
       row.innerHTML = `<i style="background: ${hex}"></i><span><b>${token}</b><small>${hex}</small></span>`;
@@ -1336,7 +1336,7 @@ System/       omega-zero itself</pre></omega-code>
     }));
   }
   drawSwatches();
-  document.addEventListener('omega-palette', drawSwatches);
+  document.addEventListener('cartridge-palette', drawSwatches);
 
   // the Button Setting screen's controls
   const screen = document.querySelector('.screen');
@@ -1344,7 +1344,7 @@ System/       omega-zero itself</pre></omega-code>
   const TEXT = [
     [screen.querySelector('action-left'), { label: 'MENU', hint: 'SELECT' }],
     [screen.querySelector('action-right'), { label: 'SETTINGS', hint: 'START' }],
-    [screen.querySelector('omega-bar'), { hint: 'Y RESET' }],
+    [screen.querySelector('cartridge-bar'), { hint: 'Y RESET' }],
   ];
   document.querySelectorAll('input[name=size]').forEach(input =>
     input.addEventListener('change', () => { screen.dataset.size = input.value; }));

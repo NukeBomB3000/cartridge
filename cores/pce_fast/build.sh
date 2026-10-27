@@ -88,7 +88,7 @@ build() {
 		;;
 	esac
 
-	# The Makefile asks git for the version, which here would name omega-zero's commit.
+	# The Makefile asks git for the version, which here would name Cartridge's commit.
 	# shellcheck disable=SC2086
 	CFLAGS="$cflags" CXXFLAGS="$cflags" LDFLAGS="$ldflags" make -C "$src" platform="$platform" \
 		$tools GIT_VERSION="\" $(printf %s "$commit" | cut -c1-7)\"" \

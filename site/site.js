@@ -1,6 +1,6 @@
 /*
-  What moves on omega-zero's site: the screens' picker and how it advances by itself, the loops,
-  the Theme panel, and the bottom bar's two actions. The tabs are <omega-tabs>'s own. The page
+  What moves on cartridge's site: the screens' picker and how it advances by itself, the loops,
+  the Theme panel, and the bottom bar's two actions. The tabs are <cartridge-tabs>'s own. The page
   reads and works without scripts: every part shown one under the other, every screen too, and
   each loop as its poster with the browser's own controls.
 */
@@ -8,10 +8,10 @@
   // What the Theme panel was last left at, kept in this browser only; nothing breaks without it.
   const kept = {
     get(key) {
-      try { return localStorage.getItem(`omega-zero:${key}`); } catch { return null; }
+      try { return localStorage.getItem(`cartridge:${key}`); } catch { return null; }
     },
     set(key, value) {
-      try { localStorage.setItem(`omega-zero:${key}`, value); } catch { /* not kept */ }
+      try { localStorage.setItem(`cartridge:${key}`, value); } catch { /* not kept */ }
     },
   };
   // 'IN GAME' as 'In game', for a name read aloud
@@ -33,7 +33,7 @@
     tab.setAttribute('role', 'tab');
     tab.setAttribute('aria-controls', shot.id);
     tab.setAttribute('aria-label', spoken(shot.dataset.label));
-    const row = document.createElement('omega-row');
+    const row = document.createElement('cartridge-row');
     row.setAttribute('label', shot.dataset.label);
     row.setAttribute('opens', '');
     tab.append(row);
@@ -184,10 +184,10 @@
   // Each row a slider: Left and Right step through its values (a click on its arrows does too,
   // and a click anywhere else on it steps forward), Up and Down move to the row above or below.
   // The row under the cursor, the focused or pointed-at one, is lit.
-  const backdrops = [...document.querySelectorAll('.omega-backdrop')];
+  const backdrops = [...document.querySelectorAll('.cartridge-backdrop')];
   const SETTINGS = {
     style: {
-      values: OmegaBackdrop.STYLES,
+      values: CartridgeBackdrop.STYLES,
       apply: value => backdrops.forEach(el => {
         if (value === 'grid') delete el.dataset.style;
         else el.dataset.style = value;
@@ -199,7 +199,7 @@
         el.toggleAttribute('data-moving', value === 'moving');
       }),
     },
-    colour: { values: OmegaPalette.COLOURS, apply: value => OmegaPalette.apply(value) },
+    colour: { values: CartridgePalette.COLOURS, apply: value => CartridgePalette.apply(value) },
     font: { values: ['bold', 'thin'], apply: value => { font = value; pair(); } },
   };
 
@@ -207,7 +207,7 @@
   for (const row of rows) {
     const name = row.dataset.setting;
     const setting = SETTINGS[name];
-    const omega = row.querySelector('omega-row');
+    const omega = row.querySelector('cartridge-row');
     // Motion stays still, and its row dim, while the system asks for less motion.
     const locked = () => name === 'motion' && still.matches;
     const set = (index, keep = true) => {

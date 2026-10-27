@@ -14,20 +14,20 @@ if ! $MOUNTPOINT -q "$SD" 2>/dev/null; then
 fi
 
 exe="${AGS_CORE_EXE:-$(readlink "/proc/$1/exe" 2>/dev/null)}"
-# launch_frontend.sh runs omega-zero through the dynamic loader, which is then the process's exe,
-# omega-zero the first thing on its command line after it
+# launch_frontend.sh runs cartridge through the dynamic loader, which is then the process's exe,
+# cartridge the first thing on its command line after it
 prog="${AGS_CORE_PROG-$(tr '\0' '\n' < "/proc/$1/cmdline" 2>/dev/null | sed -n 2p)}"
 mkdir -p "$DIR" 2>/dev/null
 
 case "$exe:$prog" in
-*/omega-zero:* | */ld-linux*:*/omega-zero) ours=1 ;;
+*/cartridge:* | */ld-linux*:*/cartridge) ours=1 ;;
 *) ours= ;;
 esac
 
 core=
 if [ -n "$ours" ]; then
 	free="$(df -kP "$SD" 2>/dev/null | awk 'NR == 2 { print $4 }')"
-	if [ -n "$(find "$DIR" -maxdepth 1 -name 'omega-zero.core*' -mmin -$KEEP_MIN 2>/dev/null)" ]; then
+	if [ -n "$(find "$DIR" -maxdepth 1 -name 'cartridge.core*' -mmin -$KEEP_MIN 2>/dev/null)" ]; then
 		core=" core=kept-earlier"
 	elif [ -z "$free" ] || [ "$free" -lt "$MIN_FREE_KB" ]; then
 		core=" core=no-room"
@@ -39,23 +39,23 @@ echo "$(date '+%F %T') pid=$1 signal=$2 thread=$3 exe=$exe${prog:+ prog=$prog}$c
 
 if [ -n "$ours" ]; then
 	# what it said before it went down, which the next start of it writes over
-	cp "$SD/omega-zero.log" "$DIR/omega-zero.log" 2>/dev/null
-	cp "/proc/$1/maps" "$DIR/omega-zero.maps" 2>/dev/null
+	cp "$SD/cartridge.log" "$DIR/cartridge.log" 2>/dev/null
+	cp "/proc/$1/maps" "$DIR/cartridge.maps" 2>/dev/null
 fi
 
-# omega-zero's whole memory as it went down. Most of it is room it took and never wrote, which
-# gzip packs to next to nothing, as fast as the card takes the rest: omega-zero starts again
+# cartridge's whole memory as it went down. Most of it is room it took and never wrote, which
+# gzip packs to next to nothing, as fast as the card takes the rest: cartridge starts again
 # once all of it has been read.
 if [ "$core" = " core=saved" ]; then
 	if command -v gzip > /dev/null 2>&1; then
-		name=omega-zero.core.gz
+		name=cartridge.core.gz
 		gzip -1 > "$DIR/$name.tmp"
 	else
-		name=omega-zero.core
+		name=cartridge.core
 		cat > "$DIR/$name.tmp"
 	fi
 	if [ $? -eq 0 ]; then
-		rm -f "$DIR/omega-zero.core" "$DIR/omega-zero.core.gz"
+		rm -f "$DIR/cartridge.core" "$DIR/cartridge.core.gz"
 		mv -f "$DIR/$name.tmp" "$DIR/$name"
 	else
 		rm -f "$DIR/$name.tmp"

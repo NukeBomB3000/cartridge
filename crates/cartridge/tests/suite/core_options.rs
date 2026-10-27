@@ -1,0 +1,232 @@
+use crate::common;
+
+use cartridge::link_kind::{serial_option, LinkKind};
+use cartridge_retro::{LibretroCore, RetroCore};
+use cartridge_store::Core;
+
+fn dylib_for(core: Core) -> std::path::PathBuf {
+    std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../vendor")
+        .join(cartridge::core::dylib_name(core))
+}
+
+/// An NES image FCEUmm takes: an iNES header for mapper 0, one 16 KiB bank of code and one
+/// 8 KiB bank of tiles, all blank.
+fn blank_nes_rom() -> tempfile::NamedTempFile {
+    let mut image = b"NES\x1a\x01\x01".to_vec();
+    image.resize(16 + 16 * 1024 + 8 * 1024, 0);
+    let f = tempfile::Builder::new().suffix(".nes").tempfile().unwrap();
+    std::fs::write(f.path(), image).unwrap();
+    f
+}
+
+fn every_serial_mode() -> Vec<&'static str> {
+    let carts = [
+        ("BPEE", "POKEMON EMER"),
+        ("AWRE", "ADVANCEWARS"),
+        ("AW2E", "ADVANCE WARS2"),
+        ("AMFE", "METROID4"),
+    ];
+    let mut modes = Vec::new();
+    for (code, title) in carts {
+        for auto in [LinkKind::Cable, LinkKind::Wireless] {
+            for chosen in [LinkKind::Cable, LinkKind::Wireless] {
+                let mode = serial_option(chosen, auto, code, title);
+                if !modes.contains(&mode) {
+                    modes.push(mode);
+                }
+            }
+        }
+    }
+    modes
+}
+
+fn every_option_is_one_the_core_has(core: &LibretroCore, what: &str) {
+    let declared = core.declared_options();
+    assert!(
+        !declared.is_empty(),
+        "{what}: the core declared no options at all, so this test would pass on anything"
+    );
+    let set = core.options();
+    assert!(!set.is_empty(), "{what}: no options were set");
+    for (key, value) in set {
+        let Some(values) = declared.get(&key) else {
+            let mut known: Vec<_> = declared.keys().cloned().collect();
+            known.sort();
+            panic!("{what}: the core declares no option {key:?}. It declares: {known:?}");
+        };
+        assert!(
+            values.contains(&value),
+            "{what}: the core declares {key:?} as {values:?}, and cartridge set it to {value:?}"
+        );
+    }
+}
+
+#[test]
+fn every_option_cartridge_sets_is_one_the_core_declares() {
+    let _g = common::core_lock();
+    let mut ran = 0;
+    for which in Core::ALL {
+        let path = dylib_for(which);
+        if !path.exists() {
+            eprintln!("no {} dylib on this host, skipping", which.as_str());
+            continue;
+        }
+        for serial in every_serial_mode() {
+            for bios in [false, true] {
+                for (colour, ghosting) in
+                    [(false, false), (true, false), (false, true), (true, true)]
+                {
+                    let mut core = LibretroCore::open(&path).expect("open core");
+                    cartridge::core::apply_core_options(
+                        &mut core, which, serial, bios, colour, ghosting,
+                    );
+                    if which == Core::Fceumm {
+                        // FCEUmm declares its options once a game is in, its DIP switches
+                        // among them
+                        let rom = blank_nes_rom();
+                        RetroCore::load(&mut core, rom.path()).expect("load an NES image");
+                    }
+                    every_option_is_one_the_core_has(
+                        &core,
+                        &format!(
+                            "{} serial={serial} bios={bios} colour={colour} ghosting={ghosting}",
+                            which.as_str()
+                        ),
+                    );
+                    ran += 1;
+                }
+            }
+        }
+    }
+    if ran == 0 {
+        eprintln!("no cores on this host, nothing was checked");
+    }
+}
+
+#[test]
+fn both_cores_declare_a_colour_correction_option() {
+    let _g = common::core_lock();
+    for (which, key) in [
+        (Core::Mgba, "mgba_color_correction"),
+        (Core::Gpsp, "gpsp_color_correction"),
+    ] {
+        let path = dylib_for(which);
+        if !path.exists() {
+            eprintln!("no {} dylib on this host, skipping", which.as_str());
+            continue;
+        }
+        let core = LibretroCore::open(&path).expect("open core");
+        assert!(
+            core.declared_options().contains_key(key),
+            "{} declares no {key}",
+            which.as_str()
+        );
+    }
+}
+
+#[test]
+fn both_cores_declare_an_lcd_ghosting_option_with_the_values_cartridge_sets() {
+    let _g = common::core_lock();
+    for which in [Core::Mgba, Core::Gpsp] {
+        let path = dylib_for(which);
+        if !path.exists() {
+            eprintln!("no {} dylib on this host, skipping", which.as_str());
+            continue;
+        }
+        let core = LibretroCore::open(&path).expect("open core");
+        let declared = core.declared_options();
+        for on in [false, true] {
+            let (key, value) = cartridge::core::ghosting_option(which, on).expect("a key");
+            let values = declared
+                .get(key)
+                .unwrap_or_else(|| panic!("{} declares no {key}", which.as_str()));
+            assert!(
+                values.iter().any(|v| v == value),
+                "{} declares {key} as {values:?}, not {value:?}",
+                which.as_str()
+            );
+        }
+    }
+}
+
+#[test]
+fn a_cable_session_leaves_the_bios_to_the_card() {
+    let _g = common::core_lock();
+    let path = dylib_for(Core::Mgba);
+    if !path.exists() {
+        eprintln!("no mgba dylib on this host, skipping");
+        return;
+    }
+    let mut core = LibretroCore::open(&path).expect("open core");
+    cartridge::core::apply_link_options(&mut core, Core::Mgba, 1);
+    let set: std::collections::HashMap<String, String> = core.options().into_iter().collect();
+    assert_eq!(
+        set.get("mgba_use_bios").map(String::as_str),
+        None,
+        "link mode overrode the card's BIOS"
+    );
+    assert_eq!(set.get("mgba_link").map(String::as_str), Some("on"));
+    assert_eq!(
+        set.get("mgba_link_player").map(String::as_str),
+        Some("1"),
+        "the port this device drives did not reach the core"
+    );
+    every_option_is_one_the_core_has(&core, "mgba cable session");
+}
+
+#[test]
+fn a_cable_session_sets_nothing_on_gpsp() {
+    let _g = common::core_lock();
+    let path = dylib_for(Core::Gpsp);
+    if !path.exists() {
+        eprintln!("no gpsp dylib on this host, skipping");
+        return;
+    }
+    let mut core = LibretroCore::open(&path).expect("open core");
+    cartridge::core::apply_link_options(&mut core, Core::Gpsp, 0);
+    assert!(
+        core.options().is_empty(),
+        "a cable session reached into gpSP, which has no cable to offer"
+    );
+}
+
+#[test]
+fn a_named_palette_takes_only_a_game_boy_only_game_played_alone() {
+    use cartridge::core::{palette_for, palette_options};
+    use cartridge_store::{GbColors, GbPalette, Platform};
+    let d = tempfile::tempdir().unwrap();
+    let rom = |name: &str, cgb: u8| {
+        let mut bytes = vec![0u8; 0x8000];
+        bytes[0x143] = cgb;
+        let p = d.path().join(name);
+        std::fs::write(&p, bytes).unwrap();
+        p
+    };
+    let (dmg, dual) = (rom("tetris.gb", 0x00), rom("dx.gbc", 0x80));
+    let pocket = GbPalette::parse("GB Pocket").unwrap();
+    let chosen = GbColors::Palette(pocket);
+    assert_eq!(palette_for(chosen, Platform::Gb, &dmg, None), Some(pocket));
+    assert_eq!(
+        palette_for(chosen, Platform::Gb, &dmg, Some(1)),
+        None,
+        "linked"
+    );
+    assert_eq!(
+        palette_for(chosen, Platform::Gb, &dual, None),
+        None,
+        "a colour game"
+    );
+    assert_eq!(palette_for(chosen, Platform::Gbc, &dmg, None), None);
+    assert_eq!(palette_for(GbColors::Auto, Platform::Gb, &dmg, None), None);
+    assert_eq!(
+        palette_options(Core::Mgba, Some(pocket)),
+        [
+            ("mgba_gb_model", "Game Boy".to_string()),
+            ("mgba_gb_colors_preset", "0".to_string()),
+            ("mgba_gb_colors", "GB Pocket".to_string()),
+        ]
+    );
+    assert!(palette_options(Core::Gpsp, Some(pocket)).is_empty());
+    assert!(palette_options(Core::Mgba, None).is_empty());
+}

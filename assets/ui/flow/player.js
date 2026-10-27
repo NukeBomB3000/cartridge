@@ -51,9 +51,9 @@
 
   const screen = document.getElementById('screen');
   const backdrop = screen.querySelector('.backdrop');
-  const bar = screen.querySelector('omega-bar');
+  const bar = screen.querySelector('cartridge-bar');
   const actions = [bar.querySelector('action-left'), bar.querySelector('action-right')];
-  const pill = bar.querySelector('omega-pill');
+  const pill = bar.querySelector('cartridge-pill');
   const shelf = {
     top: screen.querySelector('.shelf-top'),
     carts: screen.querySelector('.shelf-carts'),
@@ -325,7 +325,7 @@
       lone.style.left = `${down(area.clientWidth - lone.offsetWidth)}px`;
       lone.style.top = `${down(area.clientHeight - lone.offsetHeight)}px`;
     }
-    const panel = page('keyboard').querySelector('omega-panel');
+    const panel = page('keyboard').querySelector('cartridge-panel');
     const well = panel.shadowRoot.querySelector('[part="body"]');
     const typing = panel.querySelector('.typing');
     const style = getComputedStyle(well);
@@ -333,7 +333,7 @@
     typing.style.marginTop = `${Math.max(0, down(room - typing.offsetHeight))}px`;
   }
   const watch = new ResizeObserver(centre);
-  for (const el of [screen, ...screen.querySelectorAll('.lone, .page omega-panel')]) watch.observe(el);
+  for (const el of [screen, ...screen.querySelectorAll('.lone, .page cartridge-panel')]) watch.observe(el);
   document.fonts.ready.then(centre);
 
   // ---- what the page shows of it ----
@@ -416,8 +416,8 @@
     const pick = (key, values, fallback) => (values.includes(q.get(key)) ? q.get(key) : fallback);
     document.body.classList.toggle('shot', q.get('shot') === '1');
     screen.dataset.size = pick('size', SIZES, '640x480');
-    FlowScreens.set('colour', pick('colour', OmegaPalette.COLOURS, 'night'));
-    FlowScreens.set('style', pick('style', OmegaBackdrop.STYLES, 'grid'));
+    FlowScreens.set('colour', pick('colour', CartridgePalette.COLOURS, 'night'));
+    FlowScreens.set('style', pick('style', CartridgeBackdrop.STYLES, 'grid'));
     FlowScreens.set('moving', q.get('moving') !== '0');
     FlowScreens.set('font', pick('font', FONTS, 'bold'));
     FlowScreens.set('wifi', q.get('wifi') !== 'off');
@@ -468,7 +468,7 @@
   }
 
   const STYLE_NAMES = { grid: 'Grid', plates: 'Plates', dotted: 'Dotted', dither: 'Dither', rivets: 'Rivets', bits: 'Bits', solid: 'Solid' };
-  document.getElementById('styles').append(...OmegaBackdrop.STYLES.map(style => {
+  document.getElementById('styles').append(...CartridgeBackdrop.STYLES.map(style => {
     const label = document.createElement('label');
     label.innerHTML = `<input type="radio" name="style" value="${style}"><span>${STYLE_NAMES[style]}</span>`;
     label.querySelector('input').addEventListener('change', () => FlowScreens.set('style', style));
@@ -476,8 +476,8 @@
   }));
 
   const colours = document.getElementById('colours');
-  for (const name of OmegaPalette.COLOURS) {
-    const tones = OmegaPalette.palette(name);
+  for (const name of CartridgePalette.COLOURS) {
+    const tones = CartridgePalette.palette(name);
     const label = document.createElement('label');
     label.innerHTML = `<input type="radio" name="colour" value="${name}">` +
       `<span><i class="chip" style="background: ${tones['--oz-bg']}; --chip-frame: ${tones['--oz-frame']}"></i>` +
@@ -540,7 +540,7 @@
   FlowScreens.onChange(key => {
     if (key === 'style' && backdrop.dataset.style !== model.style) backdrop.dataset.style = model.style;
     if (key === 'moving' && backdrop.hasAttribute('data-moving') !== model.moving) backdrop.toggleAttribute('data-moving', model.moving);
-    if (key === 'colour' && document.documentElement.dataset.colour !== model.colour) OmegaPalette.apply(model.colour);
+    if (key === 'colour' && document.documentElement.dataset.colour !== model.colour) CartridgePalette.apply(model.colour);
     if (key === 'font') bar.setAttribute('font', model.font);
     // a new system or letter rises into the pill, but not one the URL put there
     if ((key === 'system' || key === 'letter') && !word.reading) setWord(true);
@@ -552,7 +552,7 @@
 
   // the placeholders' sprites, in the palette's colours, again whenever it changes
   FlowArt.paint();
-  document.addEventListener('omega-palette', () => FlowArt.paint());
+  document.addEventListener('cartridge-palette', () => FlowArt.paint());
 
   // ---- the buttons ----
 

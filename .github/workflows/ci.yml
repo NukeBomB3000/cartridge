@@ -34,7 +34,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy, device
-        run: cargo clippy -p omega-zero --no-default-features --features device -- -D warnings
+        run: cargo clippy -p cartridge --no-default-features --features device -- -D warnings
 
   test:
     name: tests
@@ -58,7 +58,7 @@ jobs:
       - name: Test on the 640x480 canvas
         run: cargo test --workspace --no-fail-fast
         env:
-          OMEGA_CANVAS: 640x480
+          CARTRIDGE_CANVAS: 640x480
 
   card:
     name: card scripts
@@ -67,5 +67,5 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Test the scripts omega-zero ships on the card
+      - name: Test the scripts Cartridge ships on the card
         run: for t in card/test-*.sh; do sh "$t"; done

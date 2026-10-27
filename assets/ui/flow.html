@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>omega-zero flow</title>
+<title>cartridge flow</title>
 <!--
-  Every new omega-zero screen, put together from the kit, and a player that walks between them
+  Every new cartridge screen, put together from the kit, and a player that walks between them
   with the slides the device will draw: the shelf, Settings and everything under it, the
   Controls panel, and the power menu with the screens after it. Open it straight from disk; it
   needs no server or build. The URL's hash picks the screen, the panel size, the colour and any
@@ -20,23 +20,23 @@
 <script src="foundation/pixel.js"></script>
 <script src="foundation/backdrop.js"></script>
 <script src="foundation/palette.js"></script>
-<script src="components/omega-modal.js"></script>
-<script src="components/omega-panel.js"></script>
+<script src="components/cartridge-modal.js"></script>
+<script src="components/cartridge-panel.js"></script>
 <script src="components/action-left.js"></script>
 <script src="components/action-right.js"></script>
 <!-- being drawn for the kit: until they are here, flow/stubs.js stands in for each -->
-<script src="components/omega-row.js"></script>
-<script src="components/omega-list-row.js"></script>
-<script src="components/omega-bar.js"></script>
-<script src="components/omega-pill.js"></script>
+<script src="components/cartridge-row.js"></script>
+<script src="components/cartridge-list-row.js"></script>
+<script src="components/cartridge-bar.js"></script>
+<script src="components/cartridge-pill.js"></script>
 <script src="flow/stubs.js"></script>
 <script src="flow/art.js"></script>
 </head>
 <body>
 <main>
   <div class="intro">
-    <h1>omega-zero flow</h1>
-    <p class="dim">Every new screen of omega-zero's menus, built from the kit in
+    <h1>cartridge flow</h1>
+    <p class="dim">Every new screen of cartridge's menus, built from the kit in
       <a href="storybook.html">storybook.html</a>, and the slides between them as the device draws
       them: 280 ms, smootherstep, every frame on whole art pixels. Walk it with the keys or the
       buttons under the screen. Going deeper slides the screen out to the right and the next in from
@@ -54,7 +54,7 @@
     <div class="device">
       <div class="screen-scroll">
         <div class="screen" id="screen" data-size="640x480">
-          <div class="backdrop omega-backdrop" data-style="grid" data-moving></div>
+          <div class="backdrop cartridge-backdrop" data-style="grid" data-moving></div>
 
           <!-- the shelf, drawn by Rust on the device: two parts that leave it two ways, and its
                system in the bar's pill -->
@@ -72,29 +72,29 @@
           <!-- Settings, from the shelf's START -->
           <section class="part page away" data-screen="settings">
             <div class="modal-area">
-              <omega-modal>
-                <omega-panel label="CONFIGS" class="hug">
-                  <omega-row label="FAST FORWARD" value="6X" carets data-values="2X|3X|4X|6X"></omega-row>
-                  <omega-row label="FAST FORWARD SOUND" value="OFF" carets data-values="OFF|ON"></omega-row>
-                  <omega-row label="COLOUR CORRECTION" value="OFF" carets data-values="OFF|ON"></omega-row>
-                  <omega-row label="LCD GHOSTING" value="ON" carets data-values="ON|OFF"></omega-row>
-                  <omega-row label="RUMBLE" value="ON" carets data-values="ON|OFF"></omega-row>
-                  <omega-row label="LABELS" opens data-opens="labels"></omega-row>
-                </omega-panel>
-                <omega-panel label="GENERAL">
-                  <omega-row label="DATE &amp; TIME" value="OCT 10 16:00" opens data-opens="datetime" data-show="date"></omega-row>
-                  <omega-row label="NETWORK" value="HOME" opens data-opens="network" data-show="network"></omega-row>
-                  <omega-row label="BLUETOOTH" value="8BITDO SN30 PRO" opens data-opens="bluetooth" data-show="bluetooth"></omega-row>
-                  <omega-row label="THEME" opens data-opens="background"></omega-row>
-                  <omega-row label="ABOUT" opens data-opens="about"></omega-row>
-                </omega-panel>
-              </omega-modal>
+              <cartridge-modal>
+                <cartridge-panel label="CONFIGS" class="hug">
+                  <cartridge-row label="FAST FORWARD" value="6X" carets data-values="2X|3X|4X|6X"></cartridge-row>
+                  <cartridge-row label="FAST FORWARD SOUND" value="OFF" carets data-values="OFF|ON"></cartridge-row>
+                  <cartridge-row label="COLOUR CORRECTION" value="OFF" carets data-values="OFF|ON"></cartridge-row>
+                  <cartridge-row label="LCD GHOSTING" value="ON" carets data-values="ON|OFF"></cartridge-row>
+                  <cartridge-row label="RUMBLE" value="ON" carets data-values="ON|OFF"></cartridge-row>
+                  <cartridge-row label="LABELS" opens data-opens="labels"></cartridge-row>
+                </cartridge-panel>
+                <cartridge-panel label="GENERAL">
+                  <cartridge-row label="DATE &amp; TIME" value="OCT 10 16:00" opens data-opens="datetime" data-show="date"></cartridge-row>
+                  <cartridge-row label="NETWORK" value="HOME" opens data-opens="network" data-show="network"></cartridge-row>
+                  <cartridge-row label="BLUETOOTH" value="8BITDO SN30 PRO" opens data-opens="bluetooth" data-show="bluetooth"></cartridge-row>
+                  <cartridge-row label="THEME" opens data-opens="background"></cartridge-row>
+                  <cartridge-row label="ABOUT" opens data-opens="about"></cartridge-row>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
           </section>
 
           <!-- Controls, from the shelf's SELECT: what every button does -->
           <section class="part page away" data-screen="controls">
-            <omega-panel label="CONTROLS" active class="lone controls-panel">
+            <cartridge-panel label="CONTROLS" active class="lone controls-panel">
               <div class="columns">
                 <div class="keymap" style="--keys: 6; --does: 11">
                   <h3>SHELF</h3>
@@ -122,7 +122,7 @@
                   <span class="k">HOLD POWER</span><span>POWER MENU</span>
                 </div>
               </div>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Network: NETWORK's rows, each switched ON or OFF and each with a panel of
@@ -132,18 +132,18 @@
                or that Wi-Fi is off -->
           <section class="part page away" data-screen="network">
             <div class="modal-area">
-              <omega-modal>
-                <omega-panel label="NETWORK" class="hug">
-                  <omega-row label="WI-FI" value="ON" carets data-values="ON|OFF" data-set="wifi" data-info="wifi"></omega-row>
-                  <omega-row label="NETWORK TIME" value="ON" carets data-values="ON|OFF" data-set="ntp" data-info="time"></omega-row>
-                  <omega-row label="SSH" value="ON" carets data-values="ON|OFF" data-set="ssh" data-info="ssh"></omega-row>
-                </omega-panel>
-                <omega-panel label="AVAILABLE NETWORKS">
+              <cartridge-modal>
+                <cartridge-panel label="NETWORK" class="hug">
+                  <cartridge-row label="WI-FI" value="ON" carets data-values="ON|OFF" data-set="wifi" data-info="wifi"></cartridge-row>
+                  <cartridge-row label="NETWORK TIME" value="ON" carets data-values="ON|OFF" data-set="ntp" data-info="time"></cartridge-row>
+                  <cartridge-row label="SSH" value="ON" carets data-values="ON|OFF" data-set="ssh" data-info="ssh"></cartridge-row>
+                </cartridge-panel>
+                <cartridge-panel label="AVAILABLE NETWORKS">
                   <div class="list">
                     <p class="note" hidden></p>
                   </div>
-                </omega-panel>
-              </omega-modal>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
           </section>
 
@@ -151,64 +151,64 @@
                found on it, or, with Wi-Fi off, what to do first. The networks it knows are kept
                in a file on the card. -->
           <section class="part page away" data-screen="wifi">
-            <omega-panel label="WI-FI" active class="lone small info">
+            <cartridge-panel label="WI-FI" active class="lone small info">
               <div class="when-online">
-                <omega-row label="NETWORK" value="Home"></omega-row>
-                <omega-row label="SIGNAL" value="-48 dBm"></omega-row>
-                <omega-row label="IP" value="192.168.1.20"></omega-row>
-                <omega-row label="HOST" value="rg35xxsp.local"></omega-row>
-                <omega-row label="MAC" value="e4:5f:01:2a:9c:33"></omega-row>
+                <cartridge-row label="NETWORK" value="Home"></cartridge-row>
+                <cartridge-row label="SIGNAL" value="-48 dBm"></cartridge-row>
+                <cartridge-row label="IP" value="192.168.1.20"></cartridge-row>
+                <cartridge-row label="HOST" value="rg35xxsp.local"></cartridge-row>
+                <cartridge-row label="MAC" value="e4:5f:01:2a:9c:33"></cartridge-row>
                 <p class="note">Networks: Config/wifi.conf</p>
               </div>
               <div class="when-offline"><p class="note">Turn Wi-Fi on first.</p></div>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Network > Y on NETWORK TIME's row: the clock as the network sets it, the
                date, time and zone as Date & Time has them; with no Wi-Fi it waits for one, and
                with Network Time off it says what to do first -->
           <section class="part page away" data-screen="time">
-            <omega-panel label="NETWORK TIME" active class="lone small info">
+            <cartridge-panel label="NETWORK TIME" active class="lone small info">
               <div class="when-online">
-                <omega-row label="STATUS" value="SYNCED"></omega-row>
-                <omega-row label="DATE" value="2026-10-10"></omega-row>
-                <omega-row label="TIME" value="16:00"></omega-row>
-                <omega-row label="ZONE" value="UTC+00:00"></omega-row>
+                <cartridge-row label="STATUS" value="SYNCED"></cartridge-row>
+                <cartridge-row label="DATE" value="2026-10-10"></cartridge-row>
+                <cartridge-row label="TIME" value="16:00"></cartridge-row>
+                <cartridge-row label="ZONE" value="UTC+00:00"></cartridge-row>
                 <p class="note">Set the zone in Date &amp; Time</p>
               </div>
               <div class="when-offline"><p class="note">Turn Network Time on first.</p></div>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Network > Y on SSH's row: the login, or, with SSH off or no Wi-Fi, what to
-               do first. The password is the six digits omega-zero makes up on a card that sets
+               do first. The password is the six digits cartridge makes up on a card that sets
                none. -->
           <section class="part page away" data-screen="ssh">
-            <omega-panel label="SSH" active class="lone small info">
+            <cartridge-panel label="SSH" active class="lone small info">
               <div class="when-online">
-                <omega-row label="IP" value="192.168.1.20"></omega-row>
-                <omega-row label="HOST" value="rg35xxsp.local"></omega-row>
-                <omega-row label="USER" value="root"></omega-row>
-                <omega-row label="PASSWORD" value="482913"></omega-row>
-                <omega-row label="PORT" value="22"></omega-row>
+                <cartridge-row label="IP" value="192.168.1.20"></cartridge-row>
+                <cartridge-row label="HOST" value="rg35xxsp.local"></cartridge-row>
+                <cartridge-row label="USER" value="root"></cartridge-row>
+                <cartridge-row label="PASSWORD" value="482913"></cartridge-row>
+                <cartridge-row label="PORT" value="22"></cartridge-row>
                 <p class="note">SFTP uses the same login</p>
               </div>
               <div class="when-offline"><p class="note">Join a Wi-Fi network first.</p></div>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Network > a network: its passphrase -->
           <section class="part page away" data-screen="keyboard">
             <div class="modal-area">
-              <omega-modal>
-                <omega-panel label="PASSPHRASE FOR HOME" active class="keyboard-panel">
+              <cartridge-modal>
+                <cartridge-panel label="PASSPHRASE FOR HOME" active class="keyboard-panel">
                   <div class="typing">
                     <div class="field-box"><span class="typed"></span><span class="cursor"></span></div>
                     <div class="keys"></div>
                     <div class="hint-line" style="--chars: 38"><b>B</b> DELETE  <b>X</b> SHIFT  <b>Y</b> SPACE  <b>START</b> DONE</div>
                   </div>
-                </omega-panel>
-              </omega-modal>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
           </section>
 
@@ -217,57 +217,57 @@
                are drawn by screens.js from what it holds -->
           <section class="part page away" data-screen="bluetooth">
             <div class="modal-area">
-              <omega-modal>
-                <omega-panel label="BLUETOOTH" class="hug">
-                  <omega-row label="BLUETOOTH" value="ON" carets data-values="ON|OFF" data-set="bluetooth"></omega-row>
-                </omega-panel>
-                <omega-panel label="DEVICES" class="devices">
+              <cartridge-modal>
+                <cartridge-panel label="BLUETOOTH" class="hug">
+                  <cartridge-row label="BLUETOOTH" value="ON" carets data-values="ON|OFF" data-set="bluetooth"></cartridge-row>
+                </cartridge-panel>
+                <cartridge-panel label="DEVICES" class="devices">
                   <p class="note" hidden></p>
-                </omega-panel>
-              </omega-modal>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
           </section>
 
           <!-- Settings > Labels -->
           <section class="part page away" data-screen="labels">
-            <omega-panel label="LABELS" active class="lone labels-panel">
-              <omega-row label="SCREENSCRAPER" value="SIGN IN"></omega-row>
-              <omega-row label="FETCH LABELS"></omega-row>
+            <cartridge-panel label="LABELS" active class="lone labels-panel">
+              <cartridge-row label="SCREENSCRAPER" value="SIGN IN"></cartridge-row>
+              <cartridge-row label="FETCH LABELS"></cartridge-row>
               <p class="note">Sign in with your free ScreenScraper account<br>to fetch the real labels of your carts.</p>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Date & Time -->
           <section class="part page away" data-screen="datetime">
-            <omega-panel label="DATE &amp; TIME" active class="lone datetime-panel">
+            <cartridge-panel label="DATE &amp; TIME" active class="lone datetime-panel">
               <div class="picker"></div>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
           <!-- Settings > Theme: changes the real backdrop behind every screen, and the bar's font -->
           <section class="part page away" data-screen="background">
-            <omega-panel label="THEME" active class="lone small">
-              <omega-row label="BACKGROUND" value="GRID" carets data-values="GRID|PLATES|DOTTED|DITHER|RIVETS|BITS|SOLID" data-set="style"></omega-row>
-              <omega-row label="MOTION" value="MOVING" carets data-values="MOVING|STILL" data-set="moving"></omega-row>
-              <omega-row label="COLOUR" value="NIGHT" carets data-values="NIGHT|SLATE|NAVY|TEAL|GREEN|PLUM|CRIMSON|AMBER" data-set="colour"></omega-row>
-              <omega-row label="FONT" value="BOLD" carets data-values="BOLD|THIN" data-set="font"></omega-row>
-            </omega-panel>
+            <cartridge-panel label="THEME" active class="lone small">
+              <cartridge-row label="BACKGROUND" value="GRID" carets data-values="GRID|PLATES|DOTTED|DITHER|RIVETS|BITS|SOLID" data-set="style"></cartridge-row>
+              <cartridge-row label="MOTION" value="MOVING" carets data-values="MOVING|STILL" data-set="moving"></cartridge-row>
+              <cartridge-row label="COLOUR" value="NIGHT" carets data-values="NIGHT|SLATE|NAVY|TEAL|GREEN|PLUM|CRIMSON|AMBER" data-set="colour"></cartridge-row>
+              <cartridge-row label="FONT" value="BOLD" carets data-values="BOLD|THIN" data-set="font"></cartridge-row>
+            </cartridge-panel>
           </section>
 
-          <!-- Settings > About: what omega-zero is, the handheld it runs on, and what it is made
+          <!-- Settings > About: what cartridge is, the handheld it runs on, and what it is made
                with. Nothing on it is picked, so both titles are lit and no row is. The build is
                the commit's short hash, -DIRTY after it for a build with changes not committed. -->
           <section class="part page away" data-screen="about">
             <div class="modal-area">
-              <omega-modal>
-                <omega-panel label="OMEGA-ZERO" active class="hug">
-                  <omega-row label="VERSION" value="0.0.2"></omega-row>
-                  <omega-row label="BUILD" value="68CDBC4"></omega-row>
-                  <omega-row label="AUTHOR" value="@OAURAMOS"></omega-row>
-                  <omega-row label="HANDHELD" value="RG35XX SP"></omega-row>
-                  <omega-row label="BATTERY" value="86% CHARGING"></omega-row>
-                </omega-panel>
-                <omega-panel label="CREDITS" active>
+              <cartridge-modal>
+                <cartridge-panel label="CARTRIDGE" active class="hug">
+                  <cartridge-row label="VERSION" value="0.0.2"></cartridge-row>
+                  <cartridge-row label="BUILD" value="68CDBC4"></cartridge-row>
+                  <cartridge-row label="AUTHOR" value="@OAURAMOS"></cartridge-row>
+                  <cartridge-row label="HANDHELD" value="RG35XX SP"></cartridge-row>
+                  <cartridge-row label="BATTERY" value="86% CHARGING"></cartridge-row>
+                </cartridge-panel>
+                <cartridge-panel label="CREDITS" active>
                   <div class="credits">
                     <p>Emulation by mGBA (MPL-2.0), gpSP (GPL-2.0),</p>
                     <p>Snes9x, Genesis Plus GX (no commercial use),</p>
@@ -278,8 +278,8 @@
                     <p>Labels: ScreenScraper. Built with Claude.</p>
                     <p>Free software under the GPL-3.0. See README.</p>
                   </div>
-                </omega-panel>
-              </omega-modal>
+                </cartridge-panel>
+              </cartridge-modal>
             </div>
           </section>
 
@@ -287,30 +287,30 @@
                it was held on, coming down from the top as that screen drops out of the bottom,
                and B goes back up there. -->
           <section class="part page away" data-screen="power">
-            <omega-panel label="POWER" active class="lone small">
-              <omega-row label="RESTART" data-opens="restarting"></omega-row>
-              <omega-row label="POWER OFF" data-opens="poweroff"></omega-row>
-            </omega-panel>
+            <cartridge-panel label="POWER" active class="lone small">
+              <cartridge-row label="RESTART" data-opens="restarting"></cartridge-row>
+              <cartridge-row label="POWER OFF" data-opens="poweroff"></cartridge-row>
+            </cartridge-panel>
           </section>
 
           <!-- POWER's choice, shown until the handheld goes down: nothing can be pressed, so the
                bar sinks away -->
           <section class="part page away" data-screen="restarting">
-            <omega-panel label="RESTART" active class="lone small going">
+            <cartridge-panel label="RESTART" active class="lone small going">
               <p class="note">Restarting<i class="g ellipsis"></i></p>
-            </omega-panel>
+            </cartridge-panel>
           </section>
           <section class="part page away" data-screen="poweroff">
-            <omega-panel label="POWER OFF" active class="lone small going">
+            <cartridge-panel label="POWER OFF" active class="lone small going">
               <p class="note">Turning off<i class="g ellipsis"></i></p>
-            </omega-panel>
+            </cartridge-panel>
           </section>
 
-          <omega-bar>
+          <cartridge-bar>
             <action-left slot="left" label="CONTROLS" hint="SELECT"></action-left>
-            <omega-pill slot="middle" text="GBA" centred></omega-pill>
+            <cartridge-pill slot="middle" text="GBA" centred></cartridge-pill>
             <action-right slot="right" label="SETTINGS" hint="START"></action-right>
-          </omega-bar>
+          </cartridge-bar>
         </div>
       </div>
 

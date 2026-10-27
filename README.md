@@ -1,4 +1,4 @@
-<h1 align="center"><img src="assets/logo/omega-zero-logo@2x.png" width="420" alt="omega-zero"></h1>
+<h1 align="center"><img src="assets/logo/cartridge-logo@2x.png" width="420" alt="Cartridge"></h1>
 
 <p align="center">A Game Boy-centric frontend for Anbernic H700 handhelds running
 <a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>. It plays GBA, GBC, GB and Game Gear games, and NES,
@@ -16,7 +16,7 @@ you play them.</p>
 
 ## Supported devices
 
-One build runs on all of them: omega-zero reads the model from BaseOS at boot and lays itself out
+One build runs on all of them: Cartridge reads the model from BaseOS at boot and lays itself out
 for its panel.
 
 | Device | Panel | Status |
@@ -85,7 +85,7 @@ is the most useful thing you can send.
 
 <p align="center">
 <a href="https://oauramos.github.io/omega-zero/"><img src="site/media/loops/lid.webp" width="640" alt="An RG35XX SP drawn in 3D, its lid open on the shelf of carts, Emerald in the middle"></a>
-<br><sub>The RG35XX SP in 3D, drawn the way a PlayStation drew it, with omega-zero's own screens on it: the loops play on the <a href="https://oauramos.github.io/omega-zero/">site</a></sub>
+<br><sub>The RG35XX SP in 3D, drawn the way a PlayStation drew it, with Cartridge's own screens on it: the loops play on the <a href="https://oauramos.github.io/omega-zero/">site</a></sub>
 </p>
 
 <p align="center">
@@ -130,7 +130,8 @@ in the [wiki](https://github.com/oauramos/omega-zero/wiki).
 
 ## Credits and licence
 
-omega-zero is made by **Otávio ([@oauramos](https://github.com/oauramos))**.
+Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero) by **Otávio
+([@oauramos](https://github.com/oauramos))**, who made nearly all of it.
 
 - Based on [slot](https://github.com/BrandonKowalski/slot) by
   [Brandon T. Kowalski](https://github.com/BrandonKowalski) (GPL-3.0). The code that hosts the
@@ -153,8 +154,8 @@ omega-zero is made by **Otávio ([@oauramos](https://github.com/oauramos))**.
 - Cart labels come from [ScreenScraper](https://www.screenscraper.fr), fetched with your own
   account.
 
-omega-zero is licensed under the GPL-3.0-or-later; see [LICENSE](LICENSE). It began in October
-2026 as a modified version of slot. It is written with Claude, and reviewed and tested by its
+Cartridge is licensed under the GPL-3.0-or-later; see [LICENSE](LICENSE). omega-zero began in October
+2026 as a modified version of slot, and Cartridge is a modified version of omega-zero. It is written with Claude, and reviewed and tested by its
 maintainer. The site and these pictures are drawn with its
 UI kit, [`assets/ui`](assets/ui).
 

@@ -1,13 +1,13 @@
 #!/bin/sh
-# A watcher apart from omega-zero: if the lid stays closed a minute past the 3 minutes after which
-# omega-zero powers off by itself, omega-zero has hung, and this powers off in its place so the
-# battery is not run flat in a bag. slot's (#117), its lid time fixed at omega-zero's.
+# A watcher apart from cartridge: if the lid stays closed a minute past the 3 minutes after which
+# cartridge powers off by itself, cartridge has hung, and this powers off in its place so the
+# battery is not run flat in a bag. slot's (#117), its lid time fixed at cartridge's.
 set -u
 
-SD="${OMEGA_ROOT:-/mnt/sdcard}"
+SD="${CARTRIDGE_ROOT:-/mnt/sdcard}"
 PSY="${AGS_PSY:-}"
-TRACE="${AGS_TRACE:-$SD/omega-zero-session.log}"
-CLOSED="${AGS_LID_CLOSED:-/run/omega-lid.closed}"
+TRACE="${AGS_TRACE:-$SD/cartridge-session.log}"
+CLOSED="${AGS_LID_CLOSED:-/run/cartridge-lid.closed}"
 UPTIME="${AGS_UPTIME:-/proc/uptime}"
 INTERVAL="${AGS_LID_INTERVAL:-5}"
 MINUTES="${AGS_LID_MINUTES:-3}"
@@ -21,7 +21,7 @@ now() {
 	echo "${up%%.*}"
 }
 
-# the power supply that reports the lid, as omega-zero finds it
+# the power supply that reports the lid, as cartridge finds it
 hallkey() {
 	if [ -n "$PSY" ]; then
 		echo "$PSY/hallkey"
@@ -33,7 +33,7 @@ hallkey() {
 }
 
 power_off() {
-	echo "$(date '+%H:%M:%S') lid: closed ${1}s and omega-zero has not powered off, powering off" >> "$TRACE" 2>/dev/null
+	echo "$(date '+%H:%M:%S') lid: closed ${1}s and cartridge has not powered off, powering off" >> "$TRACE" 2>/dev/null
 	$RMMOD 8821cs 2>/dev/null
 	$SYNC
 	$POWEROFF

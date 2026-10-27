@@ -2,14 +2,14 @@
   Stand-ins for the three components the new menus are built from, which are being drawn for the
   kit and are not in components/ yet:
 
-    <omega-row label value lit carets opens dim>         a setting: label left, value right
-    <omega-list-row label value signal="0-3" lock lit>   a Wi-Fi network, its name in its own case
-    <omega-bar hint>                                     the bottom bar, holding the two actions
+    <cartridge-row label value lit carets opens dim>         a setting: label left, value right
+    <cartridge-list-row label value signal="0-3" lock lit>   a Wi-Fi network, its name in its own case
+    <cartridge-bar hint>                                     the bottom bar, holding the two actions
       <action-left slot="left"></action-left>
       <action-right slot="right"></action-right>
-    </omega-bar>
+    </cartridge-bar>
 
-  flow.html loads components/omega-row.js, omega-list-row.js and omega-bar.js first (they are not
+  flow.html loads components/cartridge-row.js, cartridge-list-row.js and cartridge-bar.js first (they are not
   found until the real ones are there) and this file after them. Each stand-in is defined only when
   the real component is not, so the page works today and draws with the real ones the moment they
   arrive. They keep to the kit's rules (README.md), plainly: colours from palette.js, sizes in whole
@@ -22,7 +22,7 @@
   };
 
   // Glyphs as tall as a line of text, 10 rows, the ink on the capitals' rows, 2 to 8. ◀ and › are
-  // the full face's own (crates/omega-ui/assets/PixelCode-Regular.ttf), five rows on the baseline.
+  // the full face's own (crates/cartridge-ui/assets/PixelCode-Regular.ttf), five rows on the baseline.
   const line = rows => ['', '', ...rows, ''];
   const CARET = line(['', '', '....#', '..###', '#####', '..###', '....#']);
   const OPENS = line(['', '', '#..', '.#.', '..#', '.#.', '#..']);
@@ -80,7 +80,7 @@
       <div class="glyph opens"></div>
     </div>`;
 
-  define('omega-row', class extends OmegaPixel.Element {
+  define('cartridge-row', class extends CartridgePixel.Element {
     static observedAttributes = ['label', 'value', 'dim'];
 
     constructor() {
@@ -89,7 +89,7 @@
     }
 
     paint() {
-      const { sprite, flip } = OmegaPixel;
+      const { sprite, flip } = CartridgePixel;
       const $ = name => this.shadowRoot.querySelector(name);
       // the glyphs follow the text: bright, or the stripe's tone when the row is dimmed
       const key = this.hasAttribute('dim') ? 's' : 'H';
@@ -121,7 +121,7 @@
       <div class="glyph bars" part="signal"></div>
     </div>`;
 
-  define('omega-list-row', class extends OmegaPixel.Element {
+  define('cartridge-list-row', class extends CartridgePixel.Element {
     static observedAttributes = ['label', 'value', 'signal', 'dim'];
 
     constructor() {
@@ -130,7 +130,7 @@
     }
 
     paint() {
-      const { sprite } = OmegaPixel;
+      const { sprite } = CartridgePixel;
       const $ = name => this.shadowRoot.querySelector(name);
       const dim = this.hasAttribute('dim');
       const signal = Math.max(0, Math.min(3, Number(this.getAttribute('signal')) || 0));
@@ -177,7 +177,7 @@
       <div class="hint" part="hint"></div>
     </div>`;
 
-  define('omega-bar', class extends OmegaPixel.Element {
+  define('cartridge-bar', class extends CartridgePixel.Element {
     static observedAttributes = ['hint'];
 
     constructor() {

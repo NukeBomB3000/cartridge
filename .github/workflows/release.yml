@@ -20,17 +20,17 @@ jobs:
 
       - name: Check ScreenScraper's key
         env:
-          OMEGA_SS_DEVID: ${{ secrets.OMEGA_SS_DEVID }}
-          OMEGA_SS_DEVPASSWORD: ${{ secrets.OMEGA_SS_DEVPASSWORD }}
+          CARTRIDGE_SS_DEVID: ${{ secrets.CARTRIDGE_SS_DEVID }}
+          CARTRIDGE_SS_DEVPASSWORD: ${{ secrets.CARTRIDGE_SS_DEVPASSWORD }}
         run: |
           set -eu
           # A key ScreenScraper turns away would only show on a console, as Cart Labels saying
           # it refused this build. A tag goes out to players, so it stops here without a key; a
           # build by hand only warns. A ScreenScraper that cannot be asked holds nothing up.
-          if [ -z "$OMEGA_SS_DEVID" ] || [ -z "$OMEGA_SS_DEVPASSWORD" ]; then
+          if [ -z "$CARTRIDGE_SS_DEVID" ] || [ -z "$CARTRIDGE_SS_DEVPASSWORD" ]; then
             case "$GITHUB_REF" in
             refs/tags/*)
-              echo "::error::OMEGA_SS_DEVID and OMEGA_SS_DEVPASSWORD must both be set to release"
+              echo "::error::CARTRIDGE_SS_DEVID and CARTRIDGE_SS_DEVPASSWORD must both be set to release"
               exit 1
               ;;
             esac
@@ -41,13 +41,13 @@ jobs:
           rm -f "$reply"
           status=0
           # the softname label_sync.rs sends
-          code="$(curl -s -m 30 --retry 2 -A omega-zero -o "$reply" -w '%{http_code}' -G \
+          code="$(curl -s -m 30 --retry 2 -A cartridge -o "$reply" -w '%{http_code}' -G \
             https://api.screenscraper.fr/api2/ssinfraInfos.php \
-            --data-urlencode "devid=$OMEGA_SS_DEVID" \
-            --data-urlencode "devpassword=$OMEGA_SS_DEVPASSWORD" \
-            -d softname=omega-zero -d output=json)" || status=$?
+            --data-urlencode "devid=$CARTRIDGE_SS_DEVID" \
+            --data-urlencode "devpassword=$CARTRIDGE_SS_DEVPASSWORD" \
+            -d softname=cartridge -d output=json)" || status=$?
           if [ "$code" = 403 ] || grep -qs 'Erreur de login' "$reply"; then
-            echo "::error::ScreenScraper refused OMEGA_SS_DEVID and OMEGA_SS_DEVPASSWORD"
+            echo "::error::ScreenScraper refused CARTRIDGE_SS_DEVID and CARTRIDGE_SS_DEVPASSWORD"
             exit 1
           fi
           if [ "$code" != 200 ]; then
@@ -64,21 +64,21 @@ jobs:
 
       - name: Name the tree
         # after the tag or branch, its slashes made dashes: an artifact's name takes none
-        run: echo "TREE=omega-zero-$(printf %s "$GITHUB_REF_NAME" | tr / -)" >> "$GITHUB_ENV"
+        run: echo "TREE=cartridge-$(printf %s "$GITHUB_REF_NAME" | tr / -)" >> "$GITHUB_ENV"
 
       - name: Build the tree
         env:
-          # ScreenScraper's key for omega-zero, for the Cart Labels screen. Without it the
+          # ScreenScraper's key for Cartridge, for the Cart Labels screen. Without it the
           # screen says the build cannot reach ScreenScraper.
-          OMEGA_SS_DEVID: ${{ secrets.OMEGA_SS_DEVID }}
-          OMEGA_SS_DEVPASSWORD: ${{ secrets.OMEGA_SS_DEVPASSWORD }}
+          CARTRIDGE_SS_DEVID: ${{ secrets.CARTRIDGE_SS_DEVID }}
+          CARTRIDGE_SS_DEVPASSWORD: ${{ secrets.CARTRIDGE_SS_DEVPASSWORD }}
         run: task dist:device OUT="$TREE"
 
       - name: Check what is about to ship
         run: |
           set -eu
           out="$TREE"
-          file "$out/System/omega-zero" | grep -q aarch64
+          file "$out/System/cartridge" | grep -q aarch64
           # each core an aarch64 library a frontend can open: retro_init and retro_run exported
           for lib in mgba gpsp snes9x mednafen_supafaust pcsx_rearmed mednafen_pce_fast fceumm genesis_plus_gx; do
             so="$out/System/${lib}_libretro.so"
@@ -86,7 +86,7 @@ jobs:
             nm -D --defined-only "$so" | grep -qw retro_init
             nm -D --defined-only "$so" | grep -qw retro_run
           done
-          test -x "$out/System/omega-zero"
+          test -x "$out/System/cartridge"
           for size in 640x480 720x480 720x720; do
             test -f "$out/System/bootlogo-$size.bmp"
           done
@@ -158,9 +158,9 @@ jobs:
           cat > notes.md <<NOTES
           For Anbernic H700 handhelds running [BaseOS](https://github.com/pvaibhav/BaseOS): made for the RG35XX SP, and also run on the RG SP. Other BaseOS devices are untested; see the [wiki](https://github.com/oauramos/omega-zero/wiki).
 
-          Unzip and copy the contents of \`omega-zero-${GITHUB_REF_NAME}/\` to the root of the card omega-zero runs from (SD1 on its own, or SD2 beside it); the [wiki](https://github.com/oauramos/omega-zero/wiki/Installing) has the steps. See the [changelog](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md).
+          Unzip and copy the contents of \`cartridge-${GITHUB_REF_NAME}/\` to the root of the card Cartridge runs from (SD1 on its own, or SD2 beside it); the [wiki](https://github.com/oauramos/omega-zero/wiki/Installing) has the steps. See the [changelog](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md).
 
-          Emulation by mGBA (MPL-2.0) and gpSP (GPL-2.0) for the Game Boys, Snes9x (free for non-commercial use only) and Supafaust (Mednafen's snes_faust, GPL-2.0) for the SNES, PCSX ReARMed (GPL-2.0) for the PlayStation, Beetle PCE Fast (Mednafen's pce_fast, GPL-2.0) for the PC Engine, FCEUmm (GPL-2.0) for the NES, and Genesis Plus GX (free for non-commercial use only) for the Mega Drive. Their licences, patches and source (mGBA's aside) are in \`System/licenses/\`. omega-zero is free software under the GPL-3.0-or-later; its credits are in the README.
+          Emulation by mGBA (MPL-2.0) and gpSP (GPL-2.0) for the Game Boys, Snes9x (free for non-commercial use only) and Supafaust (Mednafen's snes_faust, GPL-2.0) for the SNES, PCSX ReARMed (GPL-2.0) for the PlayStation, Beetle PCE Fast (Mednafen's pce_fast, GPL-2.0) for the PC Engine, FCEUmm (GPL-2.0) for the NES, and Genesis Plus GX (free for non-commercial use only) for the Mega Drive. Their licences, patches and source (mGBA's aside) are in \`System/licenses/\`. Cartridge is free software under the GPL-3.0-or-later; its credits are in the README.
           NOTES
           gh release create "$GITHUB_REF_NAME" "$ZIP" --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" --notes-file notes.md

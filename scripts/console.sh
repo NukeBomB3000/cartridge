@@ -1,14 +1,14 @@
 #!/bin/sh
 # Talks to a console on the home network over SSH, for task deploy:wifi and task log:wifi.
 #
-#   console.sh deploy BINARY [FILE...]   copy BINARY to System/omega-zero, and every FILE into
+#   console.sh deploy BINARY [FILE...]   copy BINARY to System/cartridge, and every FILE into
 #                                        System/, then reboot into it and wait for it to start
-#   console.sh log                       print omega-zero's log
+#   console.sh log                       print cartridge's log
 #
 # CONSOLE (default rg35xxsp.local, HOST:PORT for another port) and SD (default /mnt/sdcard) say
 # where. CONSOLE_PASSWORD is root's password; when it is not set, it is read from
 # .console-password at the root of the repo, which git ignores, and failing that it is root,
-# BaseOS's own. omega-zero gives root six random digits the first time it runs on a card whose
+# BaseOS's own. cartridge gives root six random digits the first time it runs on a card whose
 # baseos.conf sets no ssh_password; the console shows them under Settings > Network, Y on SSH.
 #
 # CORES set (task deploy:wifi CORES=1) has deploy copy the device cores into System/ as well:
@@ -123,14 +123,14 @@ deploy)
 		;;
 	*) exit 1 ;;
 	esac
-	log="$sd/omega-zero-session.log"
+	log="$sd/cartridge-session.log"
 	before="$(lines "$log")"
-	put "$binary" "$sd/System/omega-zero"
-	on "chmod +x '$sd/System/omega-zero'"
+	put "$binary" "$sd/System/cartridge"
+	on "chmod +x '$sd/System/cartridge'"
 	for f in "$@"; do
 		put "$f" "$sd/System/$(basename "$f")"
 	done
-	# A core omega-zero has open keeps running from the copy it opened: the new one is renamed
+	# A core cartridge has open keeps running from the copy it opened: the new one is renamed
 	# over it, not written into it.
 	if [ -n "${CORES:-}" ]; then
 		for lib in $cores; do
@@ -139,14 +139,14 @@ deploy)
 	fi
 	on sync
 	echo "copied, rebooting $host"
-	# Wi-Fi let go of first, as omega-zero's own restart does: the RTL8821CS's driver hangs the
+	# Wi-Fi let go of first, as cartridge's own restart does: the RTL8821CS's driver hangs the
 	# kernel's shutdown when it has just gone into its power saving, as it does after scanning
 	# for networks. wpa_supplicant, wpa_cli and the DHCP client stop, each interface goes down,
 	# and its device is unbound from the driver, so the kernel has nothing of it left to stop.
 	on "(sleep 1; kill \$(pidof wpa_supplicant wpa_cli udhcpc) 2> /dev/null; sleep 1; kill -9 \$(pidof wpa_supplicant wpa_cli udhcpc) 2> /dev/null; for n in /sys/class/net/*/wireless; do n=\${n%/wireless}; d=\$(readlink -f \$n/device); r=\$(readlink -f \$n/device/driver); ifconfig \${n##*/} down; done; [ -n \"\$r\" ] && echo \${d##*/} > \$r/unbind; sleep 1; reboot) > /dev/null 2>&1 &"
-	# The launcher writes a line to the session log as it starts omega-zero. A console that is
+	# The launcher writes a line to the session log as it starts cartridge. A console that is
 	# back but turns the password away three times running has had a new one given to root: the
-	# first omega-zero to run on a card with no ssh_password does that as it starts.
+	# first cartridge to run on a card with no ssh_password does that as it starts.
 	waited=0
 	refused=0
 	while [ "$waited" -lt 120 ]; do
@@ -157,7 +157,7 @@ deploy)
 		if [ "$status" -eq 5 ]; then
 			refused=$((refused + 1))
 			if [ "$refused" -ge 3 ]; then
-				echo "console.sh: $host is back, but turned the password away: omega-zero gave root a new one as it started" >&2
+				echo "console.sh: $host is back, but turned the password away: cartridge gave root a new one as it started" >&2
 				echo "console.sh: the password is on the console under Settings > Network, Y on SSH; put it in .console-password" >&2
 				exit 1
 			fi
@@ -170,11 +170,11 @@ deploy)
 			exit 0
 		fi
 	done
-	echo "console.sh: $host did not start omega-zero within 120 s" >&2
+	echo "console.sh: $host did not start cartridge within 120 s" >&2
 	exit 1
 	;;
 log)
-	on "cat '$sd/omega-zero.log'"
+	on "cat '$sd/cartridge.log'"
 	;;
 *)
 	echo "usage: console.sh deploy BINARY [FILE...] | console.sh log" >&2

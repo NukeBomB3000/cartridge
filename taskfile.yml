@@ -1,6 +1,6 @@
 version: '3'
 
-# A local .env, kept out of git, can hold OMEGA_SS_DEVID and OMEGA_SS_DEVPASSWORD, ScreenScraper's
+# A local .env, kept out of git, can hold CARTRIDGE_SS_DEVID and CARTRIDGE_SS_DEVPASSWORD, ScreenScraper's
 # key, so every local build carries it; .env.example shows the shape. The environment wins.
 dotenv: ['.env']
 
@@ -47,7 +47,7 @@ tasks:
   release:
     desc: Release build of the slot binary
     cmds:
-      - cargo build --release -p omega-zero
+      - cargo build --release -p cartridge
 
   test:
     desc: Run the whole test suite
@@ -59,14 +59,14 @@ tasks:
       Run the emulator's worker tests, which run against real time and so need a quiet
       machine: a shared CI runner skips them
     cmds:
-      - cargo test -p omega-zero --test emu -- --ignored
+      - cargo test -p cartridge --test emu -- --ignored
 
   test:canvases:
     desc: >-
       Run the whole test suite again on every canvas but the default 720x480 one. The square
       720x720 canvas joins once the RG CubeXX layout lands
     cmds:
-      - OMEGA_CANVAS=640x480 cargo test --workspace --no-fail-fast
+      - CARTRIDGE_CANVAS=640x480 cargo test --workspace --no-fail-fast
 
   test:one:
     desc: Run tests matching FILTER, eg task test:one FILTER=gesture
@@ -93,7 +93,7 @@ tasks:
   lint:device:
     desc: Clippy the device build, which the host lint never compiles
     cmds:
-      - cargo clippy -p omega-zero --no-default-features --features device -- -D warnings
+      - cargo clippy -p cartridge --no-default-features --features device -- -D warnings
 
   check:
     desc: Everything a CI run would do
@@ -107,7 +107,7 @@ tasks:
       - task: test:card
 
   test:card:
-    desc: Test the scripts omega-zero ships on the card, off-device
+    desc: Test the scripts cartridge ships on the card, off-device
     cmds:
       - sh card/test-link.sh
       - sh card/test-led.sh
@@ -120,12 +120,12 @@ tasks:
 
   screens:
     desc: >-
-      Draw omega-zero's main screens headless into OUT, defaults to target/screens. Run it with
+      Draw cartridge's main screens headless into OUT, defaults to target/screens. Run it with
       OUT=target/screens-baseline before a change and screens:compare after it
     vars:
       OUT: '{{.OUT | default "target/screens"}}'
     cmds:
-      - cargo run -q --release --example screens -p omega-zero -- {{.OUT}}
+      - cargo run -q --release --example screens -p cartridge -- {{.OUT}}
 
   screens:compare:
     desc: Draw the screens again and fail on any pixel that differs from BASELINE, defaults to target/screens-baseline
@@ -133,7 +133,7 @@ tasks:
       OUT: '{{.OUT | default "target/screens"}}'
       BASELINE: '{{.BASELINE | default "target/screens-baseline"}}'
     cmds:
-      - cargo run -q --release --example screens -p omega-zero -- {{.OUT}} {{.BASELINE}}
+      - cargo run -q --release --example screens -p cartridge -- {{.OUT}} {{.BASELINE}}
 
   core:
     desc: >-
@@ -272,7 +272,7 @@ tasks:
   icons:
     desc: Re-fetch the nerd font symbols used by the HUD
     vars:
-      ASSETS: crates/omega-ui/assets
+      ASSETS: crates/cartridge-ui/assets
       TTF: SymbolsNerdFontMono-Regular.ttf
     cmds:
       - |
@@ -292,12 +292,12 @@ tasks:
       Award's, in the opening's letters, with the logo assets/logo/bioslogo.sh made (run it again
       after the logo changes; it needs ImageMagick)
     cmds:
-      - cargo run -q -p omega-zero --example bootscreens -- card/System
+      - cargo run -q -p cartridge --example bootscreens -- card/System
 
   bootlogos:logo:
     desc: >-
       Render the boot images in card/System as they were before the BIOS screen: the logo from
-      assets/logo/omega-zero-logo.html over the shelf's grid, one per panel so the grid stays
+      assets/logo/cartridge-logo.html over the shelf's grid, one per panel so the grid stays
       whole. STYLE=smooth for the drawn-straight version instead of pixel art (needs Google
       Chrome and ImageMagick)
     vars:
@@ -316,37 +316,37 @@ tasks:
     vars:
       ROOT: '{{.ROOT | default "./sdcard"}}'
     cmds:
-      - ./target/debug/omega-zero --init-root {{.ROOT}}
+      - ./target/debug/cartridge --init-root {{.ROOT}}
       - 'echo "content root ready at {{.ROOT}}: roms in Games/GBA, Games/GB or Games/GBC, labels in the matching Labels/GBA, Labels/GB or Labels/GBC, battery saves in the matching Saves/GBA, Saves/GB or Saves/GBC, save states under the matching States/GBA, States/GB or States/GBC, gba_bios.bin in BIOS, pngs in Wallpapers, palette in Config/theme.txt, overlays in Overlays/GBA, Overlays/GB or Overlays/GBC named for the canvas, eg 640x480.png"'
       - 'echo "nothing is moved for you: a file loose at the top of Games/, Saves/, Labels/ or States/ is left where it is and never reaches the shelf"'
 
   run:
     desc: >-
-      Run omega-zero against OMEGA_ROOT, defaults to ./sdcard. OMEGA_LINK_PORT moves the link
+      Run cartridge against CARTRIDGE_ROOT, defaults to ./sdcard. CARTRIDGE_LINK_PORT moves the link
       session off 7211, which is what lets two copies on one machine link to each other -
       off-device both are on loopback, so the port is all that separates them
     deps: [core]
     env:
-      OMEGA_ROOT: '{{.OMEGA_ROOT | default "./sdcard"}}'
+      CARTRIDGE_ROOT: '{{.CARTRIDGE_ROOT | default "./sdcard"}}'
     cmds:
-      - cargo run --release -p omega-zero
+      - cargo run --release -p cartridge
 
   run:bare:
     desc: Run with no title bar or border, for screenshots and screen capture
     deps: [core]
     env:
-      OMEGA_ROOT: '{{.OMEGA_ROOT | default "./sdcard"}}'
-      OMEGA_BARE: '1'
+      CARTRIDGE_ROOT: '{{.CARTRIDGE_ROOT | default "./sdcard"}}'
+      CARTRIDGE_BARE: '1'
     cmds:
-      - cargo run --release -p omega-zero
+      - cargo run --release -p cartridge
 
   run:debug:
     desc: Run an unoptimised build, for a debugger. Will not hold 60 fps.
     deps: [core]
     env:
-      OMEGA_ROOT: '{{.OMEGA_ROOT | default "./sdcard"}}'
+      CARTRIDGE_ROOT: '{{.CARTRIDGE_ROOT | default "./sdcard"}}'
     cmds:
-      - cargo run -p omega-zero
+      - cargo run -p cartridge
 
   dist:
     desc: Build the copy-to-SD2 tree, OUT defaults to ./dist
@@ -355,8 +355,8 @@ tasks:
       OUT: '{{.OUT | default "dist"}}'
     cmds:
       - rm -rf {{.OUT}}
-      - ./target/release/omega-zero --init-root {{.OUT}}
-      - cp target/release/omega-zero {{.OUT}}/System/omega-zero
+      - ./target/release/cartridge --init-root {{.OUT}}
+      - cp target/release/cartridge {{.OUT}}/System/cartridge
       - >-
         cp {{.CORE}} {{.GPSP_HOST}} {{.SNES9X_HOST}} {{.SUPAFAUST_HOST}} {{.PCSX_HOST}}
         {{.PCE_FAST_HOST}} {{.FCEUMM_HOST}} {{.GPGX_HOST}} {{.OUT}}/System/
@@ -748,8 +748,8 @@ tasks:
         if [ "$(uname -s)-$(uname -m)" = "Linux-aarch64" ]; then
           sh -c '{{.CMD}}'
         else
-          docker run --rm -e OMEGA_SS_DEVID -e OMEGA_SS_DEVPASSWORD \
-            -v omega-zero-rustup:/usr/local/rustup -v omega-zero-cargo:/usr/local/cargo/registry \
+          docker run --rm -e CARTRIDGE_SS_DEVID -e CARTRIDGE_SS_DEVPASSWORD \
+            -v cartridge-rustup:/usr/local/rustup -v cartridge-cargo:/usr/local/cargo/registry \
             -v "$PWD":/src -w /src rust:1-bullseye sh -c '{{.CMD}}'
         fi
 
@@ -765,9 +765,9 @@ tasks:
         vars:
           CMD: >-
             cargo build --profile {{.PROFILE}} --target-dir target-device
-            -p omega-zero --no-default-features --features device
-      - file target-device/{{.PROFILE}}/omega-zero | grep -q aarch64
-      - 'echo "built target-device/{{.PROFILE}}/omega-zero"'
+            -p cartridge --no-default-features --features device
+      - file target-device/{{.PROFILE}}/cartridge | grep -q aarch64
+      - 'echo "built target-device/{{.PROFILE}}/cartridge"'
 
   build:device:cross:
     desc: >-
@@ -779,8 +779,8 @@ tasks:
     cmds:
       - |
         set -eu
-        docker run --rm --platform linux/amd64 -e OMEGA_SS_DEVID -e OMEGA_SS_DEVPASSWORD \
-          -v omega-zero-rustup-amd64:/usr/local/rustup -v omega-zero-cargo-amd64:/usr/local/cargo/registry \
+        docker run --rm --platform linux/amd64 -e CARTRIDGE_SS_DEVID -e CARTRIDGE_SS_DEVPASSWORD \
+          -v cartridge-rustup-amd64:/usr/local/rustup -v cartridge-cargo-amd64:/usr/local/cargo/registry \
           -e CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
           -v "$PWD":/src -w /src rust:1-bullseye sh -c '
             set -e
@@ -789,19 +789,19 @@ tasks:
             rustup set default-host x86_64-unknown-linux-gnu
             rustup target add aarch64-unknown-linux-gnu
             cargo build --profile {{.PROFILE}} --target aarch64-unknown-linux-gnu \
-              --target-dir target-device -p omega-zero --no-default-features --features device
+              --target-dir target-device -p cartridge --no-default-features --features device
             chown -R '"$(id -u):$(id -g)"' target-device'
-      - file target-device/aarch64-unknown-linux-gnu/{{.PROFILE}}/omega-zero | grep -q aarch64
-      - 'echo "built target-device/aarch64-unknown-linux-gnu/{{.PROFILE}}/omega-zero"'
+      - file target-device/aarch64-unknown-linux-gnu/{{.PROFILE}}/cartridge | grep -q aarch64
+      - 'echo "built target-device/aarch64-unknown-linux-gnu/{{.PROFILE}}/cartridge"'
 
   bench:device:
-    desc: Build core_bench, omega-retro's headless core benchmark, for the H700. It never ships
+    desc: Build core_bench, cartridge-retro's headless core benchmark, for the H700. It never ships
     cmds:
       - task: device:sh
         vars:
           CMD: >-
             cargo build --profile device --target-dir target-device
-            -p omega-retro --example core_bench
+            -p cartridge-retro --example core_bench
       - file target-device/device/examples/core_bench | grep -q aarch64
       - 'echo "built target-device/device/examples/core_bench, adb push it to /tmp/core_bench"'
 
@@ -814,8 +814,8 @@ tasks:
       - rm -rf {{.OUT}}
       - task: device:sh
         vars:
-          CMD: ./target-device/device/omega-zero --init-root {{.OUT}}
-      - cp target-device/device/omega-zero {{.OUT}}/System/omega-zero
+          CMD: ./target-device/device/cartridge --init-root {{.OUT}}
+      - cp target-device/device/cartridge {{.OUT}}/System/cartridge
       - cp card/System/* {{.OUT}}/System/
       - |
         set -eu
@@ -869,7 +869,7 @@ tasks:
         for lib in {{.DEVICE_CORES}}; do
           file "vendor/${lib}_libretro.so" | grep -q aarch64
         done
-      - adb push target-device/device/omega-zero '{{.SD}}/System/omega-zero'
+      - adb push target-device/device/cartridge '{{.SD}}/System/cartridge'
       - for f in card/System/*; do adb push "$f" '{{.SD}}/System/'; done
       - |
         set -euo pipefail
@@ -906,21 +906,21 @@ tasks:
             adb push "$p" "{{.SD}}/System/licenses/$name-$(basename "$p")"
           done
         done
-      - adb shell 'chmod +x {{.SD}}/System/omega-zero && sync'
+      - adb shell 'chmod +x {{.SD}}/System/cartridge && sync'
       - adb reboot
       - adb wait-for-device
       - 'echo "deployed to {{.SD}}, device rebooting"'
 
   log:device:
-    desc: Read omega-zero's log back off a connected device
+    desc: Read cartridge's log back off a connected device
     vars:
       SD: '{{.SD | default "/mnt/sdcard"}}'
     cmds:
-      - adb shell 'cat {{.SD}}/omega-zero.log'
+      - adb shell 'cat {{.SD}}/cartridge.log'
 
   deploy:wifi:
     desc: >-
-      Build omega-zero and copy it onto a console on the home network over SSH, then reboot it
+      Build cartridge and copy it onto a console on the home network over SSH, then reboot it
       into the new build and wait until it starts. CONSOLE defaults to rg35xxsp.local and SD to
       /mnt/sdcard. CONSOLE_PASSWORD defaults to the first line of .console-password at the
       repo's root (git ignores it), else root; the console shows its password under Settings >
@@ -942,11 +942,11 @@ tasks:
       - task: build:device
         vars:
           PROFILE: '{{.PROFILE}}'
-      - sh scripts/console.sh deploy target-device/{{.PROFILE}}/omega-zero {{if .SCRIPTS}}card/System/*.sh{{end}}
+      - sh scripts/console.sh deploy target-device/{{.PROFILE}}/cartridge {{if .SCRIPTS}}card/System/*.sh{{end}}
 
   log:wifi:
     desc: >-
-      Read omega-zero's log off a console on the home network, CONSOLE, SD and CONSOLE_PASSWORD
+      Read cartridge's log off a console on the home network, CONSOLE, SD and CONSOLE_PASSWORD
       (or .console-password) as deploy:wifi
     env:
       CONSOLE: '{{.CONSOLE}}'

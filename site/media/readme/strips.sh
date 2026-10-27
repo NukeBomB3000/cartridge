@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Draws the README's section strips with the UI kit: each an <omega-panel>'s header, active,
+# Draws the README's section strips with the UI kit: each an <cartridge-panel>'s header, active,
 # 380 art pixels wide, in Night, cut out on nothing at 2x so GitHub can show it at 760x28 and
 # keep it sharp on a 2x screen. Needs Google Chrome (CHROME overrides where) and ImageMagick.
 #
@@ -24,7 +24,7 @@ strips=(
 # one panel to a strip, every 80 pixels down the page
 panels=""
 for i in "${!strips[@]}"; do
-  panels+="<omega-panel label=\"${strips[$i]#*|}\" active style=\"top: $((i * 80))px\"></omega-panel>"
+  panels+="<cartridge-panel label=\"${strips[$i]#*|}\" active style=\"top: $((i * 80))px\"></cartridge-panel>"
 done
 cat > "$tmp/strips.html" <<HTML
 <!doctype html>
@@ -35,10 +35,10 @@ cat > "$tmp/strips.html" <<HTML
 <script src="foundation/pixel.js"></script>
 <script src="foundation/backdrop.js"></script>
 <script src="foundation/palette.js"></script>
-<script src="components/omega-panel.js"></script>
+<script src="components/cartridge-panel.js"></script>
 <style>
   html, body { margin: 0; background: transparent; }
-  omega-panel { position: absolute; left: 0; width: calc(380 * var(--u)); height: calc(30 * var(--u)); }
+  cartridge-panel { position: absolute; left: 0; width: calc(380 * var(--u)); height: calc(30 * var(--u)); }
 </style>
 $panels
 HTML

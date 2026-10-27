@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Renders omega-zero-logo.html into the logo the README and the site show: the boot logo's
+# Renders cartridge-logo.html into the logo the README and the site show: the boot logo's
 # `pixel` style (see bootlogo.sh), on nothing instead of the shelf's grid, cut to the logo.
 #
 #   sitelogo.sh OUT [LOGO_WIDTH] [SCALE]
@@ -11,15 +11,15 @@
 # background, cropped to the border. Needs Google Chrome (CHROME overrides where) and
 # ImageMagick.
 #
-#   sitelogo.sh omega-zero-logo.png              the site's, 420x232
-#   sitelogo.sh omega-zero-logo-small.png 320    the site's on a phone, 324x180
-#   sitelogo.sh omega-zero-logo@2x.png 414 4     the README's, shown at 420x232 so it stays
+#   sitelogo.sh cartridge-logo.png              the site's, 420x232
+#   sitelogo.sh cartridge-logo-small.png 320    the site's on a phone, 324x180
+#   sitelogo.sh cartridge-logo@2x.png 414 4     the README's, shown at 420x232 so it stays
 #                                                sharp on a 2x screen, where GitHub smooths it
 set -euo pipefail
 
 out=$1 width=${2:-414} scale=${3:-2}
 here=$(cd "$(dirname "$0")" && pwd)
-logo="$here/omega-zero-logo.html"
+logo="$here/cartridge-logo.html"
 chrome=${CHROME:-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

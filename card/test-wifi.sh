@@ -90,16 +90,16 @@ conf="$TMP/card/Config/wifi.conf"
 reset
 run up && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "up exited $rc"
-[ -f "$TMP/run/omega-wifi.up" ] || fail "up left no mark that Wi-Fi is wanted"
+[ -f "$TMP/run/cartridge-wifi.up" ] || fail "up left no mark that Wi-Fi is wanted"
 grep -q -- "-i wlan0 -c $conf -Dnl80211" "$TMP/wpa_supplicant.log" || fail "the supplicant did not start on the card's networks"
 grep -q "^ctrl_interface=$TMP/ctrl" "$conf" || fail "the networks file has no control socket"
 grep -q '^update_config=1' "$conf" || fail "the networks file may not be saved to"
 grep -q 'enable_network all' "$TMP/wpa_cli.log" || fail "up did not let every saved network be joined"
-grep -q -- "-a $TMP/run/omega-wifi-hook -B -P $TMP/run/omega-wifi-events.pid" "$TMP/wpa_cli.log" \
+grep -q -- "-a $TMP/run/cartridge-wifi-hook -B -P $TMP/run/cartridge-wifi-events.pid" "$TMP/wpa_cli.log" \
 	|| fail "up did not listen for the radio joining a network"
-[ -x "$TMP/run/omega-wifi-hook" ] || fail "the hook is not executable"
-grep -q "'$SCRIPT' event" "$TMP/run/omega-wifi-hook" || fail "the hook does not call back into wifi.sh"
-settle "$TMP/run/omega-wifi-udhcpc.pid" || fail "up on a joined network asked for no lease"
+[ -x "$TMP/run/cartridge-wifi-hook" ] || fail "the hook is not executable"
+grep -q "'$SCRIPT' event" "$TMP/run/cartridge-wifi-hook" || fail "the hook does not call back into wifi.sh"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid" || fail "up on a joined network asked for no lease"
 grep -q -- '-i wlan0 -R -T 2 -p .* -x hostname:rg35xxsp' "$TMP/udhcpc.log" || fail "the lease was not asked for under the device's name"
 
 run up >/dev/null
@@ -108,7 +108,7 @@ run up >/dev/null
 reset
 printf 'update_config=0\nnetwork={\n\tssid="Cabin"\n\tpsk="hunter22"\n}\n' > "$conf"
 run up >/dev/null
-settle "$TMP/run/omega-wifi-udhcpc.pid"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid"
 grep -q 'ssid="Cabin"' "$conf" || fail "up lost a network written on a computer"
 grep -q '^update_config=0' "$conf" && fail "up left saving switched off"
 [ "$(grep -c '^update_config=1' "$conf")" = 1 ] || fail "up did not switch saving on exactly once"
@@ -116,19 +116,19 @@ grep -q '^update_config=0' "$conf" && fail "up left saving switched off"
 reset
 FAKE_STATE=SCANNING run up >/dev/null
 sleep 0.3
-[ -e "$TMP/run/omega-wifi-udhcpc.pid" ] && fail "up asked for a lease before joining a network"
+[ -e "$TMP/run/cartridge-wifi-udhcpc.pid" ] && fail "up asked for a lease before joining a network"
 run event wlan0 CONNECTED
-settle "$TMP/run/omega-wifi-udhcpc.pid" || fail "joining a network asked for no lease"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid" || fail "joining a network asked for no lease"
 run event wlan0 CONNECTED
 settle "$TMP/udhcpc.log" release || fail "joining again did not let the old lease go"
 settle "$TMP/udhcpc.log" renew || fail "joining again did not ask for a new lease"
 [ "$(grep -c -- '-i wlan0 -R' "$TMP/udhcpc.log")" = 1 ] || fail "joining again started a second client"
 
 reset
-: > "$TMP/run/omega-link.session"
+: > "$TMP/run/cartridge-link.session"
 run up && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "up during a link exited $rc"
-[ -f "$TMP/run/omega-wifi.up" ] || fail "up during a link forgot Wi-Fi is wanted"
+[ -f "$TMP/run/cartridge-wifi.up" ] || fail "up during a link forgot Wi-Fi is wanted"
 [ -e "$TMP/wpa_supplicant.log" ] && fail "up took the radio from a link"
 
 reset
@@ -138,11 +138,11 @@ WAIT_S=0 run up && rc=0 || rc=$?
 
 reset
 run up >/dev/null
-settle "$TMP/run/omega-wifi-udhcpc.pid"
-dhcp="$(cat "$TMP/run/omega-wifi-udhcpc.pid")"
-events="$(cat "$TMP/run/omega-wifi-events.pid")"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid"
+dhcp="$(cat "$TMP/run/cartridge-wifi-udhcpc.pid")"
+events="$(cat "$TMP/run/cartridge-wifi-events.pid")"
 run pause
-[ -f "$TMP/run/omega-wifi.up" ] || fail "pause forgot Wi-Fi is wanted"
+[ -f "$TMP/run/cartridge-wifi.up" ] || fail "pause forgot Wi-Fi is wanted"
 kill -0 "$dhcp" 2>/dev/null && fail "pause left the lease client running"
 kill -0 "$events" 2>/dev/null && fail "pause left the hook listening"
 [ -e "$TMP/ctrl/wlan0" ] && fail "pause left the supplicant running"
@@ -150,7 +150,7 @@ grep -q 'addr flush dev wlan0' "$TMP/ip.log" || fail "pause left the address on 
 run resume
 [ -e "$TMP/ctrl/wlan0" ] || fail "resume did not bring Wi-Fi back"
 run down
-[ -f "$TMP/run/omega-wifi.up" ] && fail "down left the mark"
+[ -f "$TMP/run/cartridge-wifi.up" ] && fail "down left the mark"
 [ -e "$TMP/ctrl/wlan0" ] && fail "down left the supplicant running"
 : > "$TMP/wpa_supplicant.log"
 run resume
@@ -160,7 +160,7 @@ reset
 run scan && rc=0 || rc=$?
 [ "$rc" = 1 ] || fail "scan with Wi-Fi off exited $rc"
 run up >/dev/null
-settle "$TMP/run/omega-wifi-udhcpc.pid"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid"
 out="$(run scan)"
 printf '%s\n' "$out" | grep -q "$(printf '\t')Home$" || fail "scan printed no networks"
 grep -q ' scan$' "$TMP/wpa_cli.log" || fail "scan did not ask the radio to look"
@@ -168,7 +168,7 @@ run saved | grep -q "$(printf '1\tHome')" || fail "saved printed no networks"
 
 reset
 run up >/dev/null
-settle "$TMP/run/omega-wifi-udhcpc.pid"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid"
 echo 'correct horse' | run join 486f6d65 && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "join exited $rc"
 grep -q 'set_network 3 ssid 486f6d65' "$TMP/wpa_cli.log" || fail "join did not name the network in hex"
@@ -201,7 +201,7 @@ grep -q 'select_network 1' "$TMP/wpa_cli.log" || fail "select did not pick the n
 
 reset
 run up >/dev/null
-settle "$TMP/run/omega-wifi-udhcpc.pid"
+settle "$TMP/run/cartridge-wifi-udhcpc.pid"
 out="$(run status)"
 for want in enabled=yes wpa_state=COMPLETED 'ssid=Home \xc3\xa9' ip_address=192.168.1.20 RSSI=-52 \
 	hostname=rg35xxsp ntp=yes ntp_synced=yes; do

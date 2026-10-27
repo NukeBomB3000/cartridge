@@ -14,7 +14,7 @@
 window.FlowArt = (() => {
   // A glyph stands in for a letter, so it is one Pixel Code character cell: 6 art pixels across
   // (5 of ink and a blank column, as the face's letters are) and 10 down (its 20px line). The ink is
-  // the full face's own (crates/omega-ui/assets/PixelCode-Regular.ttf), pixel for pixel: five rows
+  // the full face's own (crates/cartridge-ui/assets/PixelCode-Regular.ttf), pixel for pixel: five rows
   // standing on the baseline, the capitals' rows 4 to 8, as the device prints them.
   const cell = rows => ['', '', '', '', ...rows, ''].map(row => row.padEnd(6, '.'));
   const GLYPHS = {
@@ -97,7 +97,7 @@ window.FlowArt = (() => {
   const CART_SIDE = { w: 140, h: 82, rim: 'k', shell: 'p', groove: 'w', edge: 'w', label: 'b', title: 'w' };
 
   function paint(root = document.documentElement) {
-    const { sprite, mirror } = OmegaPixel;
+    const { sprite, mirror } = CartridgePixel;
     const set = (name, rows) => root.style.setProperty(`--flow-${name}`, sprite(rows, root));
     for (const [name, rows] of Object.entries(GLYPHS)) set(`glyph-${name}`, ink(rows, 'H'));
     for (const [name, rows] of Object.entries(NOTE_GLYPHS)) set(`glyph-${name}`, ink(rows, 'd'));

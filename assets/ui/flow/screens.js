@@ -79,8 +79,8 @@ window.FlowScreens = (() => {
   class Menu {
     constructor(page) {
       this.page = page;
-      this.rows = [...page.querySelectorAll('omega-row, omega-list-row')];
-      this.panels = [...page.querySelectorAll('omega-panel')];
+      this.rows = [...page.querySelectorAll('cartridge-row, cartridge-list-row')];
+      this.panels = [...page.querySelectorAll('cartridge-panel')];
       this.cursor = 0;
       this.light();
     }
@@ -124,7 +124,7 @@ window.FlowScreens = (() => {
     // A, or with Y on the row whose panel it is
     focus(screen) {
       const at = this.rows.findIndex(row => (row.dataset.opens === screen || row.dataset.info === screen) &&
-        (row.localName !== 'omega-list-row' || row.getAttribute('label') === model.joining));
+        (row.localName !== 'cartridge-list-row' || row.getAttribute('label') === model.joining));
       if (at < 0) return;
       this.cursor = at;
       this.light();
@@ -152,7 +152,7 @@ window.FlowScreens = (() => {
     open() {
       const screen = this.row.dataset.opens;
       if (!screen || this.row.hasAttribute('dim')) return;
-      if (this.row.localName === 'omega-list-row') set('joining', this.row.getAttribute('label'));
+      if (this.row.localName === 'cartridge-list-row') set('joining', this.row.getAttribute('label'));
       return { go: screen };
     }
 
@@ -303,7 +303,7 @@ window.FlowScreens = (() => {
   class Keyboard {
     constructor(page) {
       this.page = page;
-      this.panel = page.querySelector('omega-panel');
+      this.panel = page.querySelector('cartridge-panel');
       this.grid = page.querySelector('.keys');
       this.typed = page.querySelector('.typed');
       this.text = '';
@@ -433,9 +433,9 @@ window.FlowScreens = (() => {
       const lit = this.row;
       const scanned = model.found;
       const shown = !model.wifi ? [] : scanned ? NETWORKS : [{ name: model.network }];
-      const kept = new Map([...this.list.querySelectorAll('omega-list-row')].map(row => [row.dataset.network, row]));
+      const kept = new Map([...this.list.querySelectorAll('cartridge-list-row')].map(row => [row.dataset.network, row]));
       const rows = shown.map(network => {
-        const row = kept.get(network.name) ?? document.createElement('omega-list-row');
+        const row = kept.get(network.name) ?? document.createElement('cartridge-list-row');
         kept.delete(network.name);
         row.dataset.network = network.name;
         row.dataset.opens = 'keyboard';
@@ -561,9 +561,9 @@ window.FlowScreens = (() => {
     // off, or what the look has come to.
     draw() {
       const lit = this.row;
-      const kept = new Map([...this.list.querySelectorAll('omega-list-row')].map(row => [row.dataset.device, row]));
+      const kept = new Map([...this.list.querySelectorAll('cartridge-list-row')].map(row => [row.dataset.device, row]));
       const rows = model.devices.map(device => {
-        const row = kept.get(device.mac) ?? document.createElement('omega-list-row');
+        const row = kept.get(device.mac) ?? document.createElement('cartridge-list-row');
         kept.delete(device.mac);
         row.dataset.device = device.mac;
         row.setAttribute('label', nameOf(device));
@@ -727,7 +727,7 @@ window.FlowScreens = (() => {
     // The panels Y opens on Network's rows, and the value of a row of one, by its label.
     const panel = name => page(name).querySelector('.info');
     const fill = (name, label, value) =>
-      panel(name).querySelector(`omega-row[label="${label}"]`).setAttribute('value', value);
+      panel(name).querySelector(`cartridge-row[label="${label}"]`).setAttribute('value', value);
 
     function show() {
       const { date, wifi, ntp, ssh } = model;
@@ -752,7 +752,7 @@ window.FlowScreens = (() => {
       panel('ssh').classList.toggle('offline', !ssh || !wifi);
       panel('ssh').querySelector('.when-offline .note').textContent =
         ssh ? 'Join a Wi-Fi network first.' : 'Turn SSH on first.';
-      page('keyboard').querySelector('omega-panel').setAttribute('label', `PASSPHRASE FOR ${model.joining.toUpperCase()}`);
+      page('keyboard').querySelector('cartridge-panel').setAttribute('label', `PASSPHRASE FOR ${model.joining.toUpperCase()}`);
       // Settings' BLUETOOTH: the device connected, else whether the radio is on
       const connected = model.devices.find(device => device.state === 'connected');
       screen.querySelector('[data-show="bluetooth"]').setAttribute('value',

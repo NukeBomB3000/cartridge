@@ -39,7 +39,7 @@ reset() {
 	make_fake ip "$TMP/ip.log"
 	make_fake insmod "$TMP/mod.log"
 	make_fake legacy "$TMP/legacy.log"
-	make_fake wifi.sh "$TMP/wifi.log" "[ -e \"$TMP/run/omega-link.session\" ] && echo 'in a link' >> \"$TMP/wifi.log\""
+	make_fake wifi.sh "$TMP/wifi.log" "[ -e \"$TMP/run/cartridge-link.session\" ] && echo 'in a link' >> \"$TMP/wifi.log\""
 }
 
 run() {
@@ -56,22 +56,22 @@ run() {
 reset yes
 run absent link host && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "host exited $rc"
-grep -q 'ap_scan=2' "$TMP/run/omega-link-ap.conf" || fail "host AP scans before starting"
-grep -q 'frequency=5745' "$TMP/run/omega-link-ap.conf" || fail "host AP not on 5745"
-grep -q 'mode=2' "$TMP/run/omega-link-ap.conf" || fail "host config is not an AP"
+grep -q 'ap_scan=2' "$TMP/run/cartridge-link-ap.conf" || fail "host AP scans before starting"
+grep -q 'frequency=5745' "$TMP/run/cartridge-link-ap.conf" || fail "host AP not on 5745"
+grep -q 'mode=2' "$TMP/run/cartridge-link-ap.conf" || fail "host config is not an AP"
 grep -q 'addr add 10.42.0.1/24 dev wlan1' "$TMP/ip.log" || fail "host not addressed"
-[ -f "$TMP/run/omega-link.session" ] || fail "host left no session mark"
+[ -f "$TMP/run/cartridge-link.session" ] || fail "host left no session mark"
 
 reset yes
 rmdir "$TMP/net/wlan1"
 run absent link host && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "host without wlan1 exited $rc"
 grep -q 'addr add 10.42.0.1/24 dev wlan0' "$TMP/ip.log" || fail "host without wlan1 did not fall back to wlan0"
-grep -q -- '-i wlan0 -c .*omega-link-ap.conf' "$TMP/sup.log" || fail "the AP did not start on wlan0"
-[ "$(cat "$TMP/run/omega-link.ap")" = wlan0 ] || fail "the AP interface was not remembered"
+grep -q -- '-i wlan0 -c .*cartridge-link-ap.conf' "$TMP/sup.log" || fail "the AP did not start on wlan0"
+[ "$(cat "$TMP/run/cartridge-link.ap")" = wlan0 ] || fail "the AP interface was not remembered"
 run absent link down >/dev/null
 grep -q 'link set wlan0 down' "$TMP/ip.log" && fail "down took wlan0 down, which home Wi-Fi uses"
-[ -e "$TMP/run/omega-link.ap" ] && fail "down left the AP mark"
+[ -e "$TMP/run/cartridge-link.ap" ] && fail "down left the AP mark"
 grep -q 'addr flush dev wlan0' "$TMP/ip.log" || fail "down did not clear the AP off wlan0"
 
 reset yes
@@ -94,7 +94,7 @@ grep -q 'addr add' "$TMP/ip.log" 2>/dev/null && fail "dead AP was addressed"
 reset yes
 run absent link join && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "join exited $rc"
-grep -q 'scan_freq=5745' "$TMP/run/omega-link-sta.conf" || fail "join not pinned"
+grep -q 'scan_freq=5745' "$TMP/run/cartridge-link-sta.conf" || fail "join not pinned"
 grep -q 'addr add 10.42.0.2/24 dev wlan0' "$TMP/ip.log" || fail "join not addressed"
 
 reset yes
@@ -108,7 +108,7 @@ reset yes
 run absent link join >/dev/null
 run absent link down && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "down exited $rc"
-for f in omega-link-ap.conf omega-link-sta.conf omega-link.session; do
+for f in cartridge-link-ap.conf cartridge-link-sta.conf cartridge-link.session; do
 	[ -e "$TMP/run/$f" ] && fail "down left $f"
 done
 
@@ -144,8 +144,8 @@ run absent link sideways 2>/dev/null && rc=0 || rc=$?
 [ "$rc" = 2 ] || fail "bad verb exited $rc, want 2"
 
 if [ "$FAILS" -eq 0 ]; then
-	echo "omega-link: all passed"
+	echo "cartridge-link: all passed"
 else
-	echo "omega-link: $FAILS failed"
+	echo "cartridge-link: $FAILS failed"
 	exit 1
 fi

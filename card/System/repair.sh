@@ -1,5 +1,5 @@
 #!/bin/sh
-# Checks the card omega-zero runs from once omega-zero has handed it over: unmounts it, runs
+# Checks the card cartridge runs from once cartridge has handed it over: unmounts it, runs
 # fsck.fat or fsck.exfat until it comes back clean, leaves how it went for the next boot and
 # reboots. Run from a copy in /tmp, with the card's device, mount point and filesystem. slot's.
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -20,10 +20,10 @@ FSCK_FAT="${AGS_FSCK_FAT:-/usr/sbin/fsck.fat}"
 FSCK_EXFAT="${AGS_FSCK_EXFAT:-$HERE/fsck.exfat}"
 SLEEP="${AGS_SLEEP:-sleep}"
 HOLD="${AGS_HOLD:-2}"
-LOG="$DATA/omega-repair.log"
-RESULT="$DATA/omega-repair.result"
+LOG="$DATA/cartridge-repair.log"
+RESULT="$DATA/cartridge-repair.result"
 
-exec > "${AGS_OUT:-/tmp/omega-repair.out}" 2>&1 < /dev/null
+exec > "${AGS_OUT:-/tmp/cartridge-repair.out}" 2>&1 < /dev/null
 cd /
 
 log() {
@@ -128,7 +128,7 @@ if [ "$cards" -eq 1 ]; then
 else
 	say "UNMOUNTING DISKS"
 fi
-for watcher in omega-led omega-lid; do
+for watcher in cartridge-led cartridge-lid; do
 	pid="$(cat "$RUN/$watcher.pid" 2>/dev/null)"
 	[ -n "$pid" ] && kill "$pid" 2>/dev/null
 done
