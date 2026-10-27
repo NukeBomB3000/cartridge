@@ -1,5 +1,6 @@
 mod alsa;
 mod chime;
+pub mod eq;
 #[cfg(feature = "host")]
 mod host;
 mod pacer;
@@ -8,9 +9,11 @@ mod sfx;
 mod silence;
 mod sink;
 mod stub;
+pub mod test_sound;
 pub mod volume;
 
 pub use alsa::AlsaSink;
+pub use eq::{Equalizer, EQ_HZ};
 #[cfg(feature = "host")]
 pub use host::HostAudio;
 pub use pacer::Pacer;

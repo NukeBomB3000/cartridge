@@ -2,6 +2,9 @@ use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicUsize, Ordering}
 use std::sync::{Condvar, Mutex, MutexGuard};
 use std::time::{Duration, Instant};
 
+use cartridge_store::EQ_BANDS;
+
+use super::eq::Equalizer;
 use crate::drc::drc_target;
 
 pub fn ring_capacity(sample_rate: u32) -> usize {
@@ -32,6 +35,9 @@ pub struct Ring {
     underruns: AtomicU64,
     consuming: AtomicBool,
     priming: AtomicBool,
+    /// The equalizer what is played out goes through, and the gains it is asked for.
+    eq: Mutex<Equalizer>,
+    eq_gains: Mutex<[i8; EQ_BANDS]>,
 }
 
 impl Ring {
@@ -56,6 +62,8 @@ impl Ring {
             underruns: AtomicU64::new(0),
             consuming: AtomicBool::new(true),
             priming: AtomicBool::new(false),
+            eq: Mutex::new(Equalizer::default()),
+            eq_gains: Mutex::new([0; EQ_BANDS]),
         }
     }
 
@@ -157,7 +165,22 @@ impl Ring {
         }
         if self.muted() {
             out.fill(0);
+            return;
         }
+        let gains = *self.eq_gains.lock().unwrap_or_else(|e| e.into_inner());
+        let mut eq = self.eq.lock().unwrap_or_else(|e| e.into_inner());
+        eq.set(gains, self.sample_rate());
+        eq.process(&mut out[..n]);
+    }
+
+    /// The equalizer's bands from the next samples played out, in dB.
+    pub fn set_eq(&self, gains: [i8; EQ_BANDS]) {
+        *self.eq_gains.lock().unwrap_or_else(|e| e.into_inner()) = gains;
+    }
+
+    /// The bands the equalizer was last asked for.
+    pub fn eq(&self) -> [i8; EQ_BANDS] {
+        *self.eq_gains.lock().unwrap_or_else(|e| e.into_inner())
     }
 
     pub fn queued_frames(&self) -> usize {

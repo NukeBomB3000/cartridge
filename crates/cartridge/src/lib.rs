@@ -12,6 +12,7 @@ pub mod core_picker;
 pub mod disc_screen;
 pub mod drc;
 pub mod emu;
+pub mod equalizer_screen;
 pub mod face_builder;
 pub mod frames;
 pub mod frontend;

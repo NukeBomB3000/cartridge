@@ -56,7 +56,8 @@ impl SettingsGroup {
 pub enum SettingsRow {
     FastForward,
     FastForwardSound,
-    ColourCorrection,
+    /// The equalizer, in Colour Correction's place, which SELECT+A switches.
+    Equalizer,
     /// Five Games: the handheld kept to up to five games picked from the shelves. It took LCD
     /// Ghosting's place, which SELECT+B switches in a game.
     FiveGames,
@@ -75,7 +76,7 @@ impl SettingsRow {
     pub const ALL: [SettingsRow; 11] = [
         SettingsRow::FastForward,
         SettingsRow::FastForwardSound,
-        SettingsRow::ColourCorrection,
+        SettingsRow::Equalizer,
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
         SettingsRow::Labels,
@@ -94,7 +95,6 @@ impl SettingsRow {
         match self {
             SettingsRow::FastForward => "Fast Forward",
             SettingsRow::FastForwardSound => "Fast Forward Sound",
-            SettingsRow::ColourCorrection => "Colour Correction",
             SettingsRow::FiveGames => "5 Games",
             SettingsRow::Rumble => "Rumble",
             SettingsRow::Labels => "Labels",
@@ -102,6 +102,7 @@ impl SettingsRow {
             SettingsRow::Network => "Network",
             SettingsRow::Bluetooth => "Bluetooth",
             SettingsRow::Background => "Theme",
+            SettingsRow::Equalizer => "Equalizer",
             SettingsRow::About => "About",
         }
     }
@@ -110,7 +111,7 @@ impl SettingsRow {
         match self {
             SettingsRow::FastForward
             | SettingsRow::FastForwardSound
-            | SettingsRow::ColourCorrection
+            | SettingsRow::Equalizer
             | SettingsRow::FiveGames
             | SettingsRow::Rumble
             | SettingsRow::Labels => SettingsGroup::Configs,
@@ -133,6 +134,7 @@ impl SettingsRow {
                 | SettingsRow::Network
                 | SettingsRow::Bluetooth
                 | SettingsRow::Background
+                | SettingsRow::Equalizer
                 | SettingsRow::About
         )
     }
@@ -142,10 +144,7 @@ impl SettingsRow {
     pub fn carets(self) -> bool {
         matches!(
             self,
-            SettingsRow::FastForward
-                | SettingsRow::FastForwardSound
-                | SettingsRow::ColourCorrection
-                | SettingsRow::Rumble
+            SettingsRow::FastForward | SettingsRow::FastForwardSound | SettingsRow::Rumble
         )
     }
 

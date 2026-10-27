@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- A 5-band equalizer (150 Hz, 400 Hz, 1 kHz, 2.5 kHz, 6 kHz, ±12 dB) in Settings, in Colour
+  Correction's place (SELECT+A still switches that): one setting for the speaker and one for
+  headphones, presets Flat, Speaker, Bass and Clear on Y, and a test sound on A, the card's
+  `System/eq-test.wav` (16-bit stereo, 48 kHz) or a built-in one.
 - The game guide takes its colours from Settings > Theme > Colour: the page in the theme's
   darkest tone, the bands a panel's, headings and tables in its lighter tones.
 - The boot logo is a Game Boy Advance cart with Cartridge on its label (`task bootlogos:cart`).

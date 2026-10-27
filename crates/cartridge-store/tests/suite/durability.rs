@@ -210,6 +210,8 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
             backdrop_moving: true,
             backdrop_colour: 0,
             font: Font::Bold,
+            eq: [0; 5],
+            eq_hp: [0; 5],
         }
     );
 }
@@ -742,5 +744,29 @@ fn brightness_from_the_old_ten_steps_lands_on_the_nearest_of_twenty() {
         )
         .unwrap();
         assert_eq!(read_app_state(d.path()).brightness, new, "old step {old}");
+    }
+}
+
+#[test]
+fn the_equalizer_is_kept_for_the_speaker_and_the_headphones_apart() {
+    let d = tmp_root();
+    let mut s = AppState::default();
+    s.eq = [-4, 0, 2, 3, 1];
+    s.eq_hp = [6, 3, 0, 0, -12];
+    write_app_state(d.path(), &s).unwrap();
+    let back = read_app_state(d.path());
+    assert_eq!((back.eq, back.eq_hp), (s.eq, s.eq_hp));
+}
+
+#[test]
+fn an_equalizer_out_of_reach_reads_as_flat() {
+    let d = tmp_root();
+    for eq in ["eq=13,0,0,0,0", "eq=1,2,3", "eq=a,b,c,d,e"] {
+        std::fs::write(
+            d.path().join("Config/cartridge.state"),
+            format!("cart=\nbacklight=3\nblue_light=1\nvolume=50\nmuted=0\nclock_set=1\nutc_offset_min=0\n{eq}\n"),
+        )
+        .unwrap();
+        assert_eq!(read_app_state(d.path()).eq, [0; 5], "{eq}");
     }
 }

@@ -45,6 +45,8 @@ pub struct Session {
     starting: bool,
     /// The cart the shelf rests on, read ahead.
     prefetch: Prefetch,
+    /// The equalizer's test sound while it plays, and how far into it the ring has been fed.
+    test_sound: Option<(Vec<i16>, usize)>,
 }
 
 impl Drop for Session {
@@ -80,6 +82,7 @@ impl Session {
             running: None,
             starting: false,
             prefetch: Prefetch::default(),
+            test_sound: None,
         }
     }
 
@@ -92,6 +95,40 @@ impl Session {
         let mut samples = sfx.render(rate);
         crate::audio::volume::apply(&mut samples, self.app.output_volume());
         ring.mix(&samples);
+    }
+
+    /// The ring's equalizer at the bands for what plays out now, and the test sound fed to it
+    /// while the EQUALIZER screen plays it: kept a few frames ahead, as a core keeps its sound,
+    /// so the screen's own blips mix over it rather than cut it off.
+    fn sync_equalizer(&mut self) {
+        let ring = self.sink.ring();
+        let gains = self.app.eq_gains();
+        if ring.eq() != gains {
+            ring.set_eq(gains);
+        }
+        if !self.app.eq_test_playing() || ring.sample_rate() == 0 {
+            self.test_sound = None;
+            return;
+        }
+        let (clip, at) = self
+            .test_sound
+            .get_or_insert_with(|| (crate::audio::test_sound::test_sound(&self.root), 0));
+        if clip.is_empty() {
+            return;
+        }
+        let ahead = ring.capacity_frames() * 3 / 4;
+        let volume = self.app.output_volume();
+        while ring.queued_frames() < ahead {
+            let n = (ahead - ring.queued_frames()).min(1024) * 2;
+            let mut chunk = Vec::with_capacity(n);
+            while chunk.len() < n {
+                let take = (n - chunk.len()).min(clip.len() - *at);
+                chunk.extend_from_slice(&clip[*at..*at + take]);
+                *at = (*at + take) % clip.len();
+            }
+            crate::audio::volume::apply(&mut chunk, volume);
+            ring.push(&chunk);
+        }
     }
 
     pub fn audio_queued(&self) -> usize {
@@ -300,6 +337,7 @@ impl Session {
                 self.app.peer_lost();
             }
         }
+        self.sync_equalizer();
         if let Some(sfx) = self.app.take_sfx() {
             self.play_sfx(sfx);
         }

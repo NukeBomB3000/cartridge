@@ -20,6 +20,12 @@ pub const FF_SPEEDS: [u8; 4] = [2, 3, 4, 6];
 
 pub const FF_SPEED_DEFAULT: u8 = 6;
 
+/// How many bands the equalizer has.
+pub const EQ_BANDS: usize = 5;
+
+/// How far a band of the equalizer goes up or down, in dB.
+pub const EQ_DB_MAX: i8 = 12;
+
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct AppState {
     pub cart: Option<String>,
@@ -58,6 +64,9 @@ pub struct AppState {
     /// The shelf's background, once one was picked. Until then a card with a wallpaper shows
     /// it, and any other the default pattern.
     pub backdrop: Option<BackdropStyle>,
+    /// The equalizer's bands, in dB, for the speaker and for headphones.
+    pub eq: [i8; EQ_BANDS],
+    pub eq_hp: [i8; EQ_BANDS],
     /// The pattern drifts.
     pub backdrop_moving: bool,
     /// Which of [`BACKDROP_COLOURS`] the pattern is in.
@@ -94,6 +103,8 @@ impl Default for AppState {
             backdrop_moving: true,
             backdrop_colour: 0,
             font: Font::Bold,
+            eq: [0; EQ_BANDS],
+            eq_hp: [0; EQ_BANDS],
         }
     }
 }
@@ -115,7 +126,7 @@ pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -140,7 +151,9 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         s.backdrop.map_or("", BackdropStyle::key),
         s.backdrop_moving as u8,
         BACKDROP_COLOURS[(s.backdrop_colour as usize).min(BACKDROP_COLOURS.len() - 1)],
-        s.font.key()
+        s.font.key(),
+        eq_text(&s.eq),
+        eq_text(&s.eq_hp),
     );
     atomic_write(&state_path(root), text.as_bytes())
 }
@@ -172,6 +185,8 @@ fn parse(text: &str) -> Option<AppState> {
     let mut backdrop_moving = None;
     let mut backdrop_colour = None;
     let mut font = None;
+    let mut eq = None;
+    let mut eq_hp = None;
     for line in text.lines().filter(|l| !l.is_empty()) {
         let Some((key, value)) = line.split_once('=') else {
             continue;
@@ -210,6 +225,8 @@ fn parse(text: &str) -> Option<AppState> {
             "backdrop_moving" => backdrop_moving = flag(value),
             "backdrop_colour" => backdrop_colour = colour_index(value),
             "font" => font = Font::from_key(value),
+            "eq" => eq = eq_value(value),
+            "eq_hp" => eq_hp = eq_value(value),
             _ => {}
         }
     }
@@ -241,7 +258,22 @@ fn parse(text: &str) -> Option<AppState> {
         backdrop_moving: backdrop_moving.unwrap_or(fallback.backdrop_moving),
         backdrop_colour: backdrop_colour.unwrap_or(fallback.backdrop_colour),
         font: font.unwrap_or(fallback.font),
+        eq: eq.unwrap_or(fallback.eq),
+        eq_hp: eq_hp.unwrap_or(fallback.eq_hp),
     })
+}
+
+fn eq_text(bands: &[i8; EQ_BANDS]) -> String {
+    bands.map(|b| b.to_string()).join(",")
+}
+
+/// Five bands in dB, each within the equalizer's reach; anything else reads as flat.
+fn eq_value(value: &str) -> Option<[i8; EQ_BANDS]> {
+    let bands: Vec<i8> = value
+        .split(',')
+        .map(|b| b.trim().parse().ok().filter(|b: &i8| b.abs() <= EQ_DB_MAX))
+        .collect::<Option<_>>()?;
+    bands.try_into().ok()
 }
 
 fn platform_key(platform: Platform) -> String {

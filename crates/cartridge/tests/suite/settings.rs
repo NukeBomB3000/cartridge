@@ -137,7 +137,7 @@ fn up_and_down_move_the_bar_and_wrap_at_the_ends() {
     for want in [
         SettingsRow::FastForward,
         SettingsRow::FastForwardSound,
-        SettingsRow::ColourCorrection,
+        SettingsRow::Equalizer,
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
         SettingsRow::Labels,
@@ -216,44 +216,19 @@ fn fast_forward_sound_flips_and_rumble_steps_through_its_strengths_and_both_save
 }
 
 #[test]
-fn colour_correction_flips_on_either_arrow_and_saves() {
-    let (d, mut a, _) = on_carousel();
-    open_at(&mut a, SettingsRow::ColourCorrection);
-    assert!(
-        !a.colour_correction(),
-        "the row did not open on the default, which is off"
-    );
-    assert_eq!(
-        a.settings_value(SettingsRow::ColourCorrection),
-        Some(QuickValue::Off)
-    );
-    for (btn, want) in [
-        (Btn::Right, true),
-        (Btn::Left, false),
-        (Btn::Left, true),
-        (Btn::Right, false),
-    ] {
-        press(&mut a, btn);
-        assert_eq!(a.colour_correction(), want, "{btn:?}");
-        assert_eq!(
-            read_app_state(d.path()).colour_correction,
-            want,
-            "{btn:?} never reached the card"
-        );
-        assert_eq!(
-            a.settings_value(SettingsRow::ColourCorrection),
-            Some(QuickValue::flag(want))
-        );
-    }
+fn the_equalizer_took_colour_corrections_place_and_opens() {
+    assert_eq!(SettingsRow::Equalizer.group(), SettingsGroup::Configs);
+    assert!(SettingsRow::Equalizer.opens() && !SettingsRow::Equalizer.carets());
+    let (_d, mut a, _) = on_carousel();
+    open_at(&mut a, SettingsRow::Equalizer);
+    press(&mut a, Btn::A);
+    assert!(a.equalizer_view().is_some(), "A did not open the equalizer");
 }
 
 #[test]
 fn five_games_took_lcd_ghostings_place_and_opens_rather_than_flips() {
     let at = |r| SettingsRow::ALL.iter().position(|x| *x == r).unwrap();
-    assert_eq!(
-        at(SettingsRow::FiveGames),
-        at(SettingsRow::ColourCorrection) + 1
-    );
+    assert_eq!(at(SettingsRow::FiveGames), at(SettingsRow::Equalizer) + 1);
     assert_eq!(SettingsRow::FiveGames.label(), "5 Games");
     assert_eq!(SettingsRow::FiveGames.group(), SettingsGroup::Configs);
     assert!(SettingsRow::FiveGames.opens() && !SettingsRow::FiveGames.carets());
@@ -261,24 +236,6 @@ fn five_games_took_lcd_ghostings_place_and_opens_rather_than_flips() {
     assert_eq!(
         a.settings_value(SettingsRow::FiveGames),
         Some(QuickValue::Off)
-    );
-}
-
-#[test]
-fn colour_correction_leaves_the_settings_around_it_alone() {
-    let (d, mut a, _) = on_carousel();
-    open_at(&mut a, SettingsRow::ColourCorrection);
-    press(&mut a, Btn::Right);
-    let s = read_app_state(d.path());
-    assert!(s.colour_correction, "the row never took");
-    assert_eq!(
-        (s.ff_speed, s.ff_sound, s.rumble),
-        (
-            AppState::default().ff_speed,
-            AppState::default().ff_sound,
-            AppState::default().rumble
-        ),
-        "the row reached a setting that is not its own"
     );
 }
 
@@ -560,7 +517,7 @@ fn the_rows_say_what_is_set_in_flows_capitals() {
         [
             text("4X"),
             text("ON"),
-            text("OFF"),
+            text("FLAT"),
             text("OFF"),
             text("HIGH"),
             None,

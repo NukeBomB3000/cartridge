@@ -10,6 +10,7 @@ pub use cartridge_ui::{SettingsGroup, SettingsRow};
 use crate::app::{App, Phase};
 use crate::background_screen::BackgroundScreen;
 use crate::bluetooth_screen::{BluetoothScreen, Summary as BluetoothSummary};
+use crate::equalizer_screen::{preset_of, EqualizerScreen};
 use crate::label_screen::LabelsScreen;
 use crate::nav::Dir;
 use crate::screens::clock::clock_screen;
@@ -29,7 +30,6 @@ impl App {
         match row {
             SettingsRow::FastForward => QuickValue::speed(self.state.ff_speed),
             SettingsRow::FastForwardSound => Some(QuickValue::flag(self.state.ff_sound)),
-            SettingsRow::ColourCorrection => Some(QuickValue::flag(self.state.colour_correction)),
             SettingsRow::Rumble => Some(QuickValue::rumble(
                 self.state.rumble,
                 self.state.rumble_level,
@@ -40,6 +40,7 @@ impl App {
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
+            | SettingsRow::Equalizer
             | SettingsRow::About => None,
         }
     }
@@ -60,6 +61,11 @@ impl App {
                 BluetoothSummary::On => QuickValue::On.text().to_string(),
                 BluetoothSummary::Connected(name) => name.to_uppercase(),
             }),
+            SettingsRow::Equalizer => Some(
+                preset_of(self.eq_gains())
+                    .unwrap_or("Custom")
+                    .to_uppercase(),
+            ),
             _ => self.settings_value(row).map(|v| v.text().to_string()),
         }
     }
@@ -135,10 +141,10 @@ impl App {
             SettingsRow::Network => Phase::Network(WifiScreen::default()),
             SettingsRow::Bluetooth => Phase::Bluetooth(BluetoothScreen::default()),
             SettingsRow::Background => Phase::Background(BackgroundScreen::default()),
+            SettingsRow::Equalizer => Phase::Equalizer(EqualizerScreen::default()),
             SettingsRow::About => Phase::About,
             SettingsRow::FastForward
             | SettingsRow::FastForwardSound
-            | SettingsRow::ColourCorrection
             | SettingsRow::Rumble
             | SettingsRow::FiveGames => return,
         };
@@ -156,10 +162,6 @@ impl App {
                 s.ff_speed = to;
             }
             SettingsRow::FastForwardSound => s.ff_sound = !s.ff_sound,
-            SettingsRow::ColourCorrection => {
-                s.colour_correction = !s.colour_correction;
-                self.colour_pending = Some(s.colour_correction);
-            }
             SettingsRow::Rumble => {
                 // OFF, LOW, MED and HIGH in a row, stopping at either end
                 let at = if s.rumble { s.rumble_level } else { 0 };
@@ -188,6 +190,7 @@ impl App {
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
+            | SettingsRow::Equalizer
             | SettingsRow::About => return,
         }
         self.persist();
@@ -195,6 +198,12 @@ impl App {
 
     /// The handhelds' LCD ghosting on or off, kept, and queued for the core: SELECT+B in a game,
     /// its settings row having given its place to Five Games.
+    pub(crate) fn toggle_colour_correction(&mut self) {
+        self.state.colour_correction = !self.state.colour_correction;
+        self.colour_pending = Some(self.state.colour_correction);
+        self.persist();
+    }
+
     pub(crate) fn toggle_lcd_ghosting(&mut self) {
         self.state.lcd_ghosting = !self.state.lcd_ghosting;
         self.ghosting_pending = Some(self.state.lcd_ghosting);

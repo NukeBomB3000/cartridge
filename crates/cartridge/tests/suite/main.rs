@@ -30,6 +30,7 @@ mod discs;
 mod dist;
 mod drc;
 mod eject;
+mod equalizer;
 mod evdev;
 mod face_builder;
 mod fastforward;

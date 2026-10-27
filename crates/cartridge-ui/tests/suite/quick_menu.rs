@@ -25,7 +25,8 @@ fn px(face: &UndoFace, x: u32, y: u32) -> Option<[u8; 3]> {
 fn flow_rows(lit: SettingsRow) -> Vec<RowShown> {
     let value = |row| match row {
         SettingsRow::FastForward => Some("6X"),
-        SettingsRow::FastForwardSound | SettingsRow::ColourCorrection => Some("OFF"),
+        SettingsRow::FastForwardSound => Some("OFF"),
+        SettingsRow::Equalizer => Some("FLAT"),
         SettingsRow::Rumble => Some("ON"),
         SettingsRow::FiveGames => Some("OFF"),
         SettingsRow::DateTime => Some("OCT 10 16:00"),
@@ -287,7 +288,6 @@ fn the_rows_left_and_right_change_step_between_arrows_and_the_rows_that_open_end
         [
             SettingsRow::FastForward,
             SettingsRow::FastForwardSound,
-            SettingsRow::ColourCorrection,
             SettingsRow::Rumble
         ]
     );
@@ -461,7 +461,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
         [
             "Fast Forward",
             "Fast Forward Sound",
-            "Colour Correction",
+            "Equalizer",
             "5 Games",
             "Rumble",
             "Labels",
@@ -476,6 +476,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
     assert_eq!(
         opens,
         [
+            SettingsRow::Equalizer,
             SettingsRow::FiveGames,
             SettingsRow::Labels,
             SettingsRow::DateTime,

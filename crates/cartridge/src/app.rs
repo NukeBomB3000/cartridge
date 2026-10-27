@@ -29,6 +29,7 @@ use crate::bluetooth_screen::{Bluetooth, BluetoothScreen};
 use crate::boot_fade::BootFade;
 use crate::core_picker::{Chip, CorePicker, Outcome, Press};
 use crate::disc_screen::{DiscBar, DiscScreen};
+use crate::equalizer_screen::EqualizerScreen;
 use crate::label_screen::{Labels, LabelsScreen};
 use crate::label_sync::{label_jobs, Account, LabelJobs, NoKey, Want};
 use crate::link_kind::{link_carried, link_kind, serial_option, LinkKind};
@@ -264,6 +265,8 @@ pub enum Phase {
     Info(InfoScreen),
     Labels(LabelsScreen),
     Background(BackgroundScreen),
+    /// The equalizer, opened from Settings.
+    Equalizer(EqualizerScreen),
     Doze {
         cart: Option<String>,
     },
@@ -425,6 +428,7 @@ pub struct App {
     /// Carts whose labels arrived and whose faces are still drawn without them.
     pub(crate) stale_faces: Vec<(Platform, String)>,
     pub(crate) background_panel: Option<Lone>,
+    pub(crate) equalizer_panel: Option<Lone>,
     /// The pattern the shelf is drawn over, the width of its picture, and what it was drawn
     /// as, so a stale one is not shown while the new one is made.
     pub(crate) backdrop_face: Option<(TexId, u32, BackdropStyle, u8)>,
@@ -484,6 +488,7 @@ impl App {
             labels_panel: None,
             stale_faces: Vec::new(),
             background_panel: None,
+            equalizer_panel: None,
             backdrop_face: None,
             slide: None,
             theme: None,
@@ -1532,6 +1537,7 @@ impl App {
             Phase::Info(_) => self.info_input(action),
             Phase::Labels(_) => self.labels_input(action),
             Phase::Background(_) => self.background_input(action),
+            Phase::Equalizer(_) => self.equalizer_input(action),
             _ => {}
         }
     }
@@ -1732,7 +1738,7 @@ impl App {
             return true;
         }
         if action == Action::ColourCorrectionToggle {
-            self.change_setting(SettingsRow::ColourCorrection, true);
+            self.toggle_colour_correction();
             let said = match self.state.colour_correction {
                 true => Toast::ColourOn,
                 false => Toast::ColourOff,
@@ -2336,6 +2342,7 @@ impl App {
             Phase::Settings { row } => self.draw_settings(*row, out),
             Phase::Controls => self.draw_controls(out),
             Phase::Background(_) => self.draw_background_screen(out),
+            Phase::Equalizer(_) => self.draw_equalizer_screen(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
             // the modal and its panels stand over the backdrop, with nothing between
             Phase::Network(screen) if screen.typing.is_none() => self.draw_network(out),
