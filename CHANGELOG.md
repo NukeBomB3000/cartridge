@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Game Boy and Game Boy Color games run on Gambatte, built here from its source: on the RG SP it
+  takes 40 to 56 % less of the CPU than mGBA for the same game, so the battery lasts. A Game Boy
+  only game runs on the original Game Boy, where the palettes (SELECT+L2/R2) colour it; without
+  one it is coloured as a Game Boy Color would. mGBA stays a press of X away on the shelf, and
+  link play asks for it.
 - Nintendo DS games, from `Games/NDS`, on DSperate, built here from its source with frameskip
   (Auto while the sound runs short): both screens in one picture, the top one large. R2
   fast-forwards as on the other systems and L2 swaps the screens; there is no stylus. SELECT+MENU in a DS game opens a pause menu after DSperate's own: save

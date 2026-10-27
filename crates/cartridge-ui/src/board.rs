@@ -643,7 +643,8 @@ pub fn sockets_of(core: Core) -> Sockets {
         | Core::Fceumm
         | Core::GenesisPlusGx
         | Core::Swanstation
-        | Core::Dsperate => GBA_SOCKETS,
+        | Core::Dsperate
+        | Core::Gambatte => GBA_SOCKETS,
     }
 }
 

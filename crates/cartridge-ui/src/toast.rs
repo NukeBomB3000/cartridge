@@ -10,6 +10,8 @@ pub enum Toast {
     StateSaved,
     StateLoaded,
     NeedsGpsp,
+    /// Link play on a Game Boy game running on Gambatte, whose link mode is mGBA's.
+    NeedsMgba,
     NoLink,
     LinkEnded,
     PeerEnded,
@@ -67,7 +69,7 @@ const DISC_IN: [&str; 9] = [
 
 impl Toast {
     /// Every toast there is, a disc's once, as disc 1, and a shader's once, as none.
-    pub const ALL: [Toast; 27] = [
+    pub const ALL: [Toast; 28] = [
         Toast::StateSaved,
         Toast::StateLoaded,
         Toast::NeedsGpsp,
@@ -95,6 +97,7 @@ impl Toast {
         Toast::PickAtMost,
         Toast::PickAtLeast,
         Toast::NoGuide,
+        Toast::NeedsMgba,
     ];
 
     /// Its place in `ALL`: every disc's toast is the one place.
@@ -127,6 +130,7 @@ impl Toast {
             Toast::PickAtMost => 24,
             Toast::PickAtLeast => 25,
             Toast::NoGuide => 26,
+            Toast::NeedsMgba => 27,
         }
     }
 
@@ -135,6 +139,7 @@ impl Toast {
         match self {
             Toast::StateSaved | Toast::StateLoaded => "SAVE STATE",
             Toast::NeedsGpsp
+            | Toast::NeedsMgba
             | Toast::NoLink
             | Toast::LinkEnded
             | Toast::PeerEnded
@@ -165,6 +170,7 @@ impl Toast {
             Toast::StateSaved => "State saved",
             Toast::StateLoaded => "State loaded",
             Toast::NeedsGpsp => "Please switch to gpSP",
+            Toast::NeedsMgba => "Please switch to mGBA",
             Toast::NoLink => "No link support",
             Toast::LinkEnded => "Link ended",
             Toast::PeerEnded => "Link was ended",

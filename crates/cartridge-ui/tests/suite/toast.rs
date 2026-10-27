@@ -114,6 +114,7 @@ fn the_banner_says_what_happened_and_never_what_is_on_screen() {
             Toast::PickAtMost,
             Toast::PickAtLeast,
             Toast::NoGuide,
+            Toast::NeedsMgba,
         ],
         "a banner was added or dropped"
     );

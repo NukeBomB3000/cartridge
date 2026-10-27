@@ -29,7 +29,7 @@ fn the_gba_the_snes_and_the_playstation_each_have_two_sockets_and_the_rest_one()
         [Core::PcsxRearmed, Core::Swanstation]
     );
     for p in [Platform::Gb, Platform::Gbc] {
-        assert_eq!(Core::for_platform(p).len(), 1, "{p:?} has a core to pick");
+        assert_eq!(Core::for_platform(p), [Core::Gambatte, Core::Mgba], "{p:?}");
     }
 }
 

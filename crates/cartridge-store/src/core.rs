@@ -20,10 +20,12 @@ pub enum Core {
     Swanstation,
     /// DSperate, for the Nintendo DS.
     Dsperate,
+    /// Gambatte, for the Game Boy and Game Boy Color: lighter than mGBA, whose link mode it lacks.
+    Gambatte,
 }
 
 impl Core {
-    pub const ALL: [Core; 10] = [
+    pub const ALL: [Core; 11] = [
         Core::Mgba,
         Core::Gpsp,
         Core::Snes9x,
@@ -34,6 +36,7 @@ impl Core {
         Core::GenesisPlusGx,
         Core::Swanstation,
         Core::Dsperate,
+        Core::Gambatte,
     ];
 
     pub fn as_str(&self) -> &'static str {
@@ -48,6 +51,7 @@ impl Core {
             Core::GenesisPlusGx => "genesis_plus_gx",
             Core::Swanstation => "swanstation",
             Core::Dsperate => "dsperate",
+            Core::Gambatte => "gambatte",
         }
     }
 
@@ -79,6 +83,7 @@ impl Core {
             Core::GenesisPlusGx => "GPGX",
             Core::Swanstation => "Swan",
             Core::Dsperate => "DSpr",
+            Core::Gambatte => "Gmbt",
         }
     }
 
@@ -95,6 +100,7 @@ impl Core {
             Core::GenesisPlusGx => "Genesis Plus GX",
             Core::Swanstation => "SwanStation",
             Core::Dsperate => "DSperate",
+            Core::Gambatte => "Gambatte",
         }
     }
 
@@ -110,6 +116,7 @@ impl Core {
             "genesis_plus_gx" => Some(Core::GenesisPlusGx),
             "swanstation" => Some(Core::Swanstation),
             "dsperate" => Some(Core::Dsperate),
+            "gambatte" => Some(Core::Gambatte),
             _ => None,
         }
     }
@@ -123,7 +130,9 @@ impl Core {
     pub fn for_platform(platform: Platform) -> &'static [Core] {
         match platform {
             Platform::Gba => &[Core::Mgba, Core::Gpsp],
-            Platform::Gb | Platform::Gbc => &[Core::Mgba],
+            // Gambatte first: it runs a Game Boy game in about half mGBA's time, so the battery
+            // lasts; mGBA beside it for link play
+            Platform::Gb | Platform::Gbc => &[Core::Gambatte, Core::Mgba],
             Platform::Snes => &[Core::Snes9x, Core::Supafaust],
             Platform::Ps1 => &[Core::PcsxRearmed, Core::Swanstation],
             Platform::Pce => &[Core::PceFast],

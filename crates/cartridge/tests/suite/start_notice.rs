@@ -12,7 +12,7 @@ use cartridge::start_notice::{Fell, BLACK_MS, OUT_MS, PROMPT_MS, REVEAL_MS};
 use cartridge_input::{Action, Btn};
 use cartridge_store::{write_app_state, write_selected_core, AppState, Core, Platform};
 use cartridge_ui::Draw;
-use common::{app_booting_at, tmp_root_with_carts, write_gb_cart, CLOCK_IS_SET};
+use common::{app_booting_at, tmp_root_with_carts, CLOCK_IS_SET};
 use tempfile::TempDir;
 
 /// A frame at 60 fps, in seconds.
@@ -395,14 +395,18 @@ fn a_boot_to_the_clock_shows_it_once_the_clock_is_set() {
 #[test]
 fn a_game_on_a_system_with_one_core_is_told_to_start_it_clean() {
     let d = card();
-    write_gb_cart(&d, "Tetris", "TETRIS");
-    seated(&d, Some(("Tetris", Platform::Gb)), true);
-    noted(&d, "GB/Tetris");
+    let nes = d.path().join("Games/NES");
+    std::fs::create_dir_all(&nes).unwrap();
+    let mut rom = b"NES\x1a\x02\x01".to_vec();
+    rom.resize(16 + 0x8000 + 0x2000, 0);
+    std::fs::write(nes.join("1942.nes"), rom).unwrap();
+    seated(&d, Some(("1942", Platform::Nes)), true);
+    noted(&d, "NES/1942");
     let mut a = booted(&d);
     run_to_prompt(&mut a);
-    assert_eq!(line(&a, 5).as_deref(), Some("game : Tetris"));
-    assert_eq!(line(&a, 6).as_deref(), Some("sys  : GB"));
-    assert_eq!(line(&a, 7).as_deref(), Some("core : mGBA"));
+    assert_eq!(line(&a, 5).as_deref(), Some("game : 1942"));
+    assert_eq!(line(&a, 6).as_deref(), Some("sys  : NES"));
+    assert_eq!(line(&a, 7).as_deref(), Some("core : FCEUmm"));
     assert_eq!(
         line(&a, 13).as_deref(),
         Some("Hold A on the shelf to start")

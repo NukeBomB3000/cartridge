@@ -50,6 +50,9 @@ pub enum Setup<'a> {
         /// The named palette a Game Boy only game is drawn in; none, the Game Boy Color's own
         /// colouring of it.
         palette: Option<GbPalette>,
+        /// A Game Boy only game: Gambatte runs it on the original Game Boy, where its palettes
+        /// colour it, rather than on the Game Boy Color, where they are never asked.
+        dmg: bool,
     },
     Console,
 }
@@ -76,6 +79,10 @@ impl<'a> Setup<'a> {
             Setup::Console => None,
         }
     }
+
+    fn dmg(self) -> bool {
+        matches!(self, Setup::Handheld { dmg: true, .. })
+    }
 }
 
 /// Opens `core` for a game, from the content root's System folder or beside cartridge, with the
@@ -98,7 +105,7 @@ pub fn open(root: &Path, core: Core, setup: Setup) -> Opened {
 /// picture, so a SNES or PlayStation game without its core is still laid out as one.
 fn stand_in(core: Core) -> MockCore {
     match core {
-        Core::Mgba | Core::Gpsp => MockCore::new(),
+        Core::Mgba | Core::Gpsp | Core::Gambatte => MockCore::new(),
         Core::Snes9x | Core::Supafaust => MockCore::sized(256, 224),
         Core::PcsxRearmed | Core::Swanstation => MockCore::sized(320, 240),
         Core::Dsperate => MockCore::sized(384, 480),
@@ -119,6 +126,7 @@ pub fn open_core(root: &Path, core: Core, serial: &str, colour: bool, link: Opti
             ghosting: false,
             link,
             palette: None,
+            dmg: false,
         },
     )
 }
@@ -136,6 +144,7 @@ pub fn open_core_for(
         ghosting: false,
         link: None,
         palette: None,
+        dmg: false,
     };
     open_named(root, core, setup, paths).unwrap_or_else(|| {
         report_missing(core, paths);
@@ -159,6 +168,9 @@ fn open_named(
         // the options are there before the core starts, for one that reads them as it does
         let mut options = core_options(core, serial, root::has_real_bios(root), colour, ghosting);
         options.extend(palette_options(core, setup.palette()));
+        if core == Core::Gambatte && setup.dmg() {
+            options.push(("gambatte_gb_hwmode", "GB".to_string()));
+        }
         // and over them what the player chose on the core's own options screen
         let kept = crate::core_options::kept_options(root, core);
         let early: Vec<(&str, &str)> = options
@@ -178,6 +190,9 @@ fn open_named(
                 );
                 for (key, value) in palette_options(core, setup.palette()) {
                     opened.set_option(key, &value);
+                }
+                if core == Core::Gambatte && setup.dmg() {
+                    opened.set_option("gambatte_gb_hwmode", "GB");
                 }
                 for (key, value) in &kept {
                     opened.set_option(key, value);
@@ -213,6 +228,10 @@ fn report_missing(core: Core, paths: &[PathBuf]) {
 pub fn colour_option(which: Core, on: bool) -> Option<(&'static str, &'static str)> {
     match which {
         Core::Mgba => Some(("mgba_color_correction", if on { "Auto" } else { "OFF" })),
+        Core::Gambatte => Some((
+            "gambatte_gbc_color_correction",
+            if on { "GBC only" } else { "disabled" },
+        )),
         Core::Gpsp => Some((
             "gpsp_color_correction",
             if on { "enabled" } else { "disabled" },
@@ -238,6 +257,10 @@ pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static 
             if on { "lcd_ghosting" } else { "OFF" },
         )),
         Core::Gpsp => Some(("gpsp_frame_mixing", if on { "enabled" } else { "disabled" })),
+        Core::Gambatte => Some((
+            "gambatte_mix_frames",
+            if on { "lcd_ghosting" } else { "disabled" },
+        )),
         // its filter is for the Game Gear's LCD, and only ever on for a Game Gear game
         Core::GenesisPlusGx => Some((
             "genesis_plus_gx_lcd_filter",
@@ -262,7 +285,33 @@ pub fn palette_options(which: Core, palette: Option<GbPalette>) -> Vec<(&'static
             ("mgba_gb_colors_preset", "0".to_string()),
             ("mgba_gb_colors", p.core_name().to_string()),
         ],
+        (Core::Gambatte, Some(p)) => vec![
+            ("gambatte_gb_colorization", "internal".to_string()),
+            ("gambatte_gb_internal_palette", gambatte_palette(p)),
+        ],
         _ => Vec::new(),
+    }
+}
+
+/// mGBA's name for a palette, as cartridge keeps it, in Gambatte's spelling: after
+/// slot-fragile's, checked against gambatte-libretro's core options.
+pub fn gambatte_palette(palette: GbPalette) -> String {
+    let name = palette.core_name();
+    if let Some(sgb) = name.strip_prefix("SGB ") {
+        let code: String = sgb.chars().filter(char::is_ascii_alphanumeric).collect();
+        return format!("SGB - {code}");
+    }
+    match palette.label() {
+        "DMG Green" => "GB - DMG".into(),
+        "GB Pocket" => "GB - Pocket".into(),
+        "GB Light" => "GB - Light".into(),
+        "Grayscale" | "GBC Gray" => "GBC - Grayscale".into(),
+        "GBC Reverse" => "GBC - Inverted".into(),
+        "GBC Pale Yellow" => "GBC - Yellow".into(),
+        other => match other.strip_prefix("GBC ") {
+            Some(colour) => format!("GBC - {colour}"),
+            None => "GB - DMG".into(),
+        },
     }
 }
 
@@ -383,6 +432,15 @@ pub fn core_options(
             put("dsperate_show_cursor", "Off");
             // skips drawing a frame while the sound runs short, as cartridge asks
             put("dsperate_frameskip", "Auto");
+        }
+        // Gambatte colours a Game Boy only game as a Game Boy Color does, as mGBA's preset does,
+        // and plays the boot logo where the card has the boot ROM; its colour correction is
+        // the accurate one, lit from the middle as the GBC's screen was
+        Core::Gambatte => {
+            put("gambatte_gb_colorization", "GBC");
+            put("gambatte_gb_hwmode", "Auto");
+            put("gambatte_gbc_color_correction_mode", "accurate");
+            put("gambatte_gbc_frontlight_position", "central");
         }
         Core::PceFast => put("pce_fast_frameskip", "auto"),
         Core::Fceumm => {

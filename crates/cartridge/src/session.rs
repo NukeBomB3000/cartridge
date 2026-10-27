@@ -336,7 +336,15 @@ impl Session {
         }
         if let Some(palette) = self.app.take_palette() {
             if let Some(emu) = &self.emu {
-                emu.set_option("mgba_gb_colors", palette.core_name());
+                if self.app.core() == cartridge_store::Core::Gambatte {
+                    emu.set_option("gambatte_gb_colorization", "internal");
+                    emu.set_option(
+                        "gambatte_gb_internal_palette",
+                        &crate::core::gambatte_palette(palette),
+                    );
+                } else {
+                    emu.set_option("mgba_gb_colors", palette.core_name());
+                }
             }
         }
         if let Some(disc) = self.app.take_disc_swap() {
@@ -575,6 +583,7 @@ impl Session {
                 ghosting: self.app.lcd_ghosting(),
                 link: None,
                 palette: None,
+                dmg: false,
             },
             Platform::Gba | Platform::Gb | Platform::Gbc => Setup::Handheld {
                 serial,
@@ -582,6 +591,8 @@ impl Session {
                 ghosting: self.app.lcd_ghosting(),
                 link: player,
                 palette,
+                dmg: platform == Platform::Gb
+                    && cartridge_store::gb::class(&rom) == cartridge_store::gb::Class::Original,
             },
         };
         let opened = open(&self.root, core, setup);

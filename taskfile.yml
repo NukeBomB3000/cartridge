@@ -24,7 +24,7 @@ vars:
   EXFATPROGS_VERSION: 1.4.3
   EXFATPROGS_SHA256: 4b5052cba6ff9f6dcb1c63eeeac328620472c5b0b3caf3d38e4ada50e75469d3
   # The libretro names of the cores the device bundle ships, <name>_libretro.so in System/
-  DEVICE_CORES: mgba gpsp snes9x mednafen_supafaust pcsx_rearmed mednafen_pce_fast fceumm dsperate
+  DEVICE_CORES: mgba gpsp snes9x mednafen_supafaust pcsx_rearmed mednafen_pce_fast fceumm dsperate gambatte
     genesis_plus_gx
   # The cores built by cores/<name>/build.sh whose source archive ships in System/licenses/
   # beside them, as <name>:<libretro name>. gpSP's ships too, the way it always has
@@ -523,6 +523,30 @@ tasks:
         echo "built vendor/pcsx_rearmed_libretro.so from vendor/pcsx_rearmed-src.tar.gz @
         {{.PCSX_COMMIT}}"
 
+  core:gambatte:
+    desc: >-
+      Build the aarch64 linux Gambatte core for the Game Boy and Game Boy Color from its pinned
+      source archive, cross-compiled in an amd64 container; the archive ships beside it as its
+      GPL-2.0 corresponding source
+    vars:
+      GAMBATTE_COMMIT: 7809bb68ee96c3e6c74e9d9c4c8bb09aa7c6801d
+    status:
+      - test -f vendor/gambatte_libretro.so
+      - test "$(cat vendor/gambatte_libretro.so.meta 2>/dev/null)" = "$(sh cores/gambatte/build.sh stamp {{.GAMBATTE_COMMIT}})"
+    cmds:
+      - |
+        set -eu
+        if [ "$(cat vendor/gambatte-src.sha 2>/dev/null)" != "{{.GAMBATTE_COMMIT}}" ]; then
+          curl -fsSL -o vendor/gambatte-src.tar.gz https://github.com/libretro/gambatte-libretro/archive/{{.GAMBATTE_COMMIT}}.tar.gz
+          echo {{.GAMBATTE_COMMIT}} > vendor/gambatte-src.sha
+        fi
+        docker run --rm --platform linux/amd64 -v "$PWD":/src -w /src rust:1-bullseye sh -c '
+          sed -i "/security/d" /etc/apt/sources.list
+          apt-get update -qq && apt-get install -y -qq g++-aarch64-linux-gnu libc6-dev-arm64-cross >/dev/null
+          CROSS=aarch64-linux-gnu sh cores/gambatte/build.sh build {{.GAMBATTE_COMMIT}} vendor/gambatte-src.tar.gz target-device/gambatte vendor/gambatte_libretro.so
+          chown -R '"$(id -u):$(id -g)"' target-device vendor'
+      - file vendor/gambatte_libretro.so | grep -q aarch64
+
   core:dsperate:
     desc: >-
       Build the aarch64 linux DSperate Nintendo DS core from its pinned source archive, with the
@@ -758,7 +782,7 @@ tasks:
   cores:device:
     desc: >-
       Build every core the device bundle ships, mGBA, gpSP, Snes9x, Supafaust, pcsx_rearmed,
-      Beetle PCE Fast, FCEUmm, Genesis Plus GX and DSperate
+      Beetle PCE Fast, FCEUmm, Genesis Plus GX, DSperate and Gambatte
     deps:
       - core:device
       - core:gpsp
@@ -769,6 +793,7 @@ tasks:
       - core:fceumm
       - core:genesis_plus_gx
       - core:dsperate
+      - core:gambatte
       - fsck:exfat
 
   device:sh:

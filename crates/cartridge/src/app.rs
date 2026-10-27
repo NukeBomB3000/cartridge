@@ -2932,6 +2932,10 @@ impl App {
             self.hud.toast(Toast::NoLink, self.now());
             return;
         }
+        if self.core == Core::Gambatte {
+            self.hud.toast(Toast::NeedsMgba, self.now());
+            return;
+        }
         if self.core == Core::Mgba {
             let wireless = self
                 .seated()
