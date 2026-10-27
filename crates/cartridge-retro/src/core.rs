@@ -83,6 +83,16 @@ impl From<std::io::Error> for CoreError {
     }
 }
 
+/// An option a core declared: its key, what it calls it, the values it takes (the first its
+/// default) and the one it is set to now.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CoreOption {
+    pub key: String,
+    pub label: String,
+    pub values: Vec<String>,
+    pub value: String,
+}
+
 pub trait RetroCore: Send {
     fn load(&mut self, rom: &Path) -> Result<(), CoreError>;
     fn run_frame(&mut self, input: ButtonMask);
@@ -90,6 +100,10 @@ pub trait RetroCore: Send {
         self.run_frame(p1);
     }
     fn set_option(&mut self, _key: &str, _value: &str) {}
+    /// The options the core declared, in the order it declared them, each as it is set now.
+    fn option_list(&self) -> Vec<CoreOption> {
+        Vec::new()
+    }
     fn set_frame_skip(&mut self, _skip: bool) {}
     /// The last picture the core drew, XRGB8888 in rows `video_size().0` pixels long.
     fn video_xrgb8888(&self) -> &[u8];

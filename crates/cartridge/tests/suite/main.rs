@@ -60,6 +60,7 @@ mod mgba_gb_link;
 mod mgba_link;
 mod nav;
 mod opening;
+mod options_screen;
 mod picker_systems;
 mod platform;
 mod play;

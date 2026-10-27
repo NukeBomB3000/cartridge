@@ -159,7 +159,13 @@ fn open_named(
         // the options are there before the core starts, for one that reads them as it does
         let mut options = core_options(core, serial, root::has_real_bios(root), colour, ghosting);
         options.extend(palette_options(core, setup.palette()));
-        let early: Vec<(&str, &str)> = options.iter().map(|(k, v)| (*k, v.as_str())).collect();
+        // and over them what the player chose on the core's own options screen
+        let kept = crate::core_options::kept_options(root, core);
+        let early: Vec<(&str, &str)> = options
+            .iter()
+            .map(|(k, v)| (*k, v.as_str()))
+            .chain(kept.iter().map(|(k, v)| (k.as_str(), v.as_str())))
+            .collect();
         match LibretroCore::open_with_options(path, &bios, &saves, &early) {
             Ok(mut opened) => {
                 apply_core_options(
@@ -172,6 +178,9 @@ fn open_named(
                 );
                 for (key, value) in palette_options(core, setup.palette()) {
                     opened.set_option(key, &value);
+                }
+                for (key, value) in &kept {
+                    opened.set_option(key, value);
                 }
                 // the DualShock, as only it rumbles; its sticks stay centred
                 if core == Core::PcsxRearmed {

@@ -52,7 +52,7 @@ fn the_newest_request_of_a_burst_is_the_last_built() {
     let deadline = Instant::now() + Duration::from_secs(10);
     while Instant::now() < deadline {
         if let Some(faces) = builder.take() {
-            let done = faces.stem == "Metroid Fusion";
+            let done = faces.stem == "GBA/Metroid Fusion";
             seen.push(faces.stem);
             if done {
                 break;
@@ -60,7 +60,7 @@ fn the_newest_request_of_a_burst_is_the_last_built() {
         }
         std::thread::sleep(Duration::from_millis(5));
     }
-    assert_eq!(seen.last().map(String::as_str), Some("Metroid Fusion"));
+    assert_eq!(seen.last().map(String::as_str), Some("GBA/Metroid Fusion"));
     assert!(
         seen.len() <= 2,
         "the burst did not collapse to its newest: {seen:?} came back"

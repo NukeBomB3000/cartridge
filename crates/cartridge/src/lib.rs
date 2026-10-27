@@ -8,6 +8,7 @@ pub mod bootlogo;
 pub mod build_info;
 pub mod cable;
 pub mod core;
+pub mod core_options;
 pub mod core_picker;
 pub mod disc_screen;
 pub mod drc;

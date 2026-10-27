@@ -50,6 +50,8 @@ pub enum RowValue {
     Said(&'static str),
     /// A name kept in its own case, such as an account's.
     Name(String),
+    /// One of a core's values, changed with left and right, as the core spells it.
+    Picked(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

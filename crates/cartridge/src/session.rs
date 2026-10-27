@@ -295,6 +295,12 @@ impl Session {
         if let Some(emu) = &self.emu {
             emu.set_volume(self.app.output_volume());
             emu.set_blend(self.app.frame_blend());
+            if self.app.wants_core_options() {
+                self.app.set_core_option_list(emu.options());
+            }
+            if let Some((key, value)) = self.app.take_core_option() {
+                emu.set_option(&key, &value);
+            }
         }
         // a game is held to its system's clock; fast forward, rewind and the menus get it all
         let playing = matches!(self.app.phase(), Phase::Playing { .. }) && self.emu.is_some();

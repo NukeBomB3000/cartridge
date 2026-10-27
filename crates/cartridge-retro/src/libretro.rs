@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use libloading::Library;
 
 use crate::core::{
-    AvInfo, ButtonMask, CoreError, RetroCore, GBA_H, GBA_W, MAX_FRAME_H, MAX_FRAME_W,
+    AvInfo, ButtonMask, CoreError, CoreOption, RetroCore, GBA_H, GBA_W, MAX_FRAME_H, MAX_FRAME_W,
 };
 use crate::ffi::*;
 use crate::hw::{self, HwGl};
@@ -52,6 +52,8 @@ struct Host {
     options: std::collections::HashMap<String, std::ffi::CString>,
     options_dirty: bool,
     declared: std::collections::HashMap<String, Vec<String>>,
+    /// Each declared option's key and what the core calls it, in the order it declared them.
+    labels: Vec<(String, String)>,
     /// The first value the core listed for each option it declared, its default: what an option
     /// cartridge leaves alone reads as, as in any frontend, so no core falls back on defaults
     /// of its own. Supafaust forgets its own once a game is loaded.
@@ -87,6 +89,7 @@ impl Host {
             options: std::collections::HashMap::new(),
             options_dirty: false,
             declared: std::collections::HashMap::new(),
+            labels: Vec::new(),
             defaults: std::collections::HashMap::new(),
             hw: None,
         }
@@ -341,10 +344,12 @@ unsafe extern "C" fn environment(cmd: c_uint, data: *mut c_void) -> bool {
                 return with_host(|h| {
                     h.declared.clear();
                     h.defaults.clear();
+                    h.labels.clear();
                 })
                 .is_some();
             }
             let mut list = std::collections::HashMap::new();
+            let mut labels = Vec::new();
             let mut p = data as *const Variable;
             for _ in 0..4096 {
                 let var = &*p;
@@ -354,6 +359,16 @@ unsafe extern "C" fn environment(cmd: c_uint, data: *mut c_void) -> bool {
                 let Ok(key) = std::ffi::CStr::from_ptr(var.key).to_str() else {
                     break;
                 };
+                let label = if var.value.is_null() {
+                    key.to_string()
+                } else {
+                    std::ffi::CStr::from_ptr(var.value)
+                        .to_str()
+                        .ok()
+                        .and_then(|v| v.split_once(';'))
+                        .map_or_else(|| key.to_string(), |(label, _)| label.trim().to_string())
+                };
+                labels.push((key.to_string(), label));
                 let values = if var.value.is_null() {
                     Vec::new()
                 } else {
@@ -382,6 +397,7 @@ unsafe extern "C" fn environment(cmd: c_uint, data: *mut c_void) -> bool {
             with_host(|h| {
                 h.declared = list;
                 h.defaults = defaults;
+                h.labels = labels;
             })
             .is_some()
         }
@@ -873,6 +889,30 @@ impl Drop for LibretroCore {
 impl RetroCore for LibretroCore {
     fn set_option(&mut self, key: &str, value: &str) {
         LibretroCore::set_option(self, key, value);
+    }
+
+    fn option_list(&self) -> Vec<CoreOption> {
+        let h = &self.host;
+        h.labels
+            .iter()
+            .map(|(key, label)| {
+                let values = h.declared.get(key).cloned().unwrap_or_default();
+                let value = h
+                    .options
+                    .get(key)
+                    .or_else(|| h.defaults.get(key))
+                    .and_then(|v| v.to_str().ok())
+                    .map(str::to_string)
+                    .or_else(|| values.first().cloned())
+                    .unwrap_or_default();
+                CoreOption {
+                    key: key.clone(),
+                    label: label.clone(),
+                    values,
+                    value,
+                }
+            })
+            .collect()
     }
 
     fn load(&mut self, rom: &Path) -> Result<(), CoreError> {

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Nintendo DS games, from `Games/NDS`, on DSperate, built here from its source with frameskip
+  (Auto while the sound runs short): both screens in one picture, the top one large; L2 with the
+  d-pad moves the stylus and R2 taps. SELECT+MENU in a DS game opens the core's own options
+  (screen layout, stylus, frameskip and the rest), each change taken at once and kept in
+  `Config/core_options.ini`.
 - The core picker opens a PlayStation disc on the console's own mainboard, PU-18's look: the
   game's title on the CPU, the RAM and the BIOS above the sockets, the CD drive's connector
   below. A game named as one on another shelf, 007 on the Game Boy Color and on the

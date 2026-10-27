@@ -6,7 +6,9 @@ mod link;
 mod mock;
 mod rumble;
 
-pub use core::{AvInfo, ButtonMask, CoreError, RetroCore, GBA_H, GBA_W, MAX_FRAME_H, MAX_FRAME_W};
+pub use core::{
+    AvInfo, ButtonMask, CoreError, CoreOption, RetroCore, GBA_H, GBA_W, MAX_FRAME_H, MAX_FRAME_W,
+};
 pub use ffi::{
     DEVICE_DUALSHOCK, NETPACKET_BROADCAST, NETPACKET_FLUSH_HINT, NETPACKET_RELIABLE,
     NETPACKET_UNRELIABLE, NETPACKET_UNSEQUENCED,

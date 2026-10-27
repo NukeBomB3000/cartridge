@@ -218,6 +218,8 @@ struct Shared {
     disc: AtomicUsize,
     /// The disc a swap last put in and the file it is read from, until the session keeps it.
     swapped: Mutex<Option<(usize, String)>>,
+    /// The options the core declared, each as it is set, once the game is loaded.
+    options: Mutex<Vec<cartridge_retro::CoreOption>>,
 }
 
 #[derive(Default)]
@@ -305,6 +307,7 @@ impl EmuHandle {
             discs: AtomicUsize::new(1),
             disc: AtomicUsize::new(0),
             swapped: Mutex::new(None),
+            options: Mutex::new(Vec::new()),
         });
         let (tx, rx) = channel();
         let worker = Worker {
@@ -509,6 +512,15 @@ impl EmuHandle {
         self.shared.fast_steps.load(Ordering::Relaxed)
     }
 
+    /// The options the core declared, each as it is set; empty until the game is loaded.
+    pub fn options(&self) -> Vec<cartridge_retro::CoreOption> {
+        self.shared
+            .options
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone()
+    }
+
     pub fn set_blend(&self, on: bool) {
         self.shared.blend.store(on, Ordering::Relaxed);
     }
@@ -658,6 +670,7 @@ impl Worker {
                 .store(CoreState::Failed as u8, Ordering::Release);
             return;
         }
+        self.publish_options(core.as_ref());
         if let Some(sav) = sav {
             if let Err(e) = core.load_save_ram(&sav) {
                 eprintln!("cartridge: save ram: {e}");
@@ -1099,6 +1112,7 @@ impl Worker {
             }
             Cmd::SetOption(key, value) => {
                 core.set_option(&key, &value);
+                self.publish_options(&*core);
             }
             Cmd::SetDisc(index) => {
                 if !core.set_disc(index) {
@@ -1168,6 +1182,14 @@ impl Worker {
                 Err(e) => e.into_inner().0,
             };
         }
+    }
+
+    fn publish_options(&self, core: &dyn RetroCore) {
+        *self
+            .shared
+            .options
+            .lock()
+            .unwrap_or_else(|e| e.into_inner()) = core.option_list();
     }
 
     fn publish(&self, video: &[u8], size: (u32, u32)) {

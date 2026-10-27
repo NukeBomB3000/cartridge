@@ -29,6 +29,7 @@ mod sync_bar;
 mod sync_bluetooth;
 mod sync_clock;
 mod sync_controls;
+mod sync_core_options;
 mod sync_core_picker;
 mod sync_disc;
 mod sync_equalizer;
@@ -52,6 +53,7 @@ use sync_bar::{sync_bar, BarTexes};
 use sync_bluetooth::{sync_bluetooth, BluetoothTexes};
 use sync_clock::{sync_clock, Clocks};
 use sync_controls::sync_controls;
+use sync_core_options::sync_core_options;
 use sync_core_picker::sync_core_picker;
 use sync_disc::{sync_disc, DiscTexes};
 use sync_equalizer::sync_equalizer;
@@ -114,6 +116,7 @@ pub struct Frontend {
     controls: Baked<(crate::screens::controls::ControlsView, u8)>,
     background: Baked<(ListView, u8)>,
     equalizer: Baked<(crate::equalizer_screen::EqView, u8)>,
+    core_options: Baked<(String, ListView, u8)>,
     /// The POWER menu's panel and the one shown after its choice.
     power: PowerPanels,
     backdrop: BackdropTex,
@@ -205,6 +208,7 @@ impl Frontend {
             controls: Baked::default(),
             background: Baked::default(),
             equalizer: Baked::default(),
+            core_options: Baked::default(),
             power: PowerPanels::default(),
             backdrop: BackdropTex::default(),
             bar: BarTexes::default(),
@@ -374,6 +378,7 @@ impl Frontend {
             &mut self.background,
         );
         sync_equalizer(self.session.app_mut(), compositor, &mut self.equalizer);
+        sync_core_options(self.session.app_mut(), compositor, &mut self.core_options);
         sync_power(self.session.app_mut(), compositor, &mut self.power);
         sync_bar(self.session.app_mut(), compositor, &mut self.bar);
         sync_hud(self.session.app_mut(), compositor, &mut self.hud);

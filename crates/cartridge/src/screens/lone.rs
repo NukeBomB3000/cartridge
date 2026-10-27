@@ -78,9 +78,12 @@ impl Words {
             RowValue::Setting(true) => "ON".to_string(),
             RowValue::Setting(false) => "OFF".to_string(),
             RowValue::Choice(text) | RowValue::Said(text) => text.to_uppercase(),
-            RowValue::Name(name) => name.clone(),
+            RowValue::Name(name) | RowValue::Picked(name) => name.clone(),
         });
-        let carets = matches!(row.value, Some(RowValue::Setting(_) | RowValue::Choice(_)));
+        let carets = matches!(
+            row.value,
+            Some(RowValue::Setting(_) | RowValue::Choice(_) | RowValue::Picked(_))
+        );
         Words {
             label,
             value,

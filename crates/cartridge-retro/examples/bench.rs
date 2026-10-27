@@ -27,7 +27,10 @@ fn main() {
         Path::new("/tmp"),
     )
     .unwrap_or_else(|e| panic!("open: {e}"));
-    for pair in std::env::var("BENCH_OPTIONS").unwrap_or_default().split(',') {
+    for pair in std::env::var("BENCH_OPTIONS")
+        .unwrap_or_default()
+        .split(',')
+    {
         if let Some((key, value)) = pair.split_once('=') {
             core.set_option(key, value);
         }

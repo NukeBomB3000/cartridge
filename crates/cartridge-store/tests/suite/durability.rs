@@ -441,7 +441,8 @@ fn an_unreadable_platform_reads_as_a_card_that_never_said() {
         ("cart_platform=genesis\n", None),
         ("cart_platform=gameboy\n", None),
         ("cart_platform=0\n", None),
-        ("cart_platform=nds\n", None),
+        ("cart_platform=n64\n", None),
+        ("cart_platform=nds\n", Some(Platform::Nds)),
         ("cart_platform=GBA\n", Some(Platform::Gba)),
         ("cart_platform=Gbc\n", Some(Platform::Gbc)),
     ] {

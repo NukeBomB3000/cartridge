@@ -321,6 +321,11 @@ pub struct App {
     pub(crate) game_menu: Option<GameMenu>,
     /// The DISC screen SELECT + MENU opens over a PlayStation game on several discs.
     pub(crate) disc_screen: Option<DiscScreen>,
+    /// The core's own options, SELECT + MENU opens over a game where there is no other screen
+    /// there, its panel, and an option changed on it for the core.
+    pub(crate) core_options: Option<crate::core_options::CoreOptionsScreen>,
+    pub(crate) core_options_panel: Option<Lone>,
+    pub(crate) core_option_pending: Option<(String, String)>,
     /// The game a disc was swapped into the drive of, and that disc, counting from 0.
     pub(crate) disc_in: Option<(String, usize)>,
     /// A disc swapped in that the core has yet to be handed.
@@ -519,6 +524,9 @@ impl App {
             core_lid_shadow_face: None,
             game_menu: None,
             disc_screen: None,
+            core_options: None,
+            core_options_panel: None,
+            core_option_pending: None,
             disc_in: None,
             disc_swap: None,
             disc_panel: None,
@@ -1285,7 +1293,10 @@ impl App {
 
     /// Whether a screen over the game holds it paused: the link screen or the DISC screen.
     pub fn game_menu_open(&self) -> bool {
-        self.game_menu.is_some() || self.disc_screen.is_some() || self.guide.is_some()
+        self.game_menu.is_some()
+            || self.disc_screen.is_some()
+            || self.core_options.is_some()
+            || self.guide.is_some()
     }
 
     pub fn game_menu(&self) -> Option<GameMenu> {
@@ -1498,6 +1509,9 @@ impl App {
         }
         if self.disc_screen.is_some() {
             return self.disc_input(action);
+        }
+        if self.core_options.is_some() {
+            return self.core_options_input(action);
         }
         if self.guide.is_some() {
             return self.guide_input(action);
@@ -2334,6 +2348,7 @@ impl App {
         if let Some(screen) = &self.disc_screen {
             self.draw_disc_screen(screen, out);
         }
+        self.draw_core_options(out);
         self.draw_guide(out);
         self.hud.draw_at(self.now(), self.top_bar_reach(), out);
         self.draw_opening(out);
@@ -2960,6 +2975,10 @@ impl App {
         if self.swaps_discs() {
             return self.open_disc_screen();
         }
+        // a DS game has no link here: its core's options are there instead
+        if self.platform == cartridge_store::Platform::Nds {
+            return self.open_core_options();
+        }
         let Some(client_id) = self.link_client_id() else {
             return self.open_game_menu();
         };
@@ -3147,6 +3166,7 @@ impl App {
     fn close_game_menu(&mut self) {
         self.game_menu = None;
         self.disc_screen = None;
+        self.core_options = None;
         if let Some(mut starting) = self.starting.take() {
             starting.starter.cancel();
         }
