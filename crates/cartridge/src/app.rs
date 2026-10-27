@@ -964,14 +964,14 @@ impl App {
 
     /// What the buttons the systems disagree about do, for the game in the handheld or the last
     /// one there: a PlayStation game has L2 and R2 and nothing rewinds it. SELECT+Y steps every
-    /// system's picture size; only a handheld has a colour correction for SELECT+A and a
-    /// ghosting for SELECT+B.
+    /// system's picture size, SELECT+B every system's ghosting; only a handheld has a colour
+    /// correction for SELECT+A.
     pub fn keys(&self) -> Keys {
         Keys {
             game_l2_r2: self.platform.game_owns_l2_r2(),
             rewind: self.platform.rewinds(),
             colour: self.platform.colour_correction(),
-            ghosting: self.platform.lcd_ghosting(),
+            ghosting: true,
             picture: true,
             repair: self.card_read_only,
             palette: self.platform == Platform::Gb,
@@ -1185,6 +1185,22 @@ impl App {
 
     pub fn lcd_ghosting(&self) -> bool {
         self.state.lcd_ghosting
+    }
+
+    /// The frontend blends each frame with the last: a TV system's game, with TV ghosting on.
+    /// The handhelds' cores blend their own.
+    pub fn frame_blend(&self) -> bool {
+        !self.platform.lcd_ghosting() && self.state.tv_ghosting
+    }
+
+    /// The ghosting SELECT+B switches for the game in the handheld: its core's LCD ghosting
+    /// for a handheld, the frontend's blend for a TV system.
+    pub fn ghosting_on(&self) -> bool {
+        if self.platform.lcd_ghosting() {
+            self.state.lcd_ghosting
+        } else {
+            self.state.tv_ghosting
+        }
     }
 
     /// Whether the panel runs at 120 Hz now.
@@ -1755,8 +1771,8 @@ impl App {
             return true;
         }
         if action == Action::LcdGhostingToggle {
-            self.toggle_lcd_ghosting();
-            let said = match self.state.lcd_ghosting {
+            self.toggle_ghosting();
+            let said = match self.ghosting_on() {
                 true => Toast::GhostingOn,
                 false => Toast::GhostingOff,
             };

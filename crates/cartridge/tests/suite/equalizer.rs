@@ -95,3 +95,11 @@ fn y_steps_through_the_presets_and_a_hand_made_setting_starts_them_over() {
         Outcome::Changed(PRESETS[0].1)
     );
 }
+
+#[test]
+fn a_blended_frame_is_the_mean_of_it_and_the_last_a_channel_at_a_time() {
+    let mut frame = vec![0xff, 0x00, 0x80, 0x00, 0x10, 0x20, 0x30, 0x00];
+    let last = [0x01, 0xff, 0x80, 0x00, 0x30, 0x20, 0x10, 0x00];
+    cartridge::emu::blend_frames(&mut frame, &last);
+    assert_eq!(frame, [0x80, 0x7f, 0x80, 0x00, 0x20, 0x20, 0x20, 0x00]);
+}

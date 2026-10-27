@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- SELECT+B gives the TV systems ghosting too: each frame shown blended with the last, as a
+  TV's phosphor lingered, so flicker drawn as transparency shows. Off until switched on, kept
+  apart from the handhelds' LCD ghosting.
 - Theme: eight more colours (Indigo, Sky, Mint, Olive, Rose, Coral, Brown, Wine) and five
   backgrounds after real handhelds: Game Boy (its dot matrix), DS (the DS Lite menu's lines),
   3DS (stripes), PSP (the XMB's waves) and Switch.

@@ -196,6 +196,9 @@ struct Shared {
     volume: AtomicU8,
     fast_steps: AtomicU32,
     ff_sound: AtomicBool,
+    /// Each frame shown blended half and half with the one before, as a TV's phosphor
+    /// lingered: flicker drawn as transparency shows as it did.
+    blend: AtomicBool,
     published: AtomicU64,
     resume_refused: AtomicBool,
     sav_refused: AtomicBool,
@@ -284,6 +287,7 @@ impl EmuHandle {
             volume: AtomicU8::new(100),
             fast_steps: AtomicU32::new(FAST_STEPS),
             ff_sound: AtomicBool::new(false),
+            blend: AtomicBool::new(false),
             published: AtomicU64::new(0),
             resume_refused: AtomicBool::new(false),
             sav_refused: AtomicBool::new(false),
@@ -309,6 +313,7 @@ impl EmuHandle {
             cmds: rx,
             player,
             rules,
+            last: std::sync::Mutex::new((Vec::new(), (0, 0))),
         };
         let worker_link = link.clone();
         let join = std::thread::Builder::new()
@@ -504,6 +509,10 @@ impl EmuHandle {
         self.shared.fast_steps.load(Ordering::Relaxed)
     }
 
+    pub fn set_blend(&self, on: bool) {
+        self.shared.blend.store(on, Ordering::Relaxed);
+    }
+
     pub fn set_ff_sound(&self, on: bool) {
         self.shared.ff_sound.store(on, Ordering::Relaxed);
     }
@@ -615,6 +624,8 @@ struct Worker {
     cmds: Receiver<Cmd>,
     player: Option<u8>,
     rules: Rules,
+    /// The frame the core drew last, and its size, for blending the next with.
+    last: std::sync::Mutex<(Vec<u8>, (u32, u32))>,
 }
 
 impl Worker {
@@ -1163,6 +1174,15 @@ impl Worker {
         let mut buf = self.frames.take_write();
         buf.clear();
         buf.extend_from_slice(video);
+        if self.shared.blend.load(Ordering::Relaxed) {
+            let mut last = self.last.lock().unwrap_or_else(|e| e.into_inner());
+            if last.1 == size && last.0.len() == video.len() {
+                blend_frames(&mut buf, &last.0);
+            }
+            last.0.clear();
+            last.0.extend_from_slice(video);
+            last.1 = size;
+        }
         self.frames.publish(buf, size);
         self.shared.published.fetch_add(1, Ordering::Relaxed);
         crate::latency::published();
@@ -1621,5 +1641,16 @@ mod tests {
         assert_eq!(link.take_inbound().as_deref(), Some(&b"one"[..]));
         assert_eq!(link.take_inbound().as_deref(), Some(&b"two"[..]));
         assert_eq!(link.take_inbound(), None);
+    }
+}
+
+/// `frame` made the mean of itself and `last`, XRGB8888 both, a channel at a time without
+/// carrying from one channel into the next.
+pub fn blend_frames(frame: &mut [u8], last: &[u8]) {
+    for (px, old) in frame.chunks_exact_mut(4).zip(last.chunks_exact(4)) {
+        let a = u32::from_ne_bytes([px[0], px[1], px[2], px[3]]);
+        let b = u32::from_ne_bytes([old[0], old[1], old[2], old[3]]);
+        let mean = (a & b) + (((a ^ b) & 0xfefe_fefe) >> 1);
+        px.copy_from_slice(&mean.to_ne_bytes());
     }
 }

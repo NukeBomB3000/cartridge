@@ -291,6 +291,7 @@ impl Session {
         self.bridge_link(|app| app.update(dt));
         if let Some(emu) = &self.emu {
             emu.set_volume(self.app.output_volume());
+            emu.set_blend(self.app.frame_blend());
         }
         if let Some((client_id, transport)) = self.app.take_link_transport() {
             match &self.emu {

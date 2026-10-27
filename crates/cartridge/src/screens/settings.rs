@@ -204,6 +204,15 @@ impl App {
         self.persist();
     }
 
+    pub(crate) fn toggle_ghosting(&mut self) {
+        if self.platform.lcd_ghosting() {
+            self.toggle_lcd_ghosting();
+        } else {
+            self.state.tv_ghosting = !self.state.tv_ghosting;
+            self.persist();
+        }
+    }
+
     pub(crate) fn toggle_lcd_ghosting(&mut self) {
         self.state.lcd_ghosting = !self.state.lcd_ghosting;
         self.ghosting_pending = Some(self.state.lcd_ghosting);

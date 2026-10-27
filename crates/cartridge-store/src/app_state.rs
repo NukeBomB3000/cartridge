@@ -47,6 +47,9 @@ pub struct AppState {
     /// The handhelds' cores blend each frame with the last, as the LCD the games were drawn
     /// for blurred them: flicker drawn as transparency shows as it did.
     pub lcd_ghosting: bool,
+    /// The TV systems' games shown each frame blended with the last, as a TV's phosphor
+    /// lingered. Off unless asked for, with SELECT+B in one of their games.
+    pub tv_ghosting: bool,
     /// The colours a Game Boy only game is drawn in: Auto, the Game Boy Color's own colouring of
     /// it, or one of mGBA's named palettes.
     pub gb_palette: GbColors,
@@ -105,6 +108,7 @@ impl Default for AppState {
             font: Font::Bold,
             eq: [0; EQ_BANDS],
             eq_hp: [0; EQ_BANDS],
+            tv_ghosting: false,
         }
     }
 }
@@ -126,7 +130,7 @@ pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\ntv_ghosting={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -154,6 +158,7 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         s.font.key(),
         eq_text(&s.eq),
         eq_text(&s.eq_hp),
+        s.tv_ghosting as u8,
     );
     atomic_write(&state_path(root), text.as_bytes())
 }
@@ -187,6 +192,7 @@ fn parse(text: &str) -> Option<AppState> {
     let mut font = None;
     let mut eq = None;
     let mut eq_hp = None;
+    let mut tv_ghosting = None;
     for line in text.lines().filter(|l| !l.is_empty()) {
         let Some((key, value)) = line.split_once('=') else {
             continue;
@@ -227,6 +233,7 @@ fn parse(text: &str) -> Option<AppState> {
             "font" => font = Font::from_key(value),
             "eq" => eq = eq_value(value),
             "eq_hp" => eq_hp = eq_value(value),
+            "tv_ghosting" => tv_ghosting = flag(value),
             _ => {}
         }
     }
@@ -260,6 +267,7 @@ fn parse(text: &str) -> Option<AppState> {
         font: font.unwrap_or(fallback.font),
         eq: eq.unwrap_or(fallback.eq),
         eq_hp: eq_hp.unwrap_or(fallback.eq_hp),
+        tv_ghosting: tv_ghosting.unwrap_or(fallback.tv_ghosting),
     })
 }
 
