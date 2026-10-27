@@ -23,7 +23,7 @@ pub fn shelf_scale(platform: Platform) -> f32 {
     match platform {
         Platform::Gba => 1.0,
         Platform::Md => md::SHELF_SCALE,
-        Platform::Gg | Platform::Sms => crate::models::sega8::SHELF_SCALE,
+        Platform::Gg | Platform::Sms | Platform::Nds => crate::models::sega8::SHELF_SCALE,
         Platform::Nes => nes::SHELF_SCALE,
         Platform::Pce => hucard::SHELF_SCALE,
         Platform::Gb | Platform::Gbc => GB_SHELF_SCALE,

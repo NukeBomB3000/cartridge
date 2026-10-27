@@ -42,7 +42,8 @@ pub fn bezel_mark_face(platform: Platform, height: u32) -> Option<UndoFace> {
         | Platform::Nes
         | Platform::Md
         | Platform::Gg
-        | Platform::Sms => return None,
+        | Platform::Sms
+        | Platform::Nds => return None,
     };
     let mark = decode(png)?;
     let (sw, sh) = (mark.w, mark.h);

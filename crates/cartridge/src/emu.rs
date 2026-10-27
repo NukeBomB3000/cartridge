@@ -1624,7 +1624,11 @@ mod tests {
                 ),
                 "{platform:?}"
             );
-            assert_eq!(rules.rewinds, platform != Platform::Ps1, "{platform:?}");
+            assert_eq!(
+                rules.rewinds,
+                !matches!(platform, Platform::Ps1 | Platform::Nds),
+                "{platform:?}"
+            );
         }
         assert_eq!(Rules::default(), Rules::of(Platform::Gba));
     }

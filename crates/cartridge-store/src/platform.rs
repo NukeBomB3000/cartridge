@@ -13,10 +13,12 @@ pub enum Platform {
     Md,
     Gg,
     Sms,
+    /// The Nintendo DS, on DSperate: both its screens laid out in one picture by the core.
+    Nds,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 10] = [
+    pub const ALL: [Platform; 11] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -27,6 +29,7 @@ impl Platform {
         Platform::Md,
         Platform::Gg,
         Platform::Sms,
+        Platform::Nds,
     ];
 
     pub fn name(self) -> &'static str {
@@ -41,6 +44,7 @@ impl Platform {
             Platform::Md => "Mega Drive",
             Platform::Gg => "Game Gear",
             Platform::Sms => "Master System",
+            Platform::Nds => "Nintendo DS",
         }
     }
 
@@ -56,6 +60,7 @@ impl Platform {
             Platform::Md => "MD",
             Platform::Gg => "GG",
             Platform::Sms => "SMS",
+            Platform::Nds => "NDS",
         }
     }
 
@@ -70,6 +75,7 @@ impl Platform {
             Platform::Md => &["md", "gen", "bin"],
             Platform::Gg => &["gg"],
             Platform::Sms => &["sms"],
+            Platform::Nds => &["nds"],
         }
     }
 
@@ -84,6 +90,8 @@ impl Platform {
             Platform::Md => (320, 224),
             Platform::Gg => (160, 144),
             Platform::Sms => (256, 192),
+            // the top screen half again as big over the bottom one, as DSperate lays them out
+            Platform::Nds => (384, 480),
         }
     }
 
@@ -135,19 +143,22 @@ impl Platform {
             | Platform::Pce => Some(720_000),
             Platform::Md => Some(1_008_000),
             Platform::Gba => Some(1_200_000),
-            Platform::Snes | Platform::Ps1 => None,
+            // DSperate barely keeps up at the top clock: 54 to 60 fps in NSMB and Mario Kart
+            Platform::Snes | Platform::Ps1 | Platform::Nds => None,
         }
     }
 
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states
-    /// are too big for the rewind buffer.
+    /// are too big for the rewind buffer, nor on the DS, whose are bigger still and whose core
+    /// takes L2 for its stylus.
     pub fn rewinds(self) -> bool {
-        self != Platform::Ps1
+        !matches!(self, Platform::Ps1 | Platform::Nds)
     }
 
-    /// Whether L2/R2 belong to the game rather than to rewind and fast-forward.
+    /// Whether L2/R2 belong to the game rather than to rewind and fast-forward: the
+    /// PlayStation's, and the DS's, whose core moves its stylus with L2 and taps with R2.
     pub fn game_owns_l2_r2(self) -> bool {
-        self == Platform::Ps1
+        matches!(self, Platform::Ps1 | Platform::Nds)
     }
 
     pub fn accepts(self, path: &Path) -> bool {

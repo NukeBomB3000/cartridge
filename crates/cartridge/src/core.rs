@@ -101,6 +101,7 @@ fn stand_in(core: Core) -> MockCore {
         Core::Mgba | Core::Gpsp => MockCore::new(),
         Core::Snes9x | Core::Supafaust => MockCore::sized(256, 224),
         Core::PcsxRearmed | Core::Swanstation => MockCore::sized(320, 240),
+        Core::Dsperate => MockCore::sized(384, 480),
         Core::PceFast => MockCore::sized(256, 240),
         Core::Fceumm => MockCore::sized(256, 224),
         Core::GenesisPlusGx => MockCore::sized(320, 224),
@@ -211,6 +212,7 @@ pub fn colour_option(which: Core, on: bool) -> Option<(&'static str, &'static st
         | Core::Supafaust
         | Core::PcsxRearmed
         | Core::Swanstation
+        | Core::Dsperate
         | Core::PceFast
         | Core::Fceumm
         | Core::GenesisPlusGx => None,
@@ -236,6 +238,7 @@ pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static 
         | Core::Supafaust
         | Core::PcsxRearmed
         | Core::Swanstation
+        | Core::Dsperate
         | Core::PceFast
         | Core::Fceumm => None,
     }
@@ -357,6 +360,17 @@ pub fn core_options(
             put("swanstation_GPU_ResolutionScale", "1");
             put("swanstation_CPU_ExecutionMode", "Recompiler");
             put("swanstation_Main_ApplyGameSettings", "true");
+        }
+        // DSperate lays the top screen out large over the bottom one, its JIT on; its stylus
+        // moves while L2 is held with the d-pad and taps with R2, the screens swap with L3
+        Core::Dsperate => {
+            put("dsperate_layout", "Top Dominant");
+            put("dsperate_cpu_engine", "JIT (AArch64)");
+            put("dsperate_stylus_control", "Hold L2 + D-Pad");
+            put("dsperate_touch_button", "R2");
+            put("dsperate_swap_button", "L3");
+            put("dsperate_mic_button", "Off");
+            put("dsperate_show_cursor", "On");
         }
         Core::PceFast => put("pce_fast_frameskip", "auto"),
         Core::Fceumm => {

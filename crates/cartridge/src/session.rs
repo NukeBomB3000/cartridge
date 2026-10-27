@@ -560,7 +560,8 @@ impl Session {
             | Platform::Pce
             | Platform::Nes
             | Platform::Md
-            | Platform::Sms => Setup::Console,
+            | Platform::Sms
+            | Platform::Nds => Setup::Console,
             // the Game Gear has no cable or palette here, only its LCD's ghosting
             Platform::Gg => Setup::Handheld {
                 serial: "auto",

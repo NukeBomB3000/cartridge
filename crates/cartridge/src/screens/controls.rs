@@ -73,6 +73,7 @@ impl ControlsView {
             | Platform::Md
             | Platform::Gg
             | Platform::Sms => {}
+            Platform::Nds => game.push(("L2+✚ / R2", "STYLUS/TOUCH")),
         }
         game.extend([
             ("SELECT+▲▼", "BRIGHTNESS"),

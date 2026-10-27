@@ -124,6 +124,7 @@ fn is_console(platform: Platform) -> bool {
             | Platform::Nes
             | Platform::Md
             | Platform::Sms
+            | Platform::Nds
     )
 }
 
@@ -179,7 +180,8 @@ pub fn screen_on_frame(
         | Platform::Pce
         | Platform::Nes
         | Platform::Md
-        | Platform::Sms => {
+        | Platform::Sms
+        | Platform::Nds => {
             let h = (cw * SRC_H as f32 / SRC_W as f32).round();
             let view = GameView {
                 rect: [0.0, 0.0, cw, h],
@@ -289,6 +291,7 @@ const MD_W: f32 = 320.0;
 fn console_screen(c: Canvas, platform: Platform, mode: VideoMode, frame: (u32, u32)) -> Screen {
     let (cw, ch) = (c.w as f32, c.h as f32);
     let (w, h) = match (platform, mode) {
+        (Platform::Nds, VideoMode::Actual | VideoMode::Aspect) => fitted(cw, ch, frame),
         (Platform::Ps1, VideoMode::Actual) => ps1_whole(cw, ch, frame.1),
         (Platform::Md, VideoMode::Actual) => whole(cw, ch, MD_W, frame.1),
         (_, VideoMode::Actual) => whole(cw, ch, SNES_W, frame.1),
@@ -341,6 +344,17 @@ fn ps1_whole(cw: f32, ch: f32, lines: u32) -> (f32, f32) {
     } else {
         four_three(cw, ch)
     }
+}
+
+/// The picture `frame` as large as the canvas holds it with its pixels square: the DS's two
+/// screens as DSperate lays them out, which make a shape of their own.
+fn fitted(cw: f32, ch: f32, frame: (u32, u32)) -> (f32, f32) {
+    let (fw, fh) = match frame {
+        (0, _) | (_, 0) => (384.0, 480.0),
+        (w, h) => (w as f32, h as f32),
+    };
+    let scale = (cw / fw).min(ch / fh);
+    ((fw * scale).round(), (fh * scale).round())
 }
 
 /// The largest 4:3 rect the canvas holds.

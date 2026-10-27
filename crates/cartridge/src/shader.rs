@@ -36,6 +36,8 @@ pub fn looks_for(platform: Platform) -> &'static [Look] {
         | Platform::Nes
         | Platform::Md
         | Platform::Sms => &[Look::Off, Look::Scanlines, Look::Crt, Look::Curved],
+        // two screens scaled by no whole number, which a pixel look would cut unevenly
+        Platform::Nds => &[Look::Off],
     }
 }
 

@@ -23,7 +23,8 @@ fn every_platform_is_a_shelf_of_its_own() {
             Platform::Nes,
             Platform::Md,
             Platform::Gg,
-            Platform::Sms
+            Platform::Sms,
+            Platform::Nds
         ]
     );
     for (i, p) in Platform::ALL.iter().enumerate() {

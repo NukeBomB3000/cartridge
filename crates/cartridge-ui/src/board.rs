@@ -627,7 +627,8 @@ pub fn sockets_for(platform: Platform) -> Sockets {
         | Platform::Nes
         | Platform::Md
         | Platform::Gg
-        | Platform::Sms => GBA_SOCKETS,
+        | Platform::Sms
+        | Platform::Nds => GBA_SOCKETS,
     }
 }
 
@@ -641,7 +642,8 @@ pub fn sockets_of(core: Core) -> Sockets {
         | Core::PceFast
         | Core::Fceumm
         | Core::GenesisPlusGx
-        | Core::Swanstation => GBA_SOCKETS,
+        | Core::Swanstation
+        | Core::Dsperate => GBA_SOCKETS,
     }
 }
 

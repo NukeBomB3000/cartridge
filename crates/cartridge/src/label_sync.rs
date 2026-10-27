@@ -209,6 +209,7 @@ pub fn system_id(platform: Platform) -> u32 {
         Platform::Md => 1,
         Platform::Gg => 21,
         Platform::Sms => 2,
+        Platform::Nds => 15,
     }
 }
 
@@ -316,7 +317,10 @@ fn region_code(region: Region) -> Option<&'static str> {
 pub fn label_regions(want: &Want) -> Vec<&'static str> {
     let mut out = tag_regions(&want.stem);
     match want.platform {
-        Platform::Gba | Platform::Gb | Platform::Gbc => return regions(&want.stem, &want.code),
+        // a DS game's code ends in its region's letter as a GBA game's does
+        Platform::Gba | Platform::Gb | Platform::Gbc | Platform::Nds => {
+            return regions(&want.stem, &want.code)
+        }
         Platform::Snes | Platform::Md => {
             let region = match want.platform {
                 Platform::Md => cartridge_store::md::region(&want.rom, &want.stem),

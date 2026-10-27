@@ -265,5 +265,8 @@ fn a_game_of_one_name_on_two_shelves_has_two_sets_of_faces() {
         shell: None,
         title: String::new(),
     };
-    assert_ne!(faces_key(&cart(Platform::Gbc)), faces_key(&cart(Platform::Ps1)));
+    assert_ne!(
+        faces_key(&cart(Platform::Gbc)),
+        faces_key(&cart(Platform::Ps1))
+    );
 }
