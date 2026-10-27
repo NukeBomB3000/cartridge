@@ -3430,7 +3430,7 @@ impl App {
         }
     }
 
-    fn load_newest(&mut self) {
+    pub(crate) fn load_newest(&mut self) {
         let Some(newest) = self.entries().first().map(|e| e.state.clone()) else {
             return self.refuse();
         };
@@ -3457,7 +3457,7 @@ impl App {
         true
     }
 
-    fn save_state(&mut self) {
+    pub(crate) fn save_state(&mut self) {
         let (Some(ring), Some(snapshot)) = (self.ring(), &self.snapshot) else {
             return;
         };
