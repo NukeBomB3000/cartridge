@@ -1151,6 +1151,13 @@ impl App {
         self.last_led = None;
     }
 
+    /// The GPU held at its top clock, or let go.
+    pub fn set_gpu_boost(&mut self, on: bool) {
+        if let Some(power) = self.power.as_mut() {
+            power.set_gpu_boost(on);
+        }
+    }
+
     /// The CPU held to `khz`, or let run at its top.
     pub fn set_cpu_cap(&mut self, khz: Option<u32>) {
         if let Some(power) = self.power.as_mut() {

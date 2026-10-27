@@ -56,8 +56,9 @@ impl Drop for Session {
         if self.starting {
             persist::clear_starting(&self.root);
         }
-        // the CPU left free for whatever runs after
+        // the CPU and the GPU left free for whatever runs after
         self.app.set_cpu_cap(None);
+        self.app.set_gpu_boost(false);
     }
 }
 
@@ -301,6 +302,9 @@ impl Session {
             .then(|| self.app.platform().cpu_khz())
             .flatten();
         self.app.set_cpu_cap(cap);
+        // SwanStation draws with the GPU and waits on it each frame
+        self.app
+            .set_gpu_boost(playing && self.app.core() == cartridge_store::Core::Swanstation);
         if let Some((client_id, transport)) = self.app.take_link_transport() {
             match &self.emu {
                 Some(emu) => match self.app.link_player() {
