@@ -100,7 +100,7 @@ fn stand_in(core: Core) -> MockCore {
     match core {
         Core::Mgba | Core::Gpsp => MockCore::new(),
         Core::Snes9x | Core::Supafaust => MockCore::sized(256, 224),
-        Core::PcsxRearmed => MockCore::sized(320, 240),
+        Core::PcsxRearmed | Core::Swanstation => MockCore::sized(320, 240),
         Core::PceFast => MockCore::sized(256, 240),
         Core::Fceumm => MockCore::sized(256, 224),
         Core::GenesisPlusGx => MockCore::sized(320, 224),
@@ -210,6 +210,7 @@ pub fn colour_option(which: Core, on: bool) -> Option<(&'static str, &'static st
         Core::Snes9x
         | Core::Supafaust
         | Core::PcsxRearmed
+        | Core::Swanstation
         | Core::PceFast
         | Core::Fceumm
         | Core::GenesisPlusGx => None,
@@ -231,7 +232,12 @@ pub fn ghosting_option(which: Core, on: bool) -> Option<(&'static str, &'static 
             "genesis_plus_gx_lcd_filter",
             if on { "enabled" } else { "disabled" },
         )),
-        Core::Snes9x | Core::Supafaust | Core::PcsxRearmed | Core::PceFast | Core::Fceumm => None,
+        Core::Snes9x
+        | Core::Supafaust
+        | Core::PcsxRearmed
+        | Core::Swanstation
+        | Core::PceFast
+        | Core::Fceumm => None,
     }
 }
 
@@ -342,6 +348,13 @@ pub fn core_options(
             put("pcsx_rearmed_memcard1", "libretro");
             put("pcsx_rearmed_memcard2", "none");
             put("pcsx_rearmed_vibration", "enabled");
+        }
+        // SwanStation draws in software, as the frontend hands a core no GL context, and runs
+        // the BIOS it finds among BIOS/ by its hash; it has none built in
+        Core::Swanstation => {
+            put("swanstation_GPU_Renderer", "Software");
+            put("swanstation_CPU_ExecutionMode", "Recompiler");
+            put("swanstation_Main_ApplyGameSettings", "true");
         }
         Core::PceFast => put("pce_fast_frameskip", "auto"),
         Core::Fceumm => {

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- PlayStation games can run on SwanStation (the libretro DuckStation) as well as PCSX-ReARMed:
+  X on the shelf picks it, given `System/swanstation_libretro.so` and a real BIOS in BIOS/.
+  It draws in software and needs about twice PCSX's CPU on the H700, so PCSX stays the
+  default.
 - A game holds the CPU to what its system needs, so the handheld runs cooler and longer: 720 MHz
   for the Game Boy, Game Boy Color, Game Gear, Master System, NES and PC Engine, 1008 MHz for
   the Mega Drive, 1200 MHz for the GBA, the whole 1512 MHz for the SNES and the PlayStation.

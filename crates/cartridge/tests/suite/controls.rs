@@ -195,7 +195,7 @@ fn a_snes_game_rewinds_and_fast_forwards_and_stretches_but_neither_links_nor_cor
 #[test]
 fn a_playstation_game_fast_forwards_on_select_r2_and_swaps_discs() {
     let view = ControlsView::new(Platform::Ps1);
-    assert!(!view.groups[0].lines.contains(&("X", "CORE")));
+    assert!(view.groups[0].lines.contains(&("X", "CORE")));
     assert_eq!(
         view.groups[1].lines,
         [

@@ -152,16 +152,9 @@ fn right_and_a_on_a_snes_cart_write_supafaust() {
 }
 
 #[test]
-fn x_on_a_playstation_game_opens_nothing() {
+fn x_on_a_playstation_game_picks_between_pcsx_and_swanstation() {
     let (_d, mut app) = on_shelf(root_with_games(Platform::Ps1, &["Ridge Racer", "Wipeout"]));
     fake_faces(&mut app);
-    let before = frame(&app);
     app.apply(Action::GbaDown(Btn::X));
-    assert_eq!(
-        app.core_picker(),
-        None,
-        "a game with one core opened a picker"
-    );
-    assert_eq!(app.shelf_shake(), 0.0, "X was answered with a refusal");
-    assert_eq!(frame(&app), before, "X changed what the shelf draws");
+    assert_eq!(app.core_picker(), Some(Core::PcsxRearmed));
 }

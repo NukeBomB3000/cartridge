@@ -16,10 +16,12 @@ pub enum Core {
     PceFast,
     Fceumm,
     GenesisPlusGx,
+    /// SwanStation, the libretro DuckStation, for the PlayStation beside PCSX-ReARMed.
+    Swanstation,
 }
 
 impl Core {
-    pub const ALL: [Core; 8] = [
+    pub const ALL: [Core; 9] = [
         Core::Mgba,
         Core::Gpsp,
         Core::Snes9x,
@@ -28,6 +30,7 @@ impl Core {
         Core::PceFast,
         Core::Fceumm,
         Core::GenesisPlusGx,
+        Core::Swanstation,
     ];
 
     pub fn as_str(&self) -> &'static str {
@@ -40,6 +43,7 @@ impl Core {
             Core::PceFast => "pce_fast",
             Core::Fceumm => "fceumm",
             Core::GenesisPlusGx => "genesis_plus_gx",
+            Core::Swanstation => "swanstation",
         }
     }
 
@@ -69,6 +73,7 @@ impl Core {
             Core::PceFast => "PCE",
             Core::Fceumm => "FCEU",
             Core::GenesisPlusGx => "GPGX",
+            Core::Swanstation => "Swan",
         }
     }
 
@@ -83,6 +88,7 @@ impl Core {
             Core::PceFast => "Beetle PCE Fast",
             Core::Fceumm => "FCEUmm",
             Core::GenesisPlusGx => "Genesis Plus GX",
+            Core::Swanstation => "SwanStation",
         }
     }
 
@@ -96,6 +102,7 @@ impl Core {
             "pce_fast" => Some(Core::PceFast),
             "fceumm" => Some(Core::Fceumm),
             "genesis_plus_gx" => Some(Core::GenesisPlusGx),
+            "swanstation" => Some(Core::Swanstation),
             _ => None,
         }
     }
@@ -111,7 +118,7 @@ impl Core {
             Platform::Gba => &[Core::Mgba, Core::Gpsp],
             Platform::Gb | Platform::Gbc => &[Core::Mgba],
             Platform::Snes => &[Core::Snes9x, Core::Supafaust],
-            Platform::Ps1 => &[Core::PcsxRearmed],
+            Platform::Ps1 => &[Core::PcsxRearmed, Core::Swanstation],
             Platform::Pce => &[Core::PceFast],
             Platform::Nes => &[Core::Fceumm],
             Platform::Md | Platform::Gg | Platform::Sms => &[Core::GenesisPlusGx],
