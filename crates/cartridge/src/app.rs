@@ -1151,6 +1151,13 @@ impl App {
         self.last_led = None;
     }
 
+    /// The CPU held to `khz`, or let run at its top.
+    pub fn set_cpu_cap(&mut self, khz: Option<u32>) {
+        if let Some(power) = self.power.as_mut() {
+            power.set_cpu_cap(khz);
+        }
+    }
+
     pub fn set_rumble(&mut self, strength: u16) {
         if let Some(power) = &mut self.power {
             power.set_rumble(strength);

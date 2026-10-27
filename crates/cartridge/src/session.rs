@@ -56,6 +56,8 @@ impl Drop for Session {
         if self.starting {
             persist::clear_starting(&self.root);
         }
+        // the CPU left free for whatever runs after
+        self.app.set_cpu_cap(None);
     }
 }
 
@@ -293,6 +295,12 @@ impl Session {
             emu.set_volume(self.app.output_volume());
             emu.set_blend(self.app.frame_blend());
         }
+        // a game is held to its system's clock; fast forward, rewind and the menus get it all
+        let playing = matches!(self.app.phase(), Phase::Playing { .. }) && self.emu.is_some();
+        let cap = (playing && !self.fast && !self.rewinding)
+            .then(|| self.app.platform().cpu_khz())
+            .flatten();
+        self.app.set_cpu_cap(cap);
         if let Some((client_id, transport)) = self.app.take_link_transport() {
             match &self.emu {
                 Some(emu) => match self.app.link_player() {

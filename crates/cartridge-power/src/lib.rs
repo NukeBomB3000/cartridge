@@ -62,6 +62,8 @@ pub trait Platform: Send {
     fn backlight_off(&mut self) {
         self.set_backlight(0);
     }
+    /// The CPU held to at most `khz`, or let run at its top with None.
+    fn set_cpu_cap(&mut self, _khz: Option<u32>) {}
     fn battery(&self) -> Option<Battery>;
     fn charge(&self) -> Charge;
     fn set_led(&mut self, state: LedState);

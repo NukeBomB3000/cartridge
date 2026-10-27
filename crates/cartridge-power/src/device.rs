@@ -693,6 +693,17 @@ impl Platform for DevicePlatform {
         self.write_backlight(0);
     }
 
+    fn set_cpu_cap(&mut self, khz: Option<u32>) {
+        let policy = self.sysfs.join("devices/system/cpu/cpufreq/policy0");
+        let Some(top) = read_number(&policy.join("cpuinfo_max_freq")) else {
+            return;
+        };
+        let want = khz.map_or(top, |k| k.min(top));
+        if let Err(e) = fs::write(policy.join("scaling_max_freq"), want.to_string()) {
+            eprintln!("cartridge: cpu cap {want}: {e}");
+        }
+    }
+
     fn battery(&self) -> Option<Battery> {
         let dir = self.battery.as_ref()?;
         let percent = read_number(&dir.join("capacity"))?;

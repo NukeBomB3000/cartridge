@@ -121,6 +121,24 @@ impl Platform {
         )
     }
 
+    /// The CPU clock a game of this system is held to, in kHz, with room to spare in its
+    /// busiest scenes, so the handheld runs cooler and longer on a charge; None for the
+    /// systems that need the whole of it. Measured on the H700: a Game Boy's core needs under
+    /// half a core at 480 MHz, a GBA's or a SNES's all of one.
+    pub fn cpu_khz(self) -> Option<u32> {
+        match self {
+            Platform::Gb
+            | Platform::Gbc
+            | Platform::Gg
+            | Platform::Sms
+            | Platform::Nes
+            | Platform::Pce => Some(720_000),
+            Platform::Md => Some(1_008_000),
+            Platform::Gba => Some(1_200_000),
+            Platform::Snes | Platform::Ps1 => None,
+        }
+    }
+
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states
     /// are too big for the rewind buffer.
     pub fn rewinds(self) -> bool {

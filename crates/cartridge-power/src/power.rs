@@ -7,6 +7,8 @@ pub struct Power {
     level: u8,
     closed: bool,
     timeout: Duration,
+    /// The CPU cap last written, once one has been.
+    cpu_cap: Option<Option<u32>>,
 }
 
 impl Power {
@@ -16,6 +18,15 @@ impl Power {
             level: 0,
             closed: false,
             timeout,
+            cpu_cap: None,
+        }
+    }
+
+    /// The CPU held to at most `khz`, or let run at its top; only a change is written.
+    pub fn set_cpu_cap(&mut self, khz: Option<u32>) {
+        if self.cpu_cap != Some(khz) {
+            self.cpu_cap = Some(khz);
+            self.platform.set_cpu_cap(khz);
         }
     }
 

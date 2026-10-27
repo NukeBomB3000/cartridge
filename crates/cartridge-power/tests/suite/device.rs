@@ -464,3 +464,24 @@ fn the_repair_is_staged_off_the_card_with_its_exfat_checker() {
         .mode();
     assert_eq!(mode & 0o111, 0o111, "the staged checker cannot run");
 }
+
+#[test]
+fn a_cpu_cap_holds_the_clock_down_and_none_lets_it_run_to_its_top() {
+    let d = sysfs("255", "87");
+    let policy = d.path().join("devices/system/cpu/cpufreq/policy0");
+    fs::create_dir_all(&policy).unwrap();
+    fs::write(policy.join("cpuinfo_max_freq"), "1512000\n").unwrap();
+    fs::write(policy.join("scaling_max_freq"), "1512000\n").unwrap();
+    let mut p = platform(&d);
+    let cap = |p: &mut DevicePlatform, khz| {
+        p.set_cpu_cap(khz);
+        fs::read_to_string(policy.join("scaling_max_freq")).unwrap()
+    };
+    assert_eq!(cap(&mut p, Some(720_000)), "720000");
+    assert_eq!(
+        cap(&mut p, Some(9_000_000)),
+        "1512000",
+        "a cap past the top"
+    );
+    assert_eq!(cap(&mut p, None), "1512000");
+}

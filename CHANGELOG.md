@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- A game holds the CPU to what its system needs, so the handheld runs cooler and longer: 720 MHz
+  for the Game Boy, Game Boy Color, Game Gear, Master System, NES and PC Engine, 1008 MHz for
+  the Mega Drive, 1200 MHz for the GBA, the whole 1512 MHz for the SNES and the PlayStation.
+  Fast forward, rewind and the menus get it all. Measured on the RG SP: a Game Boy core needs
+  under half a core even at 480 MHz.
 - The CRT looks follow the game's own lines: a scanline to each, a PlayStation picture of 480
   lines shown as the fields a TV drew it in, the beam soft across and widening where bright,
   and the aperture grille only as strong as the screen has pixels for. PlayStation games no
