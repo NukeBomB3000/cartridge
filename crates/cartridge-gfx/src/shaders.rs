@@ -199,8 +199,8 @@ void main() {
 /// The sharp view with a screen look over it, chosen by `u_mode`: 1 an LCD's subpixel stripes,
 /// 2 its pixel grid, 3 the GBA's round dots, 4 a television's scanlines and 5 a CRT's scanlines
 /// through an aperture grille. The LCD looks follow the game's pixels, which they are drawn
-/// over at whole scales; the scanlines and the CRT follow the screen's own rows and columns,
-/// laid over the picture once it is scaled, so they stay even at 4:3 and stretched. The LCD, grid and dot looks are slot's ports from the libretro
+/// over at whole scales; the scanlines follow the screen's own rows, laid over the picture once
+/// it is scaled, so they stay even at 4:3 and stretched, and the CRT the game's own lines. The LCD, grid and dot looks are slot's ports from the libretro
 /// shader collection (licenses/shaders.txt): LCD3x by Gigaherz and Dot by Themaister, both
 /// public domain, and the grid of zfast_lcd_standard by Greg Hogan, GPL-2.0-or-later.
 pub const GAME_LOOK_FRAG: &str = r#"
@@ -235,6 +235,45 @@ bool white(vec3 c) {
 float paper(vec2 p) {
     return 0.5 * grain(p) + 0.25 * grain(p * 2.0) + 0.25 * grain(p * 4.0);
 }
+vec3 field_row(float x, float y, float pair) {
+    vec3 c = texture2D(u_game, vec2(x, y) / u_src).rgb;
+    if (pair > 0.5) {
+        c = 0.5 * (c + texture2D(u_game, vec2(x, y + 1.0) / u_src).rgb);
+    }
+    return c;
+}
+// A television's picture at `uv`: one scanline to each of the game's lines, a picture of more
+// than 300 lines shown as the fields a set drew it in, two of its lines to a scanline; each
+// line soft across, as a beam is, and a gaussian down that widens where the line is bright;
+// an aperture grille over it only where the screen has the pixels to show one.
+vec3 crt(vec2 uv) {
+    vec2 vis = u_uv.zw * u_src;
+    float pair = vis.y > 300.0 ? 1.0 : 0.0;
+    float lines = vis.y / (1.0 + pair);
+    float ly = uv.y * lines;
+    float sy = u_uv.y * u_src.y + floor(ly) * (1.0 + pair) + 0.5;
+    float tx = u_uv.x * u_src.x + uv.x * vis.x - 0.5;
+    float ix = floor(tx);
+    float fx = smoothstep(0.15, 0.85, tx - ix);
+    vec3 c = mix(field_row(ix + 0.5, sy, pair), field_row(ix + 1.5, sy, pair), fx);
+    float bright = max(max(c.r, c.g), c.b);
+    float width = mix(0.24, 0.42, bright);
+    float px_per_line = u_scale.y * (1.0 + pair);
+    // the beam's middle on a line's first screen row, so at two rows to a line one is lit and
+    // the other dark, rather than both half way
+    float dy = fract(fract(ly) - 0.5 / max(px_per_line, 1.0));
+    dy = min(dy, 1.0 - dy);
+    // with under two screen rows to a line there is no room for a dark gap: the beam fills it
+    float gap = clamp(px_per_line - 1.0, 0.0, 1.0);
+    // the gap between lines never quite black, so the picture keeps its brightness
+    float beam = mix(1.0, 0.45 + 0.55 * exp(-dy * dy / (2.0 * width * width)), gap);
+    c *= beam * mix(1.0, 1.18, gap);
+    float grille = clamp((u_scale.x - 1.5) / 1.5, 0.0, 1.0) * 0.18;
+    float m = mod(floor(gl_FragCoord.x), 3.0);
+    vec3 mask = m < 0.5 ? vec3(1.0, 1.0 - grille, 1.0 - grille)
+        : (m < 1.5 ? vec3(1.0 - grille, 1.0, 1.0 - grille) : vec3(1.0 - grille, 1.0 - grille, 1.0));
+    return min(c * mask * (1.0 + grille * 0.7), vec3(1.0));
+}
 void main() {
     // the curved tube bows the picture out from its middle, a little more down than across,
     // and leaves black past its edges, their corners rounded
@@ -260,10 +299,7 @@ void main() {
     float line = max(edge.x, edge.y);
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
     if (u_mode > 8.5) {
-        c *= 0.7 + 0.3 * sin(fract(texel.y) * 3.141592654);
-        float m = mod(floor(gl_FragCoord.x), 3.0);
-        vec3 mask = m < 0.5 ? vec3(1.0, 0.7, 0.7) : (m < 1.5 ? vec3(0.7, 1.0, 0.7) : vec3(0.7, 0.7, 1.0));
-        c = min(c * mask * 1.35, vec3(1.0)) * tube;
+        c = crt(uv) * tube;
     } else if (u_mode > 7.5) {
         float shade = clamp(floor(lum * 3.0 + 0.5), 0.0, 3.0);
         vec3 p = shade < 0.5 ? vec3(0.06, 0.22, 0.06)
@@ -319,10 +355,7 @@ void main() {
         vec3 bg = (0.86 + 0.14 * paper(gl_FragCoord.xy)) * c;
         c = mix(c, bg, dot(c, vec3(0.2126, 0.7152, 0.0722)));
     } else if (u_mode > 4.5) {
-        c *= 1.0 - 0.35 * row;
-        float m = mod(floor(gl_FragCoord.x), 3.0);
-        vec3 mask = m < 0.5 ? vec3(1.0, 0.7, 0.7) : (m < 1.5 ? vec3(0.7, 1.0, 0.7) : vec3(0.7, 0.7, 1.0));
-        c = min(c * mask * 1.3, vec3(1.0));
+        c = crt(uv);
     } else if (u_mode > 3.5) {
         c = min(c * (1.0 - 0.45 * row) * 1.12, vec3(1.0));
     } else if (u_mode > 2.5) {

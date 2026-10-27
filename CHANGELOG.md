@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The CRT looks follow the game's own lines: a scanline to each, a PlayStation picture of 480
+  lines shown as the fields a TV drew it in, the beam soft across and widening where bright,
+  and the aperture grille only as strong as the screen has pixels for. PlayStation games no
+  longer come out under a coarse, coloured mesh.
 - SELECT+B gives the TV systems ghosting too: each frame shown blended with the last, as a
   TV's phosphor lingered, so flicker drawn as transparency shows. Off until switched on, kept
   apart from the handhelds' LCD ghosting.
