@@ -31,17 +31,26 @@ fn power_press_edge_flushes_immediately_not_on_release() {
 }
 
 #[test]
-fn autosave_fires_at_sixty_seconds_and_not_before() {
+fn the_autosave_takes_the_resume_at_five_minutes_and_not_before() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
-    a.tick_ms(59_999);
+    a.tick_ms(60_000);
+    a.settle_saves();
+    assert!(
+        StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
+            .read_resume()
+            .unwrap()
+            .is_none(),
+        "the minute's autosave took the resume state"
+    );
+    a.tick_ms(299_999);
     assert!(
         StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
             .read_resume()
             .unwrap()
             .is_none()
     );
-    a.tick_ms(60_000);
+    a.tick_ms(300_000);
     a.settle_saves();
     assert!(
         StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
@@ -142,11 +151,15 @@ fn the_autosave_repeats_rather_than_firing_once() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let (snapshot, flushes) = counting();
     let mut a = app_playing_with(d.path(), "Emerald", snapshot);
-    a.tick_ms(60_000);
+    a.tick_ms(300_000);
     assert_eq!(flushes.load(Ordering::Relaxed), 1);
-    a.tick_ms(119_999);
-    assert_eq!(flushes.load(Ordering::Relaxed), 1, "one write per minute");
-    a.tick_ms(120_000);
+    a.tick_ms(599_999);
+    assert_eq!(
+        flushes.load(Ordering::Relaxed),
+        1,
+        "one state per five minutes"
+    );
+    a.tick_ms(600_000);
     assert_eq!(flushes.load(Ordering::Relaxed), 2);
 }
 
@@ -159,13 +172,13 @@ fn a_flush_resets_the_autosave_clock() {
     a.apply(Action::LidClose);
     a.apply(Action::LidOpen);
     assert_eq!(flushes.load(Ordering::Relaxed), 1);
-    a.tick_ms(61_000);
+    a.tick_ms(329_000);
     assert_eq!(
         flushes.load(Ordering::Relaxed),
         1,
-        "the lid wrote 31 s ago, not 61"
+        "the lid wrote 299 s ago, not 300"
     );
-    a.tick_ms(90_000);
+    a.tick_ms(331_000);
     assert_eq!(flushes.load(Ordering::Relaxed), 2);
 }
 
@@ -328,7 +341,7 @@ fn charging_outranks_low_so_a_flat_device_on_a_cable_is_not_red() {
 fn an_autosave_lands_once_the_writes_settle() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
-    a.tick_ms(60_000);
+    a.tick_ms(300_000);
     a.settle_saves();
     assert!(
         StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")
@@ -343,7 +356,7 @@ fn a_lid_close_right_after_an_autosave_leaves_the_lids_state() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let (snapshot, _) = counting();
     let mut a = app_playing_with(d.path(), "Emerald", snapshot);
-    a.tick_ms(60_000);
+    a.tick_ms(300_000);
     a.apply(Action::LidClose);
     a.settle_saves();
     let state = StateRing::new(d.path(), Platform::Gba, Core::Mgba, "Emerald")

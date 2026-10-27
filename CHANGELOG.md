@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The autosave writes a game's save every minute but its resume state only every five, each only
+  when it changed: a state runs to megabytes, and writing one every minute wore the card for
+  little. Ejecting, sleeping, closing the lid and powering off still write both at once.
 - Y on the shelf colours the cart: twelve pigments after slot-fragile's (Ruby Red, Sapphire Blue,
   Emerald Green, Gold, FireRed, LeafGreen, Jet Black, Atomic Purple and others) in solid, clear
   or glittered plastic, the cart taking each change at once; kept in `Config/cart_shell.ini`,

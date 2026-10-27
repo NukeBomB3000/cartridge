@@ -73,6 +73,12 @@ const VOLUME_STEP: u8 = 5;
 
 const AUTOSAVE_MS: Millis = 60_000;
 
+/// How often the autosave takes the resume state too, not just the save RAM: a state runs to
+/// megabytes (a PlayStation game's five, a DS game's more) and changes every minute of play, so
+/// writing it at each autosave wears the card for little; ejecting, sleeping and powering off
+/// still write it at once.
+const STATE_AUTOSAVE_MS: Millis = 300_000;
+
 const BATTERY_CRITICAL: u8 = 5;
 
 /// The least charge a card repair starts on unplugged: a repair cut off by a flat battery could
@@ -407,6 +413,8 @@ pub struct App {
     pub(crate) dozed_at: Millis,
     pub(crate) woke_on_press: bool,
     pub(crate) autosave_at: Millis,
+    /// When the autosave next takes the resume state as well as the save RAM.
+    pub(crate) state_autosave_at: Millis,
     pub(crate) pending_save: Option<std::thread::JoinHandle<()>>,
     pub(crate) battery_at: Millis,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
@@ -591,6 +599,7 @@ impl App {
             dozed_at: 0,
             woke_on_press: false,
             autosave_at: AUTOSAVE_MS,
+            state_autosave_at: STATE_AUTOSAVE_MS,
             pending_save: None,
             battery_at: BATTERY_POLL_MS,
             card_read_only: false,
@@ -2142,7 +2151,7 @@ impl App {
         if self.doze_expired() {
             self.on_doze_timeout();
         }
-        if self.now() >= self.autosave_at {
+        if self.now() >= self.autosave_at.min(self.state_autosave_at) {
             self.autosave();
         }
         if self.now() >= self.battery_at {
@@ -3331,17 +3340,27 @@ impl App {
     }
 
     fn autosave(&mut self) {
-        self.autosave_at = self.now() + AUTOSAVE_MS;
+        let now = self.now();
+        self.autosave_at = now + AUTOSAVE_MS;
+        let with_state = now >= self.state_autosave_at;
+        if with_state {
+            self.state_autosave_at = now + STATE_AUTOSAVE_MS;
+        }
         self.settle_saves();
         let (Some(root), Some(snapshot), Some(cart)) = (&self.root, &self.snapshot, self.seated())
         else {
             return;
         };
-        let Some(state) = snapshot.state() else {
-            eprintln!("cartridge: autosave: the core gave up no state");
-            return;
+        let (state, sav) = if with_state {
+            let Some(state) = snapshot.state() else {
+                eprintln!("cartridge: autosave: the core gave up no state");
+                return;
+            };
+            trusted_write(snapshot.as_ref(), state, "autosave")
+        } else {
+            let sav = snapshot.save_ram().filter(|_| snapshot.save_ram_trusted());
+            (None, sav)
         };
-        let (state, sav) = trusted_write(snapshot.as_ref(), state, "autosave");
         let (root, platform, core, cart) =
             (root.clone(), self.platform, self.core, cart.to_owned());
         let write = move || {
@@ -3368,6 +3387,7 @@ impl App {
     pub fn flush_resume(&mut self) {
         self.settle_saves();
         self.autosave_at = self.now() + AUTOSAVE_MS;
+        self.state_autosave_at = self.now() + STATE_AUTOSAVE_MS;
         let (Some(root), Some(snapshot), Some(cart)) = (&self.root, &self.snapshot, self.seated())
         else {
             return;
