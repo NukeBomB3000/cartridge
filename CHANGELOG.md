@@ -4,8 +4,7 @@
 
 - Nintendo DS games, from `Games/NDS`, on DSperate, built here from its source with frameskip
   (Auto while the sound runs short): both screens in one picture, the top one large. R2
-  fast-forwards as on the other systems and L2 steps the layout (top dominant, vertical,
-  horizontal, picture in picture, top only, bottom only); there is no stylus. SELECT+MENU in a DS game opens the core's own options
+  fast-forwards as on the other systems and L2 swaps the screens; there is no stylus. SELECT+MENU in a DS game opens the core's own options
   (screen layout, stylus, frameskip and the rest), each change taken at once and kept in
   `Config/core_options.ini`.
 - The core picker opens a PlayStation disc on the console's own mainboard, PU-18's look: the

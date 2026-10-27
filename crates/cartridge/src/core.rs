@@ -370,15 +370,15 @@ pub fn core_options(
             put("swanstation_CPU_ExecutionMode", "Recompiler");
             put("swanstation_Main_ApplyGameSettings", "true");
         }
-        // DSperate lays the top screen out large over the bottom one, its JIT on; there is no
-        // stylus, its tap on R3, which the handhelds lack, as R2 fast-forwards and L2 steps the
-        // layout here
+        // DSperate lays the top screen out large over the bottom one, its JIT on; L2 swaps the
+        // screens; there is no stylus, its tap on R3, which the handhelds lack, as R2
+        // fast-forwards here
         Core::Dsperate => {
             put("dsperate_layout", "Top Dominant");
             put("dsperate_cpu_engine", "JIT (AArch64)");
             put("dsperate_stylus_control", "Off");
             put("dsperate_touch_button", "R3");
-            put("dsperate_swap_button", "Off");
+            put("dsperate_swap_button", "L2");
             put("dsperate_mic_button", "Off");
             put("dsperate_show_cursor", "Off");
             // skips drawing a frame while the sound runs short, as cartridge asks

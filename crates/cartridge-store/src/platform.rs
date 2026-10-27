@@ -149,8 +149,8 @@ impl Platform {
     }
 
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states
-    /// are too big for the rewind buffer, nor on the DS, whose are bigger still: its L2 steps
-    /// the screens' layout instead.
+    /// are too big for the rewind buffer, nor on the DS, whose are bigger still: its L2 swaps
+    /// the screens instead.
     pub fn rewinds(self) -> bool {
         !matches!(self, Platform::Ps1 | Platform::Nds)
     }

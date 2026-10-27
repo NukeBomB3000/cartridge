@@ -7,6 +7,9 @@ pub struct Pad {
     mask: u16,
     /// L2 and R2 are the game's, as the PlayStation's are: only then do they reach its pad.
     shoulders: bool,
+    /// L2 reaches the pad too where nothing rewinds on it, as on the DS, whose core swaps its
+    /// screens with it.
+    l2: bool,
 }
 
 impl Pad {
@@ -30,8 +33,12 @@ impl Pad {
     /// any still held are let go.
     pub fn set_keys(&mut self, keys: Keys) {
         self.shoulders = keys.game_l2_r2;
+        self.l2 = keys.game_l2_r2 || !keys.rewind;
         if !self.shoulders {
-            self.mask &= !(ButtonMask::L2 | ButtonMask::R2);
+            self.mask &= !ButtonMask::R2;
+        }
+        if !self.l2 {
+            self.mask &= !ButtonMask::L2;
         }
     }
 
@@ -55,7 +62,7 @@ impl Pad {
             Btn::Y => ButtonMask::Y,
             Btn::L1 => ButtonMask::L,
             Btn::R1 => ButtonMask::R,
-            Btn::L2 if self.shoulders => ButtonMask::L2,
+            Btn::L2 if self.l2 => ButtonMask::L2,
             Btn::R2 if self.shoulders => ButtonMask::R2,
             Btn::Start => ButtonMask::START,
             Btn::Select => ButtonMask::SELECT,
