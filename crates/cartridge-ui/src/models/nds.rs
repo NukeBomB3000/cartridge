@@ -46,9 +46,10 @@ pub const H: u32 = 246;
 /// How far apart cards stand on the shelf.
 pub const PITCH: f32 = 252.0;
 
-/// The label, in the face's pixels: the well's inside, from 2 mm in at the sides and 3 mm down
-/// from the top to 28.5 mm, its corners a little round.
-const LABEL: (u32, u32, u32, u32) = (14, 23, 204, 176);
+/// The label, in the face's pixels: the well's inside, 3.3 mm in at the sides and 1.4 mm down
+/// from the top to 30.7 mm, its corners a little round: the shape of ScreenScraper's scans of DS
+/// labels, 0.9 as wide as tall, so none of a scan's NINTENDO DS logo or edge is cut.
+const LABEL: (u32, u32, u32, u32) = (23, 10, 186, 206);
 const LABEL_ROUND: u32 = 3;
 
 /// How far in from the outline a clear card's plastic lightens at its rim, in pixels.
