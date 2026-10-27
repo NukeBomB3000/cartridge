@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The libretro core, built beside DSperate's own frontends from src/frontend/libretro.
+add_library(dsperate_libretro SHARED libretro.cpp)
+find_package(Threads REQUIRED)
+target_link_libraries(dsperate_libretro PRIVATE dsperate_core Threads::Threads ${CMAKE_DL_LIBS})
+set_target_properties(dsperate_libretro PROPERTIES PREFIX "" OUTPUT_NAME "dsperate_libretro")
+# the device has libstdc++, but carry it so a newer toolchain's never asks for more than it has
+target_link_options(dsperate_libretro PRIVATE -static-libstdc++ -static-libgcc -Wl,--no-undefined)

@@ -3,6 +3,8 @@
 //! it has a shelf.
 //!
 //!   bench CORE ROM [FRAMES] [OUT.ppm]
+//!
+//! BENCH_OPTIONS="key=value,key=value" sets core options before the game loads.
 
 use std::path::Path;
 use std::time::Instant;
@@ -25,6 +27,11 @@ fn main() {
         Path::new("/tmp"),
     )
     .unwrap_or_else(|e| panic!("open: {e}"));
+    for pair in std::env::var("BENCH_OPTIONS").unwrap_or_default().split(',') {
+        if let Some((key, value)) = pair.split_once('=') {
+            core.set_option(key, value);
+        }
+    }
     core.load(Path::new(&args[2]))
         .unwrap_or_else(|e| panic!("load: {e}"));
     let fps = core.av_info().fps;

@@ -371,6 +371,8 @@ pub fn core_options(
             put("dsperate_swap_button", "L3");
             put("dsperate_mic_button", "Off");
             put("dsperate_show_cursor", "On");
+            // skips drawing a frame while the sound runs short, as cartridge asks
+            put("dsperate_frameskip", "Auto");
         }
         Core::PceFast => put("pce_fast_frameskip", "auto"),
         Core::Fceumm => {
