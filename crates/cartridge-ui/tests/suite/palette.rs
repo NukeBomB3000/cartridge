@@ -20,7 +20,7 @@ use cartridge_ui::BACKDROP_PALETTE;
 ///   console.log(`("${name}", [${hex.join(", ")}]),`);
 /// }'
 /// ```
-const PALETTE_JS: [(&str, [&str; 13]); 8] = [
+const PALETTE_JS: [(&str, [&str; 13]); 16] = [
     (
         "night",
         [
@@ -75,6 +75,62 @@ const PALETTE_JS: [(&str, [&str; 13]); 8] = [
         [
             "#302208", "#261300", "#6a3d01", "#4f300d", "#765020", "#845a1a", "#a57221", "#b0731b",
             "#be9732", "#e6ab47", "#f8b83f", "#f2c87d", "#f5e5bb",
+        ],
+    ),
+    (
+        "indigo",
+        [
+            "#1a1640", "#0e162f", "#34467a", "#29365a", "#495586", "#555e99", "#6d76c0", "#6a7ccb",
+            "#9c8fe4", "#a9aeff", "#bbbeff", "#c8c9ff", "#e6e2ff",
+        ],
+    ),
+    (
+        "sky",
+        [
+            "#0c2a3e", "#001b26", "#005169", "#003e52", "#1c617e", "#1c6c91", "#2687b7", "#028ebe",
+            "#59a2e6", "#60c2ff", "#88cdff", "#a1d6ff", "#d4e8ff",
+        ],
+    ),
+    (
+        "mint",
+        [
+            "#0e2e26", "#021e10", "#185639", "#19412d", "#2d664e", "#29735a", "#339072", "#359670",
+            "#39b3a1", "#59cfae", "#52e0bd", "#8ae3cc", "#c1f2e9",
+        ],
+    ),
+    (
+        "olive",
+        [
+            "#262a0c", "#1c1800", "#534a00", "#3f3907", "#5f5b1f", "#68681d", "#828326", "#8c8617",
+            "#8fa94c", "#b7c053", "#c1d052", "#cad888", "#ddedc4",
+        ],
+    ),
+    (
+        "rose",
+        [
+            "#36122a", "#240f23", "#633662", "#4a2b49", "#73476d", "#854e79", "#a76297", "#ac65a2",
+            "#d57ba9", "#ef94d2", "#ffa1dd", "#ffb4e0", "#ffdae9",
+        ],
+    ),
+    (
+        "coral",
+        [
+            "#3a1810", "#2b0d0e", "#723235", "#55292a", "#804642", "#924d45", "#b76157", "#c0625d",
+            "#dd815e", "#ff9682", "#ffad9a", "#ffbcab", "#ffded0",
+        ],
+    ),
+    (
+        "brown",
+        [
+            "#2a1c12", "#22140e", "#604135", "#48322a", "#6e5245", "#7c5b4a", "#9b735d", "#a37661",
+            "#bb9472", "#dcab8c", "#eeb893", "#ecc6ac", "#f5e2d1",
+        ],
+    ),
+    (
+        "wine",
+        [
+            "#300c22", "#240e22", "#643560", "#4b2b48", "#75476b", "#874d75", "#a96193", "#af649e",
+            "#d77ba4", "#f293cd", "#ffa3d7", "#ffb5db", "#ffdbe7",
         ],
     ),
 ];
@@ -143,7 +199,7 @@ fn night_turns_the_ramp_to_plain_greys() {
 
 #[test]
 fn a_colour_past_the_last_is_night() {
-    for colour in [BACKDROP_COLOURS.len() as u8, 9, 200, u8::MAX] {
+    for colour in [BACKDROP_COLOURS.len() as u8, 17, 200, u8::MAX] {
         assert_eq!(palette(colour), named("night"), "{colour}");
     }
 }

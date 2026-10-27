@@ -1589,7 +1589,7 @@ impl App {
     /// The pattern the frontend should make a picture of, when the background is one.
     pub fn backdrop_pattern(&self) -> Option<(BackdropStyle, u8)> {
         let b = self.backdrop();
-        b.style.moves().then_some((b.style, b.colour))
+        b.style.patterned().then_some((b.style, b.colour))
     }
 
     pub fn set_backdrop_face(&mut self, tex: TexId, w: u32, style: BackdropStyle, colour: u8) {

@@ -44,6 +44,14 @@ pub const BACKDROP_PALETTE: [[u8; 3]; BACKDROP_COLOURS.len()] = [
     [0x29, 0x14, 0x31],
     [0x30, 0x0f, 0x16],
     [0x30, 0x22, 0x08],
+    [0x1a, 0x16, 0x40],
+    [0x0c, 0x2a, 0x3e],
+    [0x0e, 0x2e, 0x26],
+    [0x26, 0x2a, 0x0c],
+    [0x36, 0x12, 0x2a],
+    [0x3a, 0x18, 0x10],
+    [0x2a, 0x1c, 0x12],
+    [0x30, 0x0c, 0x22],
 ];
 
 /// A colour's name to show, from the key cartridge.state keeps it by.
@@ -56,6 +64,14 @@ pub fn backdrop_colour_name(colour: u8) -> &'static str {
         Some("plum") => "Plum",
         Some("crimson") => "Crimson",
         Some("amber") => "Amber",
+        Some("indigo") => "Indigo",
+        Some("sky") => "Sky",
+        Some("mint") => "Mint",
+        Some("olive") => "Olive",
+        Some("rose") => "Rose",
+        Some("coral") => "Coral",
+        Some("brown") => "Brown",
+        Some("wine") => "Wine",
         _ => "Night",
     }
 }
@@ -178,7 +194,67 @@ fn tile_lift(style: BackdropStyle, tx: u32, ty: u32) -> f32 {
                 0.0
             }
         }
-        BackdropStyle::Bits | BackdropStyle::Solid | BackdropStyle::Wallpaper => 0.0,
+        BackdropStyle::GameBoy => {
+            // a dot three art pixels square, a pixel of seam right and below
+            if tx % 4 == 3 || ty % 4 == 3 {
+                -0.35
+            } else {
+                0.06
+            }
+        }
+        BackdropStyle::ThreeDs => {
+            if (tx + ty) % 10 < 5 {
+                0.06
+            } else {
+                0.0
+            }
+        }
+        _ => 0.0,
+    }
+}
+
+/// How far the art pixel (`ax`, `ay`) of a whole canvas `aw` by `ah` art pixels lifts the
+/// colour, for the patterns that are a picture rather than a tile.
+fn picture_lift(style: BackdropStyle, ax: u32, ay: u32, aw: u32, ah: u32) -> f32 {
+    let down = ay as f32 / ah.max(1) as f32;
+    match style {
+        // the DS Lite's menu: every other line a shade up, the whole a little lighter on top
+        BackdropStyle::Ds => {
+            let fade = 0.1 * (1.0 - down);
+            fade + if ay % 2 == 0 { 0.05 } else { 0.0 }
+        }
+        // the PSP's: two ribbons rising and falling across, each a soft band with a bright edge
+        BackdropStyle::Psp => {
+            let fade = 0.08 * (1.0 - down);
+            let x = ax as f32 / aw.max(1) as f32;
+            let tau = std::f32::consts::TAU;
+            let ribbon = |mid: f32, amp: f32, waves: f32, phase: f32, width: f32| {
+                let at = mid + amp * (tau * waves * x + phase).sin();
+                let off = (down - at) / width;
+                if (0.0..1.0).contains(&off) {
+                    let edge = if off < 0.04 { 0.16 } else { 0.0 };
+                    edge + 0.07 * (1.0 - off)
+                } else {
+                    0.0
+                }
+            };
+            fade + ribbon(0.58, 0.06, 1.0, 0.6, 0.12) + ribbon(0.66, 0.05, 1.5, 2.4, 0.08)
+        }
+        // the Switch's: lighter on top, a band behind the games across the middle
+        BackdropStyle::Switch => {
+            let fade = 0.07 * (1.0 - down);
+            let band = (0.24..0.76).contains(&down);
+            let rim = band
+                && ((down - 0.24).abs() < 1.0 / ah as f32 || (down - 0.76).abs() < 1.0 / ah as f32);
+            fade + if rim {
+                0.1
+            } else if band {
+                0.035
+            } else {
+                0.0
+            }
+        }
+        _ => 0.0,
     }
 }
 
@@ -215,6 +291,10 @@ pub fn backdrop_pattern_face(style: BackdropStyle, colour: u8) -> Option<UndoFac
                     }
                 }
                 BackdropStyle::Solid | BackdropStyle::Wallpaper => return None,
+                BackdropStyle::Ds | BackdropStyle::Psp | BackdropStyle::Switch => tint(
+                    base,
+                    picture_lift(style, x / ART, y / ART, w / ART, h / ART),
+                ),
                 tiled => tint(base, tile_lift(tiled, (x / ART) % TILE, (y / ART) % TILE)),
             };
             rgba.extend_from_slice(&px);

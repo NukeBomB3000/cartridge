@@ -117,7 +117,7 @@ fn a_card_that_never_picked_drifts_a_night_grid_or_shows_its_wallpaper() {
         Backdrop {
             style: BackdropStyle::Bits,
             moving: false,
-            colour: 7
+            colour: 15
         },
         "a colour off the end of the palette was kept"
     );
@@ -151,7 +151,22 @@ fn left_and_right_go_round_the_styles_and_each_shows_only_the_rows_it_uses() {
         BackdropStyle::Dither,
         BackdropStyle::Rivets,
         BackdropStyle::Bits,
+        BackdropStyle::GameBoy,
+        BackdropStyle::ThreeDs,
     ] {
+        if style == BackdropStyle::ThreeDs {
+            // the DS's lines stand still: no Motion row
+            r.press(Btn::Right);
+            assert_eq!(r.a.backdrop().style, BackdropStyle::Ds);
+            assert_eq!(
+                r.rows(),
+                [
+                    choice("Background", "DS"),
+                    choice("Colour", "Night"),
+                    choice("Font", "Bold")
+                ]
+            );
+        }
         r.press(Btn::Right);
         assert_eq!(r.a.backdrop().style, style);
         assert_eq!(
@@ -164,6 +179,10 @@ fn left_and_right_go_round_the_styles_and_each_shows_only_the_rows_it_uses() {
             ],
             "{style:?} lost a row"
         );
+    }
+    for still in [BackdropStyle::Psp, BackdropStyle::Switch] {
+        r.press(Btn::Right);
+        assert_eq!(r.a.backdrop().style, still);
     }
     r.press(Btn::Right);
     assert_eq!(r.a.backdrop().style, BackdropStyle::Solid);
@@ -205,7 +224,7 @@ fn motion_and_colour_change_and_every_change_is_kept_in_app_state() {
     r.press(Btn::Down);
     assert_eq!(r.sel(), Sel::Colour);
     r.press(Btn::Left);
-    assert_eq!(r.a.backdrop().colour, 7, "the colours did not wrap");
+    assert_eq!(r.a.backdrop().colour, 15, "the colours did not wrap");
     r.press(Btn::A);
     r.press(Btn::A);
     assert_eq!(r.a.backdrop().colour, 1);

@@ -27,6 +27,14 @@ window.CartridgePalette = (() => {
     plum: '#291431',
     crimson: '#300f16',
     amber: '#302208',
+    indigo: '#1a1640',
+    sky: '#0c2a3e',
+    mint: '#0e2e26',
+    olive: '#262a0c',
+    rose: '#36122a',
+    coral: '#3a1810',
+    brown: '#2a1c12',
+    wine: '#300c22',
   };
 
   // Mega Man Zero's menu colours, darkest first: the ramp every backdrop colour turns.
