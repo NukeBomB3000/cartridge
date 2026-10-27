@@ -493,6 +493,28 @@ mod tests {
         );
     }
 
+    /// Every side takes its colour from the plastic just inside its edge, never from the label:
+    /// a side sampled in the label would show the label's colour standing out past the face.
+    #[test]
+    fn no_side_takes_its_colour_from_the_label() {
+        for model in CartModel::ALL {
+            if model == CartModel::Disc {
+                continue;
+            }
+            let spec = crate::cart::spec(model);
+            let (lx, ly, lw, lh) = spec.label;
+            for v in cart_mesh(model).iter().filter(|v| v.normal[2] == 0.0) {
+                let (x, y) = (v.uv[0] * spec.w as f32, v.uv[1] * spec.h as f32);
+                let inside =
+                    x > lx as f32 && x < (lx + lw) as f32 && y > ly as f32 && y < (ly + lh) as f32;
+                assert!(
+                    !inside,
+                    "{model:?} samples its side at {x:.0},{y:.0}, in its label"
+                );
+            }
+        }
+    }
+
     /// Only the Super Famicom, HuCard, DS card, Famicom and Mega Drive labels are round at their
     /// corners: every other shape's goes through the square label's drawing untouched.
     #[test]

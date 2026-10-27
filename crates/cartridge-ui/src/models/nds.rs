@@ -1,7 +1,8 @@
 //! The Nintendo DS Game Card, NTR-005: 33 by 35 mm and 3.8 mm thick, stood upright with its
 //! contacts at the foot, the way it goes into the console.
 //!
-//! It is drawn 4 units to the millimetre, 132 by 140. Its corners are rounded 1.5 mm; its label
+//! It is drawn 8 units to the millimetre, 264 by 280, so the band its sides take their colour
+//! from, a few units in from its edge, is the plastic and not the label. Its corners are rounded 1.5 mm; its label
 //! fills a shallow well over nearly all the face, as a real card's does, so a scanned label,
 //! which carries the NINTENDO DS logo itself, is shown whole; under it a grip groove runs across
 //! the foot and an arrow moulded below it points into the slot. The groove, the arrow and the
@@ -22,19 +23,19 @@ pub const THICK: f32 = 3.8 / 33.0;
 /// size it stands at, so its label lands a texel to a pixel there.
 pub const SHELF_SCALE: f32 = 1.0;
 
-/// The card's outline, right half, in drawing units (132 by 140), clockwise from the top: each
+/// The card's outline, right half, in drawing units (264 by 280), clockwise from the top: each
 /// round corner in three cuts. The left half is its mirror.
 const HALF: &[(f32, f32)] = &[
-    (126.0, 0.0),
-    (129.0, 0.8),
-    (131.2, 3.0),
-    (132.0, 6.0),
-    (132.0, 134.0),
-    (131.2, 137.0),
-    (129.0, 139.2),
-    (126.0, 140.0),
+    (252.0, 0.0),
+    (258.0, 1.6),
+    (262.4, 6.0),
+    (264.0, 12.0),
+    (264.0, 268.0),
+    (262.4, 274.0),
+    (258.0, 278.4),
+    (252.0, 280.0),
 ];
-const UNITS: (f32, f32) = (132.0, 140.0);
+const UNITS: (f32, f32) = (264.0, 280.0);
 
 /// The size of the face in pixels: about 7 to the millimetre, so the small card's label reads
 /// and it stands as tall as a HuCard's label beside it. Its half is an even number of pixels
