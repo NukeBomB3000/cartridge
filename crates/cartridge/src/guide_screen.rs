@@ -15,7 +15,7 @@ use cartridge_gfx::{out_h, out_w, Draw, TexId};
 use cartridge_input::{Action, Btn};
 use cartridge_ui::guide::{
     decode, is_guide_file, lay_out, max_top, parse, render_page, text_area, Advances, Block,
-    Glyphs, Laid, Page, GUIDE_SIZES, GUIDE_SIZE_DEFAULT,
+    Glyphs, GuideInk, Laid, Page, GUIDE_SIZES, GUIDE_SIZE_DEFAULT,
 };
 use cartridge_ui::{clean_label, Toast};
 
@@ -460,11 +460,13 @@ impl App {
     /// The open guide's page, when it has changed since it was last drawn: its pixels, the
     /// screen's size.
     pub fn take_guide_page(&mut self) -> Option<Vec<u8>> {
+        let palette = self.palette();
         let screen = self.guide.as_mut()?;
         if !screen.stale {
             return None;
         }
         screen.stale = false;
+        let ink = GuideInk::of(palette);
         let keys = if screen.guides.len() > 1 {
             KEYS_MORE
         } else {
@@ -473,6 +475,7 @@ impl App {
         let page = Page {
             title: &screen.title,
             keys,
+            ink,
         };
         Some(render_page(
             &mut screen.glyphs,

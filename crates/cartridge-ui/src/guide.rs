@@ -10,6 +10,7 @@
 //! Every word remembers where it is in the file, so a place in the guide outlives the size of
 //! the text it was read at.
 
+use crate::kit::palette::Palette;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -30,12 +31,36 @@ const MONO_LEAST: f32 = 8.0;
 pub const GUIDE_HEAD_H: u32 = 26;
 pub const GUIDE_FOOT_H: u32 = 22;
 
-const BG: [u8; 3] = [0x16, 0x17, 0x1c];
-const BAND: [u8; 3] = [0x26, 0x28, 0x33];
-const BODY: [u8; 3] = [0xe8, 0xe4, 0xd8];
-const HEAD: [u8; 3] = [0xff, 0xc8, 0x57];
-const DIM: [u8; 3] = [0x9a, 0x9c, 0xa8];
-const MONO_INK: [u8; 3] = [0xbc, 0xdc, 0xc8];
+/// The guide's colours, taken from the theme's: the page as dark as the theme goes so the text
+/// stands out, the bands a panel's well, the text its cream, and headings, tables and art in the
+/// theme's lighter tones.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct GuideInk {
+    pub bg: [u8; 3],
+    pub band: [u8; 3],
+    pub body: [u8; 3],
+    pub head: [u8; 3],
+    pub dim: [u8; 3],
+    pub mono: [u8; 3],
+}
+
+impl GuideInk {
+    pub fn of(pal: &Palette) -> GuideInk {
+        GuideInk {
+            bg: mix(pal.dark, [0, 0, 0], 0.35),
+            band: pal.well,
+            body: pal.cream,
+            head: pal.label,
+            dim: pal.dim,
+            mono: mix(pal.cream, pal.frame_hi, 0.4),
+        }
+    }
+}
+
+fn mix(a: [u8; 3], b: [u8; 3], t: f32) -> [u8; 3] {
+    let m = |x: u8, y: u8| (x as f32 + (y as f32 - x as f32) * t).round() as u8;
+    [m(a[0], b[0]), m(a[1], b[1]), m(a[2], b[2])]
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Word {
@@ -1193,6 +1218,7 @@ impl Canvas<'_> {
 pub struct Page<'a> {
     pub title: &'a str,
     pub keys: &'a str,
+    pub ink: GuideInk,
 }
 
 /// The guide's text area on a `w` by `h` screen, `[x, y, w, h]` in screen pixels.
@@ -1221,6 +1247,7 @@ pub fn render_page(
     w: u32,
     h: u32,
 ) -> Vec<u8> {
+    let ink = page.ink;
     let mut rgba = vec![0u8; (w * h * 4) as usize];
     let [ax, ay, aw, ah] = text_area(w, h);
     let mut c = Canvas {
@@ -1228,14 +1255,14 @@ pub fn render_page(
         w,
         clip: (0, h as i32),
     };
-    c.fill(0, 0, w as i32, h as i32, BG);
-    c.fill(0, 0, w as i32, GUIDE_HEAD_H as i32, BAND);
+    c.fill(0, 0, w as i32, h as i32, ink.bg);
+    c.fill(0, 0, w as i32, GUIDE_HEAD_H as i32, ink.band);
     c.fill(
         0,
         (h - GUIDE_FOOT_H) as i32,
         w as i32,
         GUIDE_FOOT_H as i32,
-        BAND,
+        ink.band,
     );
 
     let band_px = 14.0;
@@ -1256,7 +1283,7 @@ pub fn render_page(
         &right,
         w as f32 - ax as f32 - rw,
         band_base(0, GUIDE_HEAD_H),
-        DIM,
+        ink.dim,
         false,
     );
     let mut title = page.title.to_string();
@@ -1272,7 +1299,7 @@ pub fn render_page(
         &title,
         ax as f32,
         band_base(0, GUIDE_HEAD_H),
-        HEAD,
+        ink.head,
         true,
     );
     let kw = adv.width(Face::Sans, page.keys, 12.0);
@@ -1283,7 +1310,7 @@ pub fn render_page(
         page.keys,
         ((w as f32 - kw) / 2.0).max(4.0),
         (h - GUIDE_FOOT_H / 2) as i32 + 4,
-        DIM,
+        ink.dim,
         false,
     );
 
@@ -1296,16 +1323,16 @@ pub fn render_page(
         }
         if line.rule {
             let mid = (y + line.h / 2.0) as i32;
-            c.fill(ax as i32, mid, aw as i32, 1, DIM);
+            c.fill(ax as i32, mid, aw as i32, 1, ink.dim);
             continue;
         }
         let baseline = (y + line.base).round() as i32;
         for run in &line.runs {
-            let ink = match run.ink {
-                Ink::Body => BODY,
-                Ink::Head => HEAD,
-                Ink::Dim => DIM,
-                Ink::Mono => MONO_INK,
+            let colour = match run.ink {
+                Ink::Body => ink.body,
+                Ink::Head => ink.head,
+                Ink::Dim => ink.dim,
+                Ink::Mono => ink.mono,
             };
             c.text(
                 glyphs,
@@ -1314,7 +1341,7 @@ pub fn render_page(
                 &run.text,
                 ax as f32 + run.x,
                 baseline,
-                ink,
+                colour,
                 run.bold,
             );
         }
@@ -1324,7 +1351,7 @@ pub fn render_page(
         let track = ah as f32;
         let thumb = (track * track / laid.height).max(12.0);
         let ty = ay as f32 + (track - thumb) * if max > 0.0 { top / max } else { 0.0 };
-        c.fill((w - 3) as i32, ty as i32, 2, thumb as i32, DIM);
+        c.fill((w - 3) as i32, ty as i32, 2, thumb as i32, ink.dim);
     }
     rgba
 }

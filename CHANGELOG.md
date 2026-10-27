@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The game guide takes its colours from Settings > Theme > Colour: the page in the theme's
+  darkest tone, the bands a panel's, headings and tables in its lighter tones.
 - The boot logo is a Game Boy Advance cart with Cartridge on its label (`task bootlogos:cart`).
 - Brightness has 20 steps instead of 9, smallest at the dim end, and its lowest step keeps the
   backlight on, as dim as it goes; only the closed lid turns it off. A brightness saved on the

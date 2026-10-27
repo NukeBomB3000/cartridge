@@ -75,7 +75,11 @@ fn nothing_shows_until_something_is_adjusted() {
 
 #[test]
 fn volume_reads_against_100_not_the_nine_step_scale() {
-    assert_eq!(lit(HudKind::Brightness, 20), 20, "brightness 20 is not full");
+    assert_eq!(
+        lit(HudKind::Brightness, 20),
+        20,
+        "brightness 20 is not full"
+    );
     assert_eq!(
         lit(HudKind::Volume, 9),
         2,

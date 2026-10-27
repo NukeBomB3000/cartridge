@@ -137,3 +137,19 @@ fn a_place_in_the_guide_outlives_the_size_it_was_read_at() {
     let para = |s: usize| src[..s].matches("Absatz").count();
     assert_eq!(para(back), para(at), "landed in another paragraph");
 }
+
+#[test]
+fn the_guide_takes_its_colours_from_the_theme() {
+    use cartridge_ui::guide::GuideInk;
+    use cartridge_ui::kit::palette::palette;
+    let luma = |c: [u8; 3]| c[0] as u32 * 3 + c[1] as u32 * 6 + c[2] as u32;
+    for colour in 0..8 {
+        let ink = GuideInk::of(palette(colour));
+        assert_eq!(ink.body, palette(colour).cream);
+        assert!(
+            luma(ink.body) > luma(ink.bg) * 4,
+            "theme {colour}: text too faint"
+        );
+    }
+    assert_ne!(GuideInk::of(palette(7)), GuideInk::of(palette(3)));
+}
