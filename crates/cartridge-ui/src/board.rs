@@ -168,7 +168,8 @@ pub fn board_face(cart: &Cart) -> CartFace {
         latches(&mut face, &plastic);
     }
     let mut face = cart_face(face);
-    over(&mut face, &rom_marking_face(&cart.stem), ROM_X, ROM_Y);
+    let (rx, ry) = rom_at(cart.platform);
+    over(&mut face, &rom_marking_face(&cart.stem), rx, ry);
     face
 }
 
@@ -617,13 +618,32 @@ pub const SNES_SOCKETS: Sockets = Sockets {
     chip_h: CHIP_H,
 };
 
+/// Where the ROM chip, which carries the game's title, lies on `platform`'s board: on the Game
+/// Boy's upright board at its top left, on every other where the GBA's lies.
+pub fn rom_at(platform: Platform) -> (u32, u32) {
+    match platform {
+        Platform::Gb | Platform::Gbc => (GB_ROM_X, GB_ROM_Y),
+        _ => (ROM_X, ROM_Y),
+    }
+}
+
+/// The Game Boy board's sockets, Gambatte's then mGBA's: side by side under its ROM, as wide
+/// apart as its upright board lets them.
+pub const GB_SOCKETS: Sockets = Sockets {
+    u: [54.0, 99.0],
+    v: 56.0,
+    w: SOCKET_W,
+    h: SOCKET_H,
+    chip_w: CHIP_W,
+    chip_h: CHIP_H,
+};
+
 /// The sockets on the board of a `platform` cart.
 pub fn sockets_for(platform: Platform) -> Sockets {
     match platform {
         Platform::Snes => SNES_SOCKETS,
+        Platform::Gb | Platform::Gbc => GB_SOCKETS,
         Platform::Gba
-        | Platform::Gb
-        | Platform::Gbc
         | Platform::Ps1
         | Platform::Pce
         | Platform::Nes
@@ -645,8 +665,8 @@ pub fn sockets_of(core: Core) -> Sockets {
         | Core::Fceumm
         | Core::GenesisPlusGx
         | Core::Swanstation
-        | Core::Dsperate
-        | Core::Gambatte => GBA_SOCKETS,
+        | Core::Dsperate => GBA_SOCKETS,
+        Core::Gambatte => GB_SOCKETS,
     }
 }
 
@@ -1222,23 +1242,23 @@ const PS1_TRACES: &[&[(i32, i32)]] = &[
 
 const PS1_VIAS: &[(i32, i32)] = &[(80, 50), (112, 34), (176, 50), (50, 78), (116, 70)];
 
-/// A Game Boy cart opened from the back, after DMG-BEAN-02: the shell's back with its notched
-/// corner and the screw at its top; the board inside it with the mask ROM, carrying the title,
-/// where a GBA cart's ROM lies, the MBC and the save RAM above the sockets beside the cell that
-/// keeps it, and 32 contacts along the foot.
+/// A Game Boy cart opened from the back, after DMG-BEAN-02, upright as the cart is: the shell's
+/// back, nearly square, with its notched corner; the board in it with the mask ROM, carrying the
+/// title, at its top left, the MBC and the cell that keeps the save RAM beside it, the sockets
+/// under them and the contacts along the foot.
 fn gb_board(face: &mut UndoFace, p: &Plastic) {
-    const NOTCH: i32 = 10;
+    let [sx, sy, sw, sh] = GB_SHELL;
+    const NOTCH: i32 = 9;
     const RIM: i32 = 3;
-    let (w, h) = (BOARD_W as i32, BOARD_H as i32);
-    // the shell: square but for the notch at its top right and its foot's rounded corners
     let side = |x: i32, y: i32| {
-        let notch = x >= w - NOTCH + y;
-        let round = rounded(y, h, &[1], &[3, 1, 1]);
-        notch || x < round || x >= w - round
+        let (x, y) = (x - sx, y - sy);
+        let round = rounded(y, sh, &[1], &[3, 1, 1]);
+        x >= sw - NOTCH + y || x < round || x >= sw - round
     };
-    let inside = |x: i32, y: i32| (0..w).contains(&x) && (0..h).contains(&y) && !side(x, y);
-    for y in 0..h {
-        for x in 0..w {
+    let inside =
+        |x: i32, y: i32| (sx..sx + sw).contains(&x) && (sy..sy + sh).contains(&y) && !side(x, y);
+    for y in sy..sy + sh {
+        for x in sx..sx + sw {
             if !inside(x, y) {
                 continue;
             }
@@ -1248,16 +1268,15 @@ fn gb_board(face: &mut UndoFace, p: &Plastic) {
             dot(face, x, y, if edge { p.deep } else { p.face });
         }
     }
-    for y in RIM..h - RIM {
-        for x in RIM..w - RIM {
-            let well = inside(x - RIM, y) && inside(x + RIM, y) && inside(x, y - RIM);
-            if !well {
+    for y in sy + RIM..sy + sh - RIM {
+        for x in sx + RIM..sx + sw - RIM {
+            if !(inside(x - RIM, y) && inside(x + RIM, y) && inside(x, y - RIM)) {
                 continue;
             }
-            let shade = match y - RIM {
+            let shade = match y - sy - RIM {
                 0 | 1 => p.wall_deep,
                 2..=4 => p.wall,
-                _ if x - RIM < 3 => p.wall,
+                _ if x - sx - RIM < 3 => p.wall,
                 _ => p.floor,
             };
             dot(face, x, y, shade);
@@ -1284,55 +1303,58 @@ fn gb_board(face: &mut UndoFace, p: &Plastic) {
     for &(x, y) in GB_VIAS {
         via(face, x, y);
     }
-    // 32 contacts, three pixels of gold and two of board, down to the board's foot
-    for n in 0..32 {
-        let x = bx + 4 + n * 5;
-        fill(face, [x, by + bh - 14, 3, 14], GOLD);
-        fill(face, [x + 2, by + bh - 13, 1, 13], GOLD_DARK);
+    // 32 contacts, two pixels of gold and one of board, down to the board's foot
+    for n in 0..30 {
+        let x = bx + 2 + n * 3;
+        fill(face, [x, by + bh - 11, 2, 11], GOLD);
+        dot(face, x + 1, by + bh - 10, GOLD_DARK);
     }
 
-    // the mask ROM, a DIP lying lengthways, its pins down either side
-    rom_chip(face);
-    // the MBC and the save RAM, small DIPs, their pins above and below
-    for (x, w) in [(86, 26), (118, 32)] {
-        for n in 0..(w - 2) / 3 {
-            let px = x + 2 + n * 3;
-            fill(face, [px, 12, 1, 2], PIN);
-            fill(face, [px, 24, 1, 2], PIN);
-        }
-        body(face, [x, 14, w, 10]);
-        dot(face, x + 2, 21, BODY_HI);
+    // the mask ROM, its pins down either side
+    let [rx, ry, rw, rh] = [GB_ROM_X as i32, GB_ROM_Y as i32, ROM_W as i32, ROM_H as i32];
+    for n in 0..(rh - 4) / 2 {
+        let py = ry + 2 + n * 2;
+        dot(face, rx - 1, py, PIN);
+        dot(face, rx + rw, py, PIN);
     }
-    print(face, "MBC1", 87, 30, SILK);
-    // the cell that keeps the save RAM, its tab soldered over it
-    disc(face, 164, 22, 9, CELL_EDGE);
-    disc(face, 164, 22, 8, CELL);
-    ring(face, 164, 22, 6, CELL_RING);
-    fill(face, [161, 12, 7, 3], PIN);
-    capacitor(face, 40, 72);
-    print(face, "DMG-BEAN-02", 17, 12, SILK);
+    body(face, [rx, ry, rw, rh]);
+    dot(face, rx + 3, ry + rh - 4, BODY_HI);
+    // the MBC, a small square chip, and the cell under it with its tab
+    for n in 0..5 {
+        dot(face, 115 + n * 3, 9, PIN);
+        dot(face, 115 + n * 3, 24, PIN);
+    }
+    body(face, [113, 10, 17, 14]);
+    dot(face, 115, 21, BODY_HI);
+    disc(face, 121, 38, 8, CELL_EDGE);
+    disc(face, 121, 38, 7, CELL);
+    ring(face, 121, 38, 5, CELL_RING);
+    fill(face, [118, 29, 7, 3], PIN);
 }
 
-/// The Game Boy board's rect inside its shell.
-const GB_PCB: [i32; 4] = [8, 7, 166, 91];
+/// The shell's back and the board in it, `[x, y, w, h]` in the face: upright and nearly
+/// square in the middle of the face, as a Game Boy cart stands.
+const GB_SHELL: [i32; 4] = [41, 0, 104, 104];
+const GB_PCB: [i32; 4] = [47, 4, 92, 96];
+/// Where its ROM chip lies, at the board's top left.
+const GB_ROM_X: u32 = 51;
+const GB_ROM_Y: u32 = 8;
 
 const GB_TRACES: &[&[(i32, i32)]] = &[
-    // the ROM's lines over to the MBC and the first socket
-    &[(78, 30), (82, 30), (86, 26)],
-    &[(78, 34), (84, 34), (88, 38), (88, 41)],
-    &[(78, 38), (82, 38), (85, 41)],
-    &[(112, 19), (118, 19)],
-    &[(150, 19), (155, 19)],
-    // the sockets' and the ROM's pins down to the contacts
-    &[(95, 67), (95, 83)],
-    &[(105, 67), (105, 83)],
-    &[(140, 67), (140, 83)],
-    &[(150, 67), (150, 83)],
-    &[(160, 67), (160, 83)],
-    &[(30, 71), (30, 83)],
-    &[(60, 71), (60, 76), (66, 82), (66, 83)],
-    // along the right edge from the cell
-    &[(172, 32), (172, 70)],
+    // the ROM over to the MBC and down to the sockets
+    &[(109, 14), (113, 14)],
+    &[(109, 20), (113, 20)],
+    &[(70, 52), (70, 55)],
+    &[(90, 52), (90, 54), (106, 54), (106, 55)],
+    // the sockets' pins down to the contacts
+    &[(60, 80), (60, 88)],
+    &[(70, 80), (70, 88)],
+    &[(80, 80), (80, 88)],
+    &[(105, 80), (105, 88)],
+    &[(115, 80), (115, 88)],
+    &[(125, 80), (125, 88)],
+    // from the cell down the right edge
+    &[(133, 40), (135, 42), (135, 86)],
 ];
 
-const GB_VIAS: &[(i32, i32)] = &[(80, 50), (114, 34), (172, 74), (50, 79)];
+const GB_VIAS: &[(i32, i32)] = &[(111, 30), (95, 55), (133, 50)];
