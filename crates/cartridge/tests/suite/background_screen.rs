@@ -117,7 +117,7 @@ fn a_card_that_never_picked_drifts_a_night_grid_or_shows_its_wallpaper() {
         Backdrop {
             style: BackdropStyle::Bits,
             moving: false,
-            colour: 15
+            colour: 16
         },
         "a colour off the end of the palette was kept"
     );
@@ -224,7 +224,7 @@ fn motion_and_colour_change_and_every_change_is_kept_in_app_state() {
     r.press(Btn::Down);
     assert_eq!(r.sel(), Sel::Colour);
     r.press(Btn::Left);
-    assert_eq!(r.a.backdrop().colour, 15, "the colours did not wrap");
+    assert_eq!(r.a.backdrop().colour, 16, "the colours did not wrap");
     r.press(Btn::A);
     r.press(Btn::A);
     assert_eq!(r.a.backdrop().colour, 1);
@@ -445,4 +445,22 @@ fn up_and_down_go_round_all_four_rows() {
         r.a.background_view().expect("the list is showing").lit,
         Some(0)
     );
+}
+
+#[test]
+fn a_still_picture_pattern_is_drawn_rather_than_the_colour_alone() {
+    for style in [BackdropStyle::Ds, BackdropStyle::Psp, BackdropStyle::Switch] {
+        let mut r = Rig::with(AppState {
+            backdrop: Some(style),
+            ..AppState::default()
+        });
+        let face = TexId::from_raw(701);
+        r.a.set_backdrop_face(face, out_w() + backdrop_period(style), style, 0);
+        r.tick(3_000);
+        assert_eq!(
+            pattern_x(&r.frame(), face),
+            Some(0.0),
+            "{style:?} came out as the colour alone"
+        );
+    }
 }

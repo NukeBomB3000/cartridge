@@ -20,7 +20,7 @@ use cartridge_ui::network::{
 use cartridge_ui::{Draw, TexId, UndoFace};
 
 const NIGHT: u8 = 0;
-const AMBER: u8 = 7;
+const AMBER: u8 = 6;
 
 #[test]
 fn at_640x480_everything_is_where_flow_puts_it() {

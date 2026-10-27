@@ -26,7 +26,7 @@ pub use app_state::{
     FF_SPEEDS, FF_SPEED_DEFAULT, RUMBLE_LEVEL_MAX, UTC_OFFSET_MAX, UTC_OFFSET_MIN, VOLUME_MAX,
 };
 pub use atomic::{atomic_write, atomic_write_dated, sweep_temps};
-pub use backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS};
+pub use backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS, NIGHT};
 pub use cart_shell::{Outline, ShellChoice, ShellFinish, CART_SHELL_FILE, LABELS_SHELL_FILE};
 pub use config::{move_config, CONFIG_DIR};
 pub use core::{

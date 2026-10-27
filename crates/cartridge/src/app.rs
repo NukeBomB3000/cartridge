@@ -1624,7 +1624,7 @@ impl App {
         match (b.style, self.backdrop_face) {
             (BackdropStyle::Wallpaper, _) => draw_backdrop(self.wallpaper, out),
             (style, Some((tex, w, built, colour)))
-                if style.moves() && built == style && colour == b.colour =>
+                if style.patterned() && built == style && colour == b.colour =>
             {
                 draw_pattern((tex, w), backdrop_shift(style, b.moving, self.now()), out);
             }

@@ -13,7 +13,7 @@ use cartridge_ui::{
 };
 
 const NIGHT: u8 = 0;
-const AMBER: u8 = 7;
+const AMBER: u8 = 6;
 
 /// `face`'s pixel at (`x`, `y`): its colour, or None where it is clear.
 fn px(face: &UndoFace, x: u32, y: u32) -> Option<[u8; 3]> {

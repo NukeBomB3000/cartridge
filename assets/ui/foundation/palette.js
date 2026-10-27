@@ -20,21 +20,22 @@ window.CartridgePalette = (() => {
   // The backdrop colours cartridge offers, as crates/cartridge-ui/src/backdrop.rs draws them.
   const BACKDROPS = {
     night: '#050508',
+    black: '#000000',
     slate: '#22252c',
-    navy: '#101b36',
-    teal: '#0b2b2e',
-    green: '#102c16',
-    plum: '#291431',
     crimson: '#300f16',
-    amber: '#302208',
-    indigo: '#1a1640',
-    sky: '#0c2a3e',
-    mint: '#0e2e26',
-    olive: '#262a0c',
-    rose: '#36122a',
     coral: '#3a1810',
     brown: '#2a1c12',
+    amber: '#302208',
+    olive: '#262a0c',
+    green: '#102c16',
+    mint: '#0e2e26',
+    teal: '#0b2b2e',
+    sky: '#0c2a3e',
+    navy: '#101b36',
+    indigo: '#1a1640',
+    plum: '#291431',
     wine: '#300c22',
+    rose: '#36122a',
   };
 
   // Mega Man Zero's menu colours, darkest first: the ramp every backdrop colour turns.

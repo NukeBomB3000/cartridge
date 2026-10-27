@@ -109,12 +109,15 @@ impl BackdropStyle {
     }
 }
 
-/// The colours a pattern comes in, by the name cartridge.state keeps, the eight it began with first. cartridge-ui holds
+/// The colours a pattern comes in, by the name cartridge.state keeps, Night first, the other neutrals, then round the colour wheel. cartridge-ui holds
 /// what each looks like, in this order.
-pub const BACKDROP_COLOURS: [&str; 16] = [
-    "night", "slate", "navy", "teal", "green", "plum", "crimson", "amber", "indigo", "sky", "mint",
-    "olive", "rose", "coral", "brown", "wine",
+pub const BACKDROP_COLOURS: [&str; 17] = [
+    "night", "black", "slate", "crimson", "coral", "brown", "amber", "olive", "green", "mint",
+    "teal", "sky", "navy", "indigo", "plum", "wine", "rose",
 ];
+
+/// Night, the colour every card began in: near black, a breath of blue in it.
+pub const NIGHT: u8 = 0;
 
 pub fn colour_index(key: &str) -> Option<u8> {
     BACKDROP_COLOURS

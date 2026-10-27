@@ -868,11 +868,15 @@ fn a_new_colour_in_background_retints_the_top_bar() {
     }
     press(&mut a, Btn::A);
     a.finish_slide();
+    // Black after Night is grey too: on to the first colour that is not
     for _ in 0..3 {
         if a.palette_colour() != 0 {
             break;
         }
         press(&mut a, Btn::Down);
+        press(&mut a, Btn::Right);
+    }
+    while ChromeColours::of(palette(a.palette_colour())) == night {
         press(&mut a, Btn::Right);
     }
     let colour = a.palette_colour();

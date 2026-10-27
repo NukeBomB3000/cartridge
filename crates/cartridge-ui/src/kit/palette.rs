@@ -73,11 +73,12 @@ impl Palette {
 }
 
 /// The palette for backdrop colour `colour` (an index in the [`BACKDROP_COLOURS`] order:
-/// night, slate, navy, teal, green, plum, crimson, amber); out of range gives Night.
+/// night, black, slate, then round the colour wheel); out of range gives Night.
 pub fn palette(colour: u8) -> &'static Palette {
     static PALETTES: OnceLock<[Palette; BACKDROP_COLOURS.len()]> = OnceLock::new();
     let all = PALETTES.get_or_init(|| BACKDROP_PALETTE.map(turned));
-    all.get(colour as usize).unwrap_or(&all[0])
+    all.get(colour as usize)
+        .unwrap_or(&all[cartridge_store::NIGHT as usize])
 }
 
 /// A colour as the [f32; 4] Draw takes, with alpha `a`.

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::atomic::atomic_write;
-use crate::backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS};
+use crate::backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS, NIGHT};
 use crate::font::Font;
 use crate::gb_palette::GbColors;
 use crate::platform::Platform;
@@ -104,7 +104,7 @@ impl Default for AppState {
             bluetooth: false,
             backdrop: None,
             backdrop_moving: true,
-            backdrop_colour: 0,
+            backdrop_colour: NIGHT,
             font: Font::Bold,
             eq: [0; EQ_BANDS],
             eq_hp: [0; EQ_BANDS],

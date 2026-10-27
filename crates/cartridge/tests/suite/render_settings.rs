@@ -21,7 +21,7 @@ use cartridge_ui::{
 use common::{clocked, tmp_root_with_carts};
 
 const NIGHT: u8 = 0;
-const AMBER: u8 = 7;
+const AMBER: u8 = 6;
 
 struct Script(VecDeque<Vec<RawEvent>>);
 
