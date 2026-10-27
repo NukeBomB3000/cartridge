@@ -126,7 +126,38 @@ pub fn core_options_face(title: &str, view: &ListView, pal: &Palette) -> UndoFac
     panel.face
 }
 
+/// The DS layouts L2 steps through, in DSperate's words.
+pub const DS_LAYOUTS: [&str; 6] = [
+    "Top Dominant",
+    "Vertical",
+    "Horizontal",
+    "Picture in Picture",
+    "Top Only",
+    "Bottom Only",
+];
+
+/// The layout after `now`, round to the first after the last.
+pub fn next_ds_layout(now: &str) -> &'static str {
+    let at = DS_LAYOUTS.iter().position(|l| *l == now).unwrap_or(0);
+    DS_LAYOUTS[(at + 1) % DS_LAYOUTS.len()]
+}
+
 impl App {
+    /// L2 in a DS game: the next layout, handed to the core and kept as the options screen keeps
+    /// a change.
+    pub(crate) fn next_ds_layout(&mut self) {
+        let Some(root) = self.root.clone() else {
+            return;
+        };
+        let key = "dsperate_layout";
+        let now = ini::value(&root, CORE_OPTIONS_FILE, key).unwrap_or_else(|| DS_LAYOUTS[0].into());
+        let to = next_ds_layout(&now);
+        if let Err(e) = ini::write(&root, CORE_OPTIONS_FILE, key, to) {
+            eprintln!("cartridge: {CORE_OPTIONS_FILE}: {e}");
+        }
+        self.core_option_pending = Some((key.to_string(), to.to_string()));
+    }
+
     /// SELECT + MENU on a system with its core's options there: opens them over the paused game,
     /// their list filled in from the core on the next update.
     pub(crate) fn open_core_options(&mut self) {

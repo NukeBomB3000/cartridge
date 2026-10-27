@@ -149,16 +149,16 @@ impl Platform {
     }
 
     /// Whether held L2 rewinds: not on the PlayStation, whose games use L2 and whose states
-    /// are too big for the rewind buffer, nor on the DS, whose are bigger still and whose core
-    /// takes L2 for its stylus.
+    /// are too big for the rewind buffer, nor on the DS, whose are bigger still: its L2 steps
+    /// the screens' layout instead.
     pub fn rewinds(self) -> bool {
         !matches!(self, Platform::Ps1 | Platform::Nds)
     }
 
-    /// Whether L2/R2 belong to the game rather than to rewind and fast-forward: the
-    /// PlayStation's, and the DS's, whose core moves its stylus with L2 and taps with R2.
+    /// Whether L2/R2 belong to the game rather than to rewind and fast-forward: only the
+    /// PlayStation's.
     pub fn game_owns_l2_r2(self) -> bool {
-        matches!(self, Platform::Ps1 | Platform::Nds)
+        self == Platform::Ps1
     }
 
     pub fn accepts(self, path: &Path) -> bool {

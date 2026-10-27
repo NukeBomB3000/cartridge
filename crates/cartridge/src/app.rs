@@ -1564,6 +1564,7 @@ impl App {
                 Action::Eject => self.eject(),
                 Action::GameMenu => self.game_menu_shortcut(),
                 Action::QuickMenu => self.open_guide(),
+                Action::GbaDown(Btn::L2) if self.platform == Platform::Nds => self.next_ds_layout(),
                 Action::Polaroids => self.open_polaroids(),
                 Action::SaveState => self.save_state(),
                 Action::LoadState => self.load_newest(),

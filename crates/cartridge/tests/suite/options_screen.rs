@@ -69,3 +69,14 @@ fn only_a_cores_own_kept_options_come_back_for_it() {
     );
     assert!(kept_options(d.path(), Core::Mgba).is_empty());
 }
+
+#[test]
+fn l2_steps_the_ds_layouts_round() {
+    use cartridge::core_options::{next_ds_layout, DS_LAYOUTS};
+    let mut at = DS_LAYOUTS[0];
+    for want in DS_LAYOUTS.iter().skip(1).chain(DS_LAYOUTS.iter().take(1)) {
+        at = next_ds_layout(at);
+        assert_eq!(at, *want);
+    }
+    assert_eq!(next_ds_layout("something else"), DS_LAYOUTS[1]);
+}
