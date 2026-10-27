@@ -23,7 +23,8 @@ pub fn shelf_scale(platform: Platform) -> f32 {
     match platform {
         Platform::Gba => 1.0,
         Platform::Md => md::SHELF_SCALE,
-        Platform::Gg | Platform::Sms | Platform::Nds => crate::models::sega8::SHELF_SCALE,
+        Platform::Gg | Platform::Sms => crate::models::sega8::SHELF_SCALE,
+        Platform::Nds => crate::models::nds::SHELF_SCALE,
         Platform::Nes => nes::SHELF_SCALE,
         Platform::Pce => hucard::SHELF_SCALE,
         Platform::Gb | Platform::Gbc => GB_SHELF_SCALE,
@@ -40,6 +41,7 @@ pub fn model_scale(model: CartModel) -> f32 {
         CartModel::Snes(_) => snes::SHELF_SCALE,
         CartModel::Disc => disc::SHELF_SCALE,
         CartModel::HuCard => hucard::SHELF_SCALE,
+        CartModel::Nds => crate::models::nds::SHELF_SCALE,
         CartModel::Nes(_) => nes::SHELF_SCALE,
         CartModel::Md(_) => md::SHELF_SCALE,
         CartModel::Sega8(_) => crate::models::sega8::SHELF_SCALE,
@@ -58,6 +60,7 @@ pub fn model_shelf_box(model: CartModel) -> (f32, f32) {
 pub fn model_pitch(model: CartModel) -> f32 {
     match model {
         CartModel::HuCard => hucard::PITCH,
+        CartModel::Nds => crate::models::nds::PITCH,
         _ => model_shelf_box(model).0,
     }
 }

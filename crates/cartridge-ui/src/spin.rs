@@ -4,7 +4,7 @@ use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, snes, snes::SnesShell};
+use crate::models::{disc, hucard, nds, snes, snes::SnesShell};
 use crate::silhouette::GbShell;
 
 /// How thick a cart is, as a share of its width: a Game Pak is about 8 mm thick and 57 wide.
@@ -60,10 +60,12 @@ pub enum CartModel {
     Nes(NesShell),
     Md(MdShell),
     Sega8(Sega8Shell),
+    /// The Nintendo DS Game Card.
+    Nds,
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 14] = [
+    pub const ALL: [CartModel; 15] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -78,6 +80,7 @@ impl CartModel {
         CartModel::Sega8(Sega8Shell::GameGear),
         CartModel::Sega8(Sega8Shell::MasterSystem),
         CartModel::Sega8(Sega8Shell::MarkIii),
+        CartModel::Nds,
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -97,6 +100,7 @@ impl CartModel {
             CartModel::Sega8(Sega8Shell::GameGear) => 11,
             CartModel::Sega8(Sega8Shell::MasterSystem) => 12,
             CartModel::Sega8(Sega8Shell::MarkIii) => 13,
+            CartModel::Nds => 14,
         }
     }
 
@@ -107,6 +111,7 @@ impl CartModel {
             CartModel::Snes(_) => snes::THICK,
             CartModel::Disc => disc::THICK,
             CartModel::HuCard => hucard::THICK,
+            CartModel::Nds => nds::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
             CartModel::Sega8(shell) => sega8::thick(shell),
@@ -239,6 +244,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::Snes(shell) => snes::outline(shell),
         CartModel::Disc => disc::outline(),
         CartModel::HuCard => hucard::outline(),
+        CartModel::Nds => nds::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
         CartModel::Sega8(shell) => sega8::outline(shell),
@@ -487,15 +493,16 @@ mod tests {
         );
     }
 
-    /// Only the Super Famicom, HuCard, Famicom and Mega Drive labels are round at their corners:
-    /// every other shape's goes through the square label's drawing untouched.
+    /// Only the Super Famicom, HuCard, DS card, Famicom and Mega Drive labels are round at their
+    /// corners: every other shape's goes through the square label's drawing untouched.
     #[test]
-    fn only_the_super_famicom_hucard_famicom_and_mega_drive_labels_are_round() {
+    fn only_the_super_famicom_hucard_ds_famicom_and_mega_drive_labels_are_round() {
         for model in CartModel::ALL {
             let round = crate::cart::spec(model).label_round;
             match model {
                 CartModel::Snes(SnesShell::Famicom)
                 | CartModel::HuCard
+                | CartModel::Nds
                 | CartModel::Nes(NesShell::Famicom)
                 | CartModel::Md(MdShell::MegaDrive) => assert!(round > 0),
                 _ => assert_eq!(round, 0, "the {model:?} label is round"),
