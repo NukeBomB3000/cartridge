@@ -326,6 +326,9 @@ pub struct App {
     pub(crate) core_options: Option<crate::core_options::CoreOptionsScreen>,
     pub(crate) core_options_panel: Option<Lone>,
     pub(crate) core_option_pending: Option<(String, String)>,
+    /// The cart's colour, Y opens on the shelf, and its panel.
+    pub(crate) shell_screen: Option<crate::shell_screen::ShellScreen>,
+    pub(crate) shell_panel: Option<Lone>,
     /// The game a disc was swapped into the drive of, and that disc, counting from 0.
     pub(crate) disc_in: Option<(String, usize)>,
     /// A disc swapped in that the core has yet to be handed.
@@ -527,6 +530,8 @@ impl App {
             core_options: None,
             core_options_panel: None,
             core_option_pending: None,
+            shell_screen: None,
+            shell_panel: None,
             disc_in: None,
             disc_swap: None,
             disc_panel: None,
@@ -1530,8 +1535,10 @@ impl App {
                 Action::GbaDown(Btn::R1) => self.switch_shelf(1),
                 _ => {}
             },
+            Phase::Shelf if self.shell_screen.is_some() => self.shell_input(action),
             Phase::Shelf => match action {
                 Action::GbaDown(Btn::X) if self.core_picker.is_none() => self.open_core_picker(),
+                Action::GbaDown(Btn::Y) if self.core_picker.is_none() => self.open_shell_screen(),
                 _ if self.core_picker.is_some() => self.core_picker_input(action),
                 // START is the settings button on the shelf; MENU opens nothing here
                 Action::GbaDown(Btn::Start) => self.open_settings(),
@@ -2341,6 +2348,9 @@ impl App {
         }
         if let Some(picker) = self.core_picker_shown() {
             self.draw_core_picker(&picker, out);
+        }
+        if matches!(self.phase, Phase::Shelf) {
+            self.draw_shell_screen(out);
         }
         if let Some(menu) = self.game_menu {
             self.draw_game_menu(menu, out);

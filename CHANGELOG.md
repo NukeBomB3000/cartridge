@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Y on the shelf colours the cart: twelve pigments after slot-fragile's (Ruby Red, Sapphire Blue,
+  Emerald Green, Gold, FireRed, LeafGreen, Jet Black, Atomic Purple and others) in solid, clear
+  or glittered plastic, the cart taking each change at once; kept in `Config/cart_shell.ini`,
+  ORIGINAL taking its own colour back.
 - Game Boy and Game Boy Color games run on Gambatte, built here from its source: on the RG SP it
   takes 40 to 56 % less of the CPU than mGBA for the same game, so the battery lasts. A Game Boy
   only game runs on the original Game Boy, where the palettes (SELECT+L2/R2) colour it; without

@@ -43,6 +43,9 @@ impl ControlsView {
         if Core::for_platform(platform).len() > 1 {
             shelf.push(("X", "CORE"));
         }
+        if platform != Platform::Ps1 {
+            shelf.push(("Y", "CART COLOUR"));
+        }
         shelf.extend([
             ("START", "SETTINGS"),
             ("SELECT", "CONTROLS"),

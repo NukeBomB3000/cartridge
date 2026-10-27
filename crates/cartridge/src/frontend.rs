@@ -42,6 +42,7 @@ mod sync_network;
 mod sync_opening;
 mod sync_power;
 mod sync_settings;
+mod sync_shell;
 mod sync_start_notice;
 mod sync_switcher;
 mod sync_top_bar;
@@ -66,6 +67,7 @@ use sync_network::{sync_network, NetworkTexes};
 use sync_opening::{sync_opening, TerminalRows};
 use sync_power::{sync_power, PowerPanels};
 use sync_settings::{sync_settings, SettingsTexes};
+use sync_shell::sync_shell;
 use sync_start_notice::sync_start_notice;
 use sync_switcher::{sync_switcher, Switcher};
 use sync_top_bar::{sync_top_bar, TopBarTexes};
@@ -117,6 +119,7 @@ pub struct Frontend {
     background: Baked<(ListView, u8)>,
     equalizer: Baked<(crate::equalizer_screen::EqView, u8)>,
     core_options: Baked<(String, ListView, u8)>,
+    shell: Baked<(ListView, u8)>,
     /// The POWER menu's panel and the one shown after its choice.
     power: PowerPanels,
     backdrop: BackdropTex,
@@ -209,6 +212,7 @@ impl Frontend {
             background: Baked::default(),
             equalizer: Baked::default(),
             core_options: Baked::default(),
+            shell: Baked::default(),
             power: PowerPanels::default(),
             backdrop: BackdropTex::default(),
             bar: BarTexes::default(),
@@ -379,6 +383,7 @@ impl Frontend {
         );
         sync_equalizer(self.session.app_mut(), compositor, &mut self.equalizer);
         sync_core_options(self.session.app_mut(), compositor, &mut self.core_options);
+        sync_shell(self.session.app_mut(), compositor, &mut self.shell);
         sync_power(self.session.app_mut(), compositor, &mut self.power);
         sync_bar(self.session.app_mut(), compositor, &mut self.bar);
         sync_hud(self.session.app_mut(), compositor, &mut self.hud);

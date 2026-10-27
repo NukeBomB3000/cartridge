@@ -75,3 +75,16 @@ pub fn write(root: &Path, file: &str, key: &str, value: &str) -> std::io::Result
     }
     crate::atomic::atomic_write(&path, out.as_bytes())
 }
+
+/// `key` taken out of `file`, its other lines left as they are; nothing to do where the file or
+/// the key is not there.
+pub fn remove(root: &Path, file: &str, key: &str) -> std::io::Result<()> {
+    let path = root.join(file);
+    let existing = match std::fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e),
+    };
+    let out = set(&existing, key, None)?;
+    crate::atomic::atomic_write(&path, out.as_bytes())
+}

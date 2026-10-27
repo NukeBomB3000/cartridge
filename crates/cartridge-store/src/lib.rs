@@ -28,7 +28,9 @@ pub use app_state::{
 };
 pub use atomic::{atomic_write, atomic_write_dated, sweep_temps};
 pub use backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS, NIGHT};
-pub use cart_shell::{Outline, ShellChoice, ShellFinish, CART_SHELL_FILE, LABELS_SHELL_FILE};
+pub use cart_shell::{
+    key as cart_shell_key, Outline, ShellChoice, ShellFinish, CART_SHELL_FILE, LABELS_SHELL_FILE,
+};
 pub use config::{move_config, CONFIG_DIR};
 pub use core::{
     core_for, core_for_platform, read_selected_cores, write_selected_core, Core, SELECTED_CORE_FILE,

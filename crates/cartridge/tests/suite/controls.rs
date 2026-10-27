@@ -98,10 +98,11 @@ fn a_select_tap_in_a_game_opens_nothing() {
 }
 
 /// The shelf's lines for a system with a core to pick, the GBA's and the SNES's.
-const SHELF_WITH_CORES: [(&str, &str); 8] = [
+const SHELF_WITH_CORES: [(&str, &str); 9] = [
     ("A", "PLAY"),
     ("HOLD A", "CLEAN START"),
     ("X", "CORE"),
+    ("Y", "CART COLOUR"),
     ("START", "SETTINGS"),
     ("SELECT", "CONTROLS"),
     ("◀▶", "BROWSE"),
