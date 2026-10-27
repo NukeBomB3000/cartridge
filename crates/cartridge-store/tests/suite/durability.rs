@@ -85,7 +85,7 @@ fn a_app_state_missing_a_key_reads_as_default_not_half_populated() {
     let d = tmp_root();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=Emerald\nbrightness=3\nblue_light=1\n",
+        "cart=Emerald\nbacklight=3\nblue_light=1\n",
     )
     .unwrap();
     assert_eq!(read_app_state(d.path()), AppState::default());
@@ -95,9 +95,9 @@ fn a_app_state_missing_a_key_reads_as_default_not_half_populated() {
 fn an_out_of_range_level_reads_as_default() {
     let d = tmp_root();
     for body in [
-        "cart=\nbrightness=10\nblue_light=1\nvolume=50\n",
-        "cart=\nbrightness=3\nblue_light=10\nvolume=50\n",
-        "cart=\nbrightness=3\nblue_light=1\nvolume=101\n",
+        "cart=\nbacklight=21\nblue_light=1\nvolume=50\n",
+        "cart=\nbacklight=3\nblue_light=10\nvolume=50\n",
+        "cart=\nbacklight=3\nblue_light=1\nvolume=101\n",
     ] {
         std::fs::write(d.path().join("Config/cartridge.state"), body).unwrap();
         assert_eq!(
@@ -139,7 +139,7 @@ fn a_line_the_reader_does_not_know_is_skipped() {
     let d = tmp_root();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=Emerald\nbrightness=3\nfrom_a_later_build=7\nblue_light=1\nvolume=40\nmuted=1\n\
+        "cart=Emerald\nbacklight=3\nfrom_a_later_build=7\nblue_light=1\nvolume=40\nmuted=1\n\
          no equals sign at all\nclock_set=1\nutc_offset_min=-300\n",
     )
     .unwrap();
@@ -179,7 +179,7 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
     let d = tmp_root();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=1\nclock_set=1\nutc_offset_min=-300\n",
+        "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=1\nclock_set=1\nutc_offset_min=-300\n",
     )
     .unwrap();
     assert_eq!(
@@ -262,7 +262,7 @@ fn lcd_ghosting_round_trips_as_its_own_line_and_is_on_when_absent() {
         assert!(text.lines().any(|l| l == want), "no {want} in {text:?}");
     }
     let d = tmp_root();
-    let known = "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+    let known = "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for (extra, want) in [
         ("", true),
         ("lcd_ghosting=0\n", false),
@@ -289,7 +289,7 @@ fn lcd_ghosting_round_trips_as_its_own_line_and_is_on_when_absent() {
 #[test]
 fn high_refresh_is_on_by_default_and_only_a_clear_1_keeps_it_on() {
     let d = tmp_root();
-    let known = "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+    let known = "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for (extra, want) in [
         ("", true),
         ("high_refresh=1\n", true),
@@ -350,7 +350,7 @@ fn an_older_build_reads_the_new_speed_as_its_own_default() {
 #[test]
 fn an_out_of_range_setting_falls_back_to_its_default() {
     let d = tmp_root();
-    let known = "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+    let known = "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for bad in [
         "rumble=2\nff_speed=5\nff_sound=9\n",
         "rumble=\nff_speed=1\nff_sound=on\n",
@@ -432,7 +432,7 @@ fn an_empty_slot_writes_an_empty_platform() {
 #[test]
 fn an_unreadable_platform_reads_as_a_card_that_never_said() {
     let d = tmp_root();
-    let known = "cart=Tetris\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+    let known = "cart=Tetris\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for (line, want) in [
         ("cart_platform=\n", None),
         ("cart_platform=genesis\n", None),
@@ -461,8 +461,8 @@ fn an_unreadable_platform_reads_as_a_card_that_never_said() {
 fn an_offset_outside_the_range_of_real_zones_reads_as_default() {
     let d = tmp_root();
     for body in [
-        "cart=\nbrightness=5\nblue_light=0\nvolume=60\nmuted=0\nclock_set=1\nutc_offset_min=900\n",
-        "cart=\nbrightness=5\nblue_light=0\nvolume=60\nmuted=0\nclock_set=1\nutc_offset_min=-780\n",
+        "cart=\nbacklight=5\nblue_light=0\nvolume=60\nmuted=0\nclock_set=1\nutc_offset_min=900\n",
+        "cart=\nbacklight=5\nblue_light=0\nvolume=60\nmuted=0\nclock_set=1\nutc_offset_min=-780\n",
     ] {
         std::fs::write(d.path().join("Config/cartridge.state"), body).unwrap();
         assert_eq!(read_app_state(d.path()), AppState::default(), "{body}");
@@ -495,7 +495,7 @@ fn a_card_that_never_picked_a_background_reads_as_not_having_picked_one() {
     let d = tmp_root();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n",
+        "cart=\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n",
     )
     .unwrap();
     let s = read_app_state(d.path());
@@ -516,7 +516,7 @@ fn a_background_the_reader_does_not_know_falls_back_to_the_default() {
     let d = tmp_root();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\nbackdrop=plaid\nbackdrop_moving=7\nbackdrop_colour=mauve\n",
+        "cart=\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\nbackdrop=plaid\nbackdrop_moving=7\nbackdrop_colour=mauve\n",
     )
     .unwrap();
     let s = read_app_state(d.path());
@@ -571,7 +571,7 @@ fn ssh_is_on_unless_the_card_says_off() {
     assert!(AppState::default().ssh, "a first boot switches SSH off");
     let d = tmp_root();
     let known =
-        "cart=\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+        "cart=\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for (line, on) in [
         ("", true),
         ("ssh=on\n", true),
@@ -627,7 +627,7 @@ fn bluetooth_is_off_unless_the_card_says_on() {
     );
     let d = tmp_root();
     let known =
-        "cart=\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+        "cart=\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for (line, on) in [
         ("", false),
         ("bluetooth=on\n", true),
@@ -654,7 +654,7 @@ fn bluetooth_is_off_unless_the_card_says_on() {
 fn a_font_the_reader_does_not_know_or_never_saw_is_bold() {
     let d = tmp_root();
     let known =
-        "cart=\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
+        "cart=\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=0\n";
     for line in ["", "font=\n", "font=Thin\n", "font=light\n", "font=1\n"] {
         std::fs::write(
             d.path().join("Config/cartridge.state"),
@@ -730,4 +730,17 @@ fn the_palettes_go_round_through_auto() {
         Some("GBC Dark Green"),
         "the arrows of the GBC's button choices show"
     );
+}
+
+#[test]
+fn brightness_from_the_old_ten_steps_lands_on_the_nearest_of_twenty() {
+    for (old, new) in [(0, 0), (3, 7), (5, 11), (9, 20)] {
+        let d = tmp_root();
+        std::fs::write(
+            d.path().join("Config/cartridge.state"),
+            format!("cart=Emerald\nbrightness={old}\nblue_light=1\nvolume=40\nmuted=1\nclock_set=1\nutc_offset_min=-300\n"),
+        )
+        .unwrap();
+        assert_eq!(read_app_state(d.path()).brightness, new, "old step {old}");
+    }
 }

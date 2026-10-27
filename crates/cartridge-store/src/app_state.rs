@@ -6,7 +6,10 @@ use crate::font::Font;
 use crate::gb_palette::GbColors;
 use crate::platform::Platform;
 
-pub const BRIGHTNESS_MAX: u8 = 9;
+pub const BRIGHTNESS_MAX: u8 = 20;
+
+/// The top of the 0 to 9 scale brightness was kept on before it had twenty steps.
+const OLD_BRIGHTNESS_MAX: u8 = 9;
 pub const BLUE_LIGHT_MAX: u8 = 9;
 pub const VOLUME_MAX: u8 = 100;
 
@@ -68,7 +71,7 @@ impl Default for AppState {
         AppState {
             cart: None,
             cart_platform: None,
-            brightness: 5,
+            brightness: 14,
             blue_light: 0,
             volume: 60,
             volume_hp: 60,
@@ -112,7 +115,7 @@ pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbrightness={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -146,6 +149,7 @@ fn parse(text: &str) -> Option<AppState> {
     let mut cart = None;
     let mut cart_platform = None;
     let mut brightness = None;
+    let mut old_brightness = None;
     let mut blue_light = None;
     let mut volume = None;
     let mut volume_hp = None;
@@ -175,7 +179,12 @@ fn parse(text: &str) -> Option<AppState> {
         match key {
             "cart" => cart = Some(value.to_string()),
             "cart_platform" => cart_platform = platform_value(value),
-            "brightness" => brightness = Some(level(value, BRIGHTNESS_MAX)?),
+            "backlight" => brightness = Some(level(value, BRIGHTNESS_MAX)?),
+            // the old scale, carried over to the nearest of the new steps
+            "brightness" => {
+                let old = level(value, OLD_BRIGHTNESS_MAX)?;
+                old_brightness = Some(((u16::from(old) * u16::from(BRIGHTNESS_MAX) + 4) / 9) as u8);
+            }
             "blue_light" => blue_light = Some(level(value, BLUE_LIGHT_MAX)?),
             "volume" => volume = Some(level(value, VOLUME_MAX)?),
             "volume_hp" => volume_hp = Some(level(value, VOLUME_MAX)?),
@@ -209,7 +218,7 @@ fn parse(text: &str) -> Option<AppState> {
     Some(AppState {
         cart: (!cart.is_empty()).then_some(cart),
         cart_platform,
-        brightness: brightness?,
+        brightness: brightness.or(old_brightness)?,
         blue_light: blue_light?,
         volume: volume?,
         volume_hp: volume_hp.or(volume)?,

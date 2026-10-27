@@ -75,7 +75,7 @@ fn nothing_shows_until_something_is_adjusted() {
 
 #[test]
 fn volume_reads_against_100_not_the_nine_step_scale() {
-    assert_eq!(lit(HudKind::Brightness, 9), 9, "brightness 9 is not full");
+    assert_eq!(lit(HudKind::Brightness, 20), 20, "brightness 20 is not full");
     assert_eq!(
         lit(HudKind::Volume, 9),
         2,
@@ -90,7 +90,7 @@ fn volume_reads_against_100_not_the_nine_step_scale() {
 fn each_level_has_its_title_and_cells() {
     let kinds = [
         (HudKind::Volume, "VOLUME", 20),
-        (HudKind::Brightness, "BRIGHTNESS", 9),
+        (HudKind::Brightness, "BRIGHTNESS", 20),
         (HudKind::BlueLight, "BLUE LIGHT", 9),
         (HudKind::Rewind, "REWIND", 20),
     ];

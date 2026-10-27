@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The boot logo is a Game Boy Advance cart with Cartridge on its label (`task bootlogos:cart`).
+- Brightness has 20 steps instead of 9, smallest at the dim end, and its lowest step keeps the
+  backlight on, as dim as it goes; only the closed lid turns it off. A brightness saved on the
+  old scale is carried over to the nearest new step.
 - omega-zero is now Cartridge: the program is `System/cartridge`, its log `cartridge.log`, its
   settings `Config/cartridge.state` (taken over from `Config/omega-zero.state` at the first
   start), with a new logo on the boot screen. Copy the new `System/` over the old one; the old

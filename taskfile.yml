@@ -294,6 +294,18 @@ tasks:
     cmds:
       - cargo run -q -p cartridge --example bootscreens -- card/System
 
+  bootlogos:cart:
+    desc: >-
+      Render the boot images in card/System as a Game Boy Advance cart with the Cartridge logo on
+      its label, from assets/logo/bootcart.html, one per panel (needs Google Chrome and
+      ImageMagick)
+    cmds:
+      - |
+        set -euo pipefail
+        for size in 640x480 720x480 720x720; do
+          assets/logo/bootcart.sh "${size%x*}" "${size#*x}" "card/System/bootlogo-$size.bmp"
+        done
+
   bootlogos:logo:
     desc: >-
       Render the boot images in card/System as they were before the BIOS screen: the logo from

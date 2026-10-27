@@ -2,7 +2,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use cartridge_power::{
-    motor_change, motor_pin, rumble_node, Battery, Charge, DevicePlatform, LedState, Platform,
+    backlight_value, motor_change, motor_pin, rumble_node, Battery, Charge, DevicePlatform,
+    LedState, Platform,
 };
 use tempfile::TempDir;
 
@@ -54,19 +55,31 @@ fn platform(d: &TempDir) -> DevicePlatform {
 fn the_backlight_steps_span_whatever_range_the_kernel_reports() {
     let d = sysfs("255", "87");
     let mut p = platform(&d);
-    p.set_backlight(9);
+    p.set_backlight(20);
     assert_eq!(brightness(&d), 255);
-    p.set_backlight(5);
+    p.set_backlight(14);
     let mid = brightness(&d);
-    assert!((110..=160).contains(&mid), "step 5 of 9 wrote {mid} of 255");
+    assert!(
+        (110..=160).contains(&mid),
+        "step 14 of 20 wrote {mid} of 255"
+    );
 }
 
 #[test]
-fn step_zero_is_dark() {
+fn step_zero_is_dim_but_lit_and_only_the_lid_turns_it_off() {
     let d = sysfs("255", "87");
     let mut p = platform(&d);
     p.set_backlight(0);
+    let floor = brightness(&d);
+    assert!((1..=10).contains(&floor), "step 0 wrote {floor}");
+    p.backlight_off();
     assert_eq!(brightness(&d), 0);
+}
+
+#[test]
+fn every_step_is_brighter_than_the_one_below_it() {
+    let values: Vec<u32> = (0..=20).map(|s| backlight_value(s, 255)).collect();
+    assert!(values.windows(2).all(|w| w[0] < w[1]), "{values:?}");
 }
 
 #[test]
@@ -170,7 +183,7 @@ fn dispdbg(d: &TempDir, file: &str) -> String {
 fn a_tree_with_no_backlight_class_drives_the_panel_through_dispdbg() {
     let d = dispdbg_tree();
     let mut p = DevicePlatform::probe(d.path(), PathBuf::from("/mnt/sdcard"), None);
-    p.set_backlight(9);
+    p.set_backlight(20);
     assert_eq!(dispdbg(&d, "name"), "lcd0");
     assert_eq!(dispdbg(&d, "command"), "setbl");
     assert_eq!(
@@ -179,8 +192,8 @@ fn a_tree_with_no_backlight_class_drives_the_panel_through_dispdbg() {
         "top step is not full brightness"
     );
     assert_eq!(dispdbg(&d, "start"), "1", "the write was never committed");
-    p.set_backlight(0);
-    assert_eq!(dispdbg(&d, "param"), "0", "step zero has to be dark");
+    p.backlight_off();
+    assert_eq!(dispdbg(&d, "param"), "0", "off has to be dark");
 }
 
 #[test]
@@ -189,7 +202,7 @@ fn a_backlight_class_still_wins_over_dispdbg() {
     let dbg = d.path().join("kernel/debug/dispdbg");
     fs::create_dir_all(&dbg).unwrap();
     fs::write(dbg.join("param"), "").unwrap();
-    platform(&d).set_backlight(9);
+    platform(&d).set_backlight(20);
     assert_eq!(brightness(&d), 255);
     assert_eq!(dispdbg(&d, "param"), "", "dispdbg was written to as well");
 }

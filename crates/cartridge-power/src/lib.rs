@@ -9,8 +9,9 @@ pub use baseos::{
     baseos_release, parse_baseos_release, read_baseos_release, BaseosRelease, BASEOS_RELEASE,
 };
 pub use device::{
-    card_mount_in, has_bit, motor_change, motor_pin, read_only_in, record_first_frame, rumble_node,
-    stage_repair, take_repair_result, trace_first_frame, uptime_seconds, CardMount, DevicePlatform,
+    backlight_value, card_mount_in, has_bit, motor_change, motor_pin, read_only_in,
+    record_first_frame, rumble_node, stage_repair, take_repair_result, trace_first_frame,
+    uptime_seconds, CardMount, DevicePlatform,
 };
 pub use motor::Motor;
 pub use power::Power;
@@ -50,8 +51,17 @@ pub enum LedState {
     Charged,
 }
 
+/// The backlight's top step, the brightness setting's.
+pub const BACKLIGHT_STEPS: u8 = 20;
+
 pub trait Platform: Send {
+    /// The backlight at `step` of 0 to [`BACKLIGHT_STEPS`]: 0 is as dim as the panel still
+    /// shows a picture, never dark.
     fn set_backlight(&mut self, step: u8);
+    /// The backlight off, for the lid closed.
+    fn backlight_off(&mut self) {
+        self.set_backlight(0);
+    }
     fn battery(&self) -> Option<Battery>;
     fn charge(&self) -> Charge;
     fn set_led(&mut self, state: LedState);

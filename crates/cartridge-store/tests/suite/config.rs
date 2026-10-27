@@ -58,7 +58,7 @@ fn settings_written_before_the_move_are_still_read_after_it() {
     std::fs::create_dir_all(d.path().join("System")).unwrap();
     std::fs::write(
         d.path().join("System/omega-zero.state"),
-        "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=-240\n",
+        "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=-240\n",
     )
     .unwrap();
 
@@ -75,7 +75,7 @@ fn settings_written_before_the_move_are_still_read_after_it() {
 fn settings_from_before_the_rename_carry_over() {
     let d = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(d.path().join("Config")).unwrap();
-    std::fs::write(d.path().join("Config/omega-zero.state"), "cart=Emerald\nbrightness=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=-240\n").unwrap();
+    std::fs::write(d.path().join("Config/omega-zero.state"), "cart=Emerald\nbacklight=3\nblue_light=1\nvolume=40\nmuted=0\nclock_set=1\nutc_offset_min=-240\n").unwrap();
 
     move_config(d.path()).unwrap();
 

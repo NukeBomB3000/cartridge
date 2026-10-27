@@ -8,9 +8,7 @@ use std::sync::mpsc::RecvTimeoutError;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::refresh::PanelRefresh;
-use crate::{Battery, Charge, LedState, Platform, RepairResult};
-
-const TOP_STEP: u32 = 9;
+use crate::{Battery, Charge, LedState, Platform, RepairResult, BACKLIGHT_STEPS};
 
 const DEV_INPUT: &str = "/dev/input";
 
@@ -641,6 +639,28 @@ fn processes(names: &[&str]) -> Vec<u32> {
         .collect()
 }
 
+impl DevicePlatform {
+    fn write_backlight(&self, value: u32) {
+        let Some(backlight) = &self.backlight else {
+            return;
+        };
+        let write = |file: PathBuf, body: String| {
+            if let Err(e) = fs::write(&file, body) {
+                eprintln!("cartridge: {}: {e}", file.display());
+            }
+        };
+        match backlight {
+            Backlight::Class(dir) => write(dir.join("brightness"), value.to_string()),
+            Backlight::Dispdbg(dir) => {
+                write(dir.join("name"), "lcd0".to_string());
+                write(dir.join("command"), "setbl".to_string());
+                write(dir.join("param"), value.to_string());
+                write(dir.join("start"), "1".to_string());
+            }
+        }
+    }
+}
+
 impl Platform for DevicePlatform {
     fn supports_high_refresh(&self) -> bool {
         self.refresh.is_some()
@@ -665,25 +685,12 @@ impl Platform for DevicePlatform {
     }
 
     fn set_backlight(&mut self, step: u8) {
-        let Some(backlight) = &self.backlight else {
-            return;
-        };
-        let step = u32::from(step).min(TOP_STEP);
-        let value = self.max_brightness * step / TOP_STEP;
-        let write = |file: PathBuf, body: String| {
-            if let Err(e) = fs::write(&file, body) {
-                eprintln!("cartridge: {}: {e}", file.display());
-            }
-        };
-        match backlight {
-            Backlight::Class(dir) => write(dir.join("brightness"), value.to_string()),
-            Backlight::Dispdbg(dir) => {
-                write(dir.join("name"), "lcd0".to_string());
-                write(dir.join("command"), "setbl".to_string());
-                write(dir.join("param"), value.to_string());
-                write(dir.join("start"), "1".to_string());
-            }
-        }
+        let value = backlight_value(step, self.max_brightness);
+        self.write_backlight(value);
+    }
+
+    fn backlight_off(&mut self) {
+        self.write_backlight(0);
     }
 
     fn battery(&self) -> Option<Battery> {
@@ -903,4 +910,16 @@ pub fn take_repair_result(file: &Path) -> Option<RepairResult> {
         "clean" => RepairResult::Clean,
         _ => RepairResult::Failed,
     })
+}
+
+/// The dimmest backlight that still shows a picture, as a share of the brightest.
+const BACKLIGHT_FLOOR: f32 = 0.02;
+
+/// The backlight's value at `step` of 0 to [`BACKLIGHT_STEPS`], out of `max`: from the floor at 0
+/// to `max` at the top, the steps squared so the dim end, where the eye tells them apart best,
+/// gets the small ones.
+pub fn backlight_value(step: u8, max: u32) -> u32 {
+    let t = f32::from(step.min(BACKLIGHT_STEPS)) / f32::from(BACKLIGHT_STEPS);
+    let share = BACKLIGHT_FLOOR + (1.0 - BACKLIGHT_FLOOR) * t * t;
+    ((max as f32 * share).round() as u32).clamp(1, max.max(1))
 }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cartridge boot cart</title>
+<!--
+  The boot logo: a Game Boy Advance cart in the shelf's grey, the shelf's own silhouette, ridges
+  and GAME BOY ADVANCE lettering (cartridge-ui/assets), with the Cartridge logo on its label.
+  ?w=720&h=480 frames it for a panel; bootcart.sh renders the boot images from it.
+-->
+<style>
+  :root { --bg: #050508; --grid: #1c1c1e; --step: 40px; --line: 2px; }
+  html {
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(to right, var(--grid) var(--line), transparent var(--line)),
+      linear-gradient(to bottom, var(--grid) var(--line), transparent var(--line));
+    background-size: var(--step) var(--step);
+  }
+  html, body { margin: 0; overflow: hidden; }
+  svg { position: fixed; display: block; }
+</style>
+</head>
+<body>
+<svg id="cart" viewBox="-6 -6 252 155" role="img" aria-label="A Game Boy Advance cart labelled Cartridge">
+  <defs>
+    <g id="ridge">
+      <path d="M 115.75 7.38 C 107.02 7.43 82.33 9.89 71.84 12.22 C 58.15 15.27 46.73 19.66 33.02 22.44 C 33.02 22.44 69.23 15.81 73.49 15.09 C 98.02 10.96 119.30 11.51 119.30 11.51 L 120.59 11.51 C 120.59 11.51 141.88 10.96 166.40 15.09 C 170.67 15.81 206.87 22.44 206.87 22.44 C 193.17 19.66 181.74 15.27 168.06 12.22 C 157.22 9.81 131.27 7.28 123.35 7.38 L 119.93 7.38 C 119.93 7.38 116.03 7.38 115.75 7.38 Z"/>
+    </g>
+    <g id="cut">
+      <path d="M 97.96 127.22 C 97.40 127.21 96.91 127.61 96.81 128.17 C 96.72 128.73 97.05 129.27 97.59 129.44 L 115.99 135.71 C 116.02 135.73 116.05 135.75 116.08 135.76 L 119.14 136.56 C 119.33 136.61 119.53 136.61 119.72 136.56 L 122.79 135.76 C 122.82 135.75 122.85 135.73 122.87 135.71 L 141.26 129.44 C 141.80 129.27 142.13 128.73 142.05 128.17 C 141.95 127.62 141.47 127.21 140.90 127.22 L 119.43 127.22 L 97.96 127.22 Z M 104.81 129.5 L 119.43 129.5 L 134.05 129.5 L 122.17 133.55 L 119.43 134.26 L 116.68 133.55 L 104.81 129.5 Z"/>
+    </g>
+    <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a5e67"/>
+      <stop offset="0.5" stop-color="#43464e"/>
+      <stop offset="1" stop-color="#2f3238"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f5f8"/>
+      <stop offset="1" stop-color="#d4d7de"/>
+    </linearGradient>
+    <mask id="letters" maskUnits="userSpaceOnUse" x="0" y="0" width="240" height="141">
+      <image href="../../crates/cartridge-ui/assets/lettering_gba.png" width="240" height="141"/>
+    </mask>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+  <path d="M 10.72 0.00 C 10.62 0.00 10.52 0.02 10.42 0.05 L 7.52 0.82 C 7.42 0.85 7.33 0.89 7.24 0.95 L 5.14 2.16 C 5.05 2.21 4.98 2.27 4.91 2.34 L 3.13 4.11 C 3.06 4.18 3.00 4.26 2.94 4.34 L 1.21 7.37 C 1.16 7.45 1.12 7.54 1.09 7.64 L 0.04 11.56 C 0.01 11.65 0.00 11.76 0.00 11.85 L 0.00 25.57 C 0.00 25.77 0.05 25.96 0.15 26.14 L 1.13 27.83 C 1.28 28.09 1.53 28.28 1.82 28.36 L 3.63 28.84 C 3.73 28.87 3.83 28.89 3.93 28.89 L 6.49 28.89 L 6.49 136.73 C 6.50 136.93 6.55 137.13 6.65 137.3 L 7.65 139.04 C 7.75 139.21 7.89 139.35 8.07 139.45 L 10.49 140.85 C 10.66 140.95 10.86 141 11.06 141 L 82.44 141 L 157.56 141 L 228.94 141 C 229.14 141 229.34 140.95 229.51 140.85 L 231.93 139.45 C 232.10 139.35 232.24 139.21 232.34 139.04 L 233.35 137.3 C 233.45 137.13 233.50 136.93 233.50 136.73 L 233.50 28.89 L 236.06 28.89 C 236.16 28.89 236.26 28.87 236.36 28.84 L 238.17 28.36 C 238.46 28.28 238.71 28.09 238.86 27.83 L 239.84 26.14 C 239.94 25.97 240.00 25.77 240.00 25.57 L 240.00 11.85 C 240.00 11.75 239.99 11.65 239.96 11.56 L 238.91 7.64 C 238.88 7.54 238.85 7.45 238.80 7.37 L 237.05 4.34 C 237.00 4.26 236.94 4.18 236.87 4.11 L 235.10 2.34 C 235.03 2.27 234.95 2.21 234.86 2.16 L 232.75 0.95 C 232.67 0.90 232.58 0.85 232.48 0.82 L 229.58 0.05 C 229.48 0.02 229.39 0.00 229.29 0.00 L 153.74 0.00 L 86.25 0.00 L 10.72 0.00 Z" fill="url(#shell)" stroke="#1a1b1f" stroke-width="1" filter="url(#drop)"/>
+  <path d="M 10.72 0.00 C 10.62 0.00 10.52 0.02 10.42 0.05 L 7.52 0.82 C 7.42 0.85 7.33 0.89 7.24 0.95 L 5.14 2.16 C 5.05 2.21 4.98 2.27 4.91 2.34 L 3.13 4.11 C 3.06 4.18 3.00 4.26 2.94 4.34 L 1.21 7.37 C 1.16 7.45 1.12 7.54 1.09 7.64 L 0.04 11.56 C 0.01 11.65 0.00 11.76 0.00 11.85 L 0.00 25.57 C 0.00 25.77 0.05 25.96 0.15 26.14 L 1.13 27.83 C 1.28 28.09 1.53 28.28 1.82 28.36 L 3.63 28.84 C 3.73 28.87 3.83 28.89 3.93 28.89 L 6.49 28.89 L 6.49 136.73 C 6.50 136.93 6.55 137.13 6.65 137.3 L 7.65 139.04 C 7.75 139.21 7.89 139.35 8.07 139.45 L 10.49 140.85 C 10.66 140.95 10.86 141 11.06 141 L 82.44 141 L 157.56 141 L 228.94 141 C 229.14 141 229.34 140.95 229.51 140.85 L 231.93 139.45 C 232.10 139.35 232.24 139.21 232.34 139.04 L 233.35 137.3 C 233.45 137.13 233.50 136.93 233.50 136.73 L 233.50 28.89 L 236.06 28.89 C 236.16 28.89 236.26 28.87 236.36 28.84 L 238.17 28.36 C 238.46 28.28 238.71 28.09 238.86 27.83 L 239.84 26.14 C 239.94 25.97 240.00 25.77 240.00 25.57 L 240.00 11.85 C 240.00 11.75 239.99 11.65 239.96 11.56 L 238.91 7.64 C 238.88 7.54 238.85 7.45 238.80 7.37 L 237.05 4.34 C 237.00 4.26 236.94 4.18 236.87 4.11 L 235.10 2.34 C 235.03 2.27 234.95 2.21 234.86 2.16 L 232.75 0.95 C 232.67 0.90 232.58 0.85 232.48 0.82 L 229.58 0.05 C 229.48 0.02 229.39 0.00 229.29 0.00 L 153.74 0.00 L 86.25 0.00 L 10.72 0.00 Z" fill="none" stroke="#7d828c" stroke-width="0.6" transform="translate(0.5 0.5)" opacity="0.6"/>
+  <!-- ridges and the cut, lit from the top left as the shelf lights them -->
+  <g fill="#fff" opacity="0.18"><use href="#ridge" x="-1" y="-1"/><use href="#cut" x="1" y="1"/></g>
+  <g fill="#000" opacity="0.45"><use href="#ridge"/><use href="#cut"/></g>
+  <!-- the lettering pressed into the plastic: a dark edge below, the face a shade lighter -->
+  <g mask="url(#letters)">
+    <rect x="0" y="0.6" width="240" height="141" fill="#1d1f23" opacity="0.8"/>
+  </g>
+  <g mask="url(#letters)" transform="translate(0 -0.5)">
+    <rect x="0" y="0" width="240" height="141" fill="#6b707a"/>
+  </g>
+  <!-- the label's well, then the label -->
+  <rect x="30.4" y="30.6" width="181.6" height="95.8" rx="3" fill="#25272c"/>
+  <rect x="30.4" y="30.6" width="181.6" height="95.8" rx="3" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="1"/>
+  <rect x="32.4" y="32.6" width="177.6" height="91.8" rx="2" fill="url(#paper)"/>
+  <rect x="32.4" y="32.6" width="177.6" height="91.8" rx="2" fill="#0c037f" opacity="0.08"/>
+  <image href="cartridge-logo@2x.png" x="38" y="36" width="166.4" height="84" preserveAspectRatio="xMidYMid meet"/>
+</svg>
+<script>
+// &scale=4 draws it that many times the panel's size, the grid with it, for a box filter.
+const scale = +new URLSearchParams(location.search).get('scale') || 1;
+document.documentElement.style.setProperty('--step', `${40 * scale}px`);
+document.documentElement.style.setProperty('--line', `${2 * scale}px`);
+// On a fixed screen the cart is `cart` of the width across (0.62 by default), in the middle.
+const q = new URLSearchParams(location.search);
+const W = +q.get('w') || innerWidth, H = +q.get('h') || innerHeight;
+const share = +q.get('cart') || 0.62;
+const svg = document.getElementById('cart');
+const w = Math.min(W * share, H * 0.8 * 252 / 155), h = w * 155 / 252;
+Object.assign(svg.style, { width: `${w}px`, height: `${h}px`, left: `${(W - w) / 2}px`, top: `${(H - h) / 2}px` });
+</script>
+</body>
+</html>

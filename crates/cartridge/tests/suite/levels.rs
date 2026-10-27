@@ -10,11 +10,11 @@ use common::{app_playing_in, app_playing_with_volume, boot, tmp_root_with_carts}
 fn levels_clamp_and_persist() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = boot(d.path());
-    for _ in 0..20 {
+    for _ in 0..30 {
         a.apply(Action::BrightnessUp);
     }
-    assert_eq!(read_app_state(d.path()).brightness, 9);
-    for _ in 0..20 {
+    assert_eq!(read_app_state(d.path()).brightness, 20);
+    for _ in 0..30 {
         a.apply(Action::BrightnessDown);
     }
     assert_eq!(read_app_state(d.path()).brightness, 0);

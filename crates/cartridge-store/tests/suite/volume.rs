@@ -20,7 +20,7 @@ fn a_state_from_before_headphones_uses_the_speaker_level_for_both() {
     std::fs::create_dir_all(d.path().join("Config")).unwrap();
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=\ncart_platform=\nbrightness=5\nblue_light=0\nvolume=35\nmuted=0\nclock_set=1\nutc_offset_min=0\n",
+        "cart=\ncart_platform=\nbacklight=5\nblue_light=0\nvolume=35\nmuted=0\nclock_set=1\nutc_offset_min=0\n",
     )
     .unwrap();
     let s = read_app_state(d.path());
@@ -42,7 +42,7 @@ fn the_headphones_mute_round_trips_and_falls_back_to_the_speakers() {
 
     std::fs::write(
         d.path().join("Config/cartridge.state"),
-        "cart=\ncart_platform=\nbrightness=5\nblue_light=0\nvolume=35\nmuted=1\nclock_set=1\nutc_offset_min=0\n",
+        "cart=\ncart_platform=\nbacklight=5\nblue_light=0\nvolume=35\nmuted=1\nclock_set=1\nutc_offset_min=0\n",
     )
     .unwrap();
     let old = read_app_state(d.path());

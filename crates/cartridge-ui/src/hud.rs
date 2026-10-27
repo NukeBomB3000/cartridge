@@ -79,12 +79,12 @@ impl HudKind {
         }
     }
 
-    /// How many cells the gauge has: one to a step for the levels of 0 to 9, one to 5% for
-    /// the volume and the rewind left.
+    /// How many cells the gauge has: one to a step for brightness's twenty and blue light's
+    /// levels of 0 to 9, one to 5% for the volume and the rewind left.
     pub fn cells(self) -> u32 {
         match self {
-            HudKind::Brightness | HudKind::BlueLight => 9,
-            HudKind::Volume | HudKind::Rewind => 20,
+            HudKind::BlueLight => 9,
+            HudKind::Brightness | HudKind::Volume | HudKind::Rewind => 20,
         }
     }
 

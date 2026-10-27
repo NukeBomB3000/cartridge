@@ -2187,7 +2187,7 @@ fn a_chorded_select_never_reaches_the_pad() {
     let (power, backlight) = common::panel(d.path(), Duration::from_secs(180));
     s.app_mut().set_power(power);
     let lit = backlight.load(Ordering::Relaxed);
-    assert!(lit > 0 && lit < 9, "the level has to have room to move");
+    assert!(lit > 0 && lit < 20, "the level has to have room to move");
 
     s.feed([RawEvent::Down(Btn::Select)], 1000);
     assert_eq!(
