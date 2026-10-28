@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- The carts on the shelf have more to do. The one in the middle, left alone for three seconds,
+  starts a trick and does another every few seconds in a random order: a full twirl showing its
+  back, two hops, a quick shake, a look aside, a cartwheel in the screen. A cart that comes to its
+  place bounces as it lands, and the ones beside it float a little each out of step. A scroll
+  ends a trick at once. Discs (PS1) keep their spin and only hop and look aside.
 - The picture no longer stands still each time sound comes back after a few quiet seconds. The
   audio device is let go after three seconds of silence and opened again with the next sound,
   which takes longer than the sound ring holds; the emulator, pushing sound into a ring nothing

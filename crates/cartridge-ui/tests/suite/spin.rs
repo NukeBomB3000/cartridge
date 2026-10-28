@@ -432,3 +432,78 @@ fn the_super_famicom_cart_s_top_is_straight_with_its_corners_3_5_mm_round() {
         );
     }
 }
+
+fn playful(n: usize) -> Shelf {
+    let mut s = faced(n);
+    s.set_playful(true);
+    s
+}
+
+#[test]
+fn a_cart_left_alone_does_more_than_sway() {
+    let mut s = playful(3);
+    run(&mut s, 2.0);
+    let (mut yaw, mut lift, mut roll) = (0f32, 0f32, 0f32);
+    for _ in 0..120 * 60 {
+        s.update(DT);
+        let p = s.pose();
+        yaw = yaw.max(p.yaw.abs());
+        lift = lift.max(p.lift);
+        roll = roll.max(p.roll.abs());
+    }
+    assert!(yaw > 30f32.to_radians(), "no turn beyond the sway: {yaw}");
+    assert!(lift > 6.0, "no hop above the float: {lift}");
+    assert!(roll > 0.08, "no roll in the canvas: {roll}");
+}
+
+#[test]
+fn a_plain_shelf_keeps_to_the_sway() {
+    let mut s = faced(3);
+    run(&mut s, 2.0);
+    for _ in 0..120 * 60 {
+        s.update(DT);
+        let p = s.pose();
+        assert!(p.yaw.abs() <= 20.1f32.to_radians() && p.lift <= 4.01 && p.roll == 0.0);
+    }
+}
+
+#[test]
+fn a_scroll_ends_a_trick_and_the_cart_bounces_as_it_lands() {
+    let mut s = playful(5);
+    run(&mut s, 3.4);
+    s.right();
+    run(&mut s, 0.15);
+    let p = s.pose();
+    assert_eq!((p.lift, p.roll), (0.0, 0.0), "a trick went on through the scroll");
+    let mut best = 0f32;
+    for _ in 0..90 {
+        s.update(DT);
+        best = best.max(s.pose().lift);
+    }
+    assert!(best > 2.0, "the cart landed without a bounce: {best}");
+}
+
+#[test]
+fn the_others_float_a_little_out_of_step() {
+    let mut s = playful(5);
+    run(&mut s, 3.0);
+    let side_ys = |s: &Shelf| -> Vec<f32> {
+        row(s)
+            .iter()
+            .filter_map(|d| match *d {
+                Draw::Tex { y, tex, .. } | Draw::Spun { y, tex, .. }
+                    if tex != TexId::from_raw(40 + s.index) =>
+                {
+                    Some(y)
+                }
+                _ => None,
+            })
+            .collect()
+    };
+    let before = side_ys(&s);
+    run(&mut s, 0.7);
+    assert!(
+        before.iter().zip(side_ys(&s)).any(|(a, b)| *a != b),
+        "the neighbours stand dead still"
+    );
+}

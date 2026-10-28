@@ -26,6 +26,7 @@ const LAST: f32 = 1.0 - 1e-4;
 const SWAYING: Pose = Pose {
     yaw: 0.17,
     lift: 3.0,
+    roll: 0.0,
 };
 
 fn cart() -> Cart {

@@ -125,6 +125,90 @@ const LEAN_FROM: f32 = 0.05;
 const STILL_YAW: f32 = 0.002;
 const STILL_LIFT: f32 = 0.05;
 
+/// A cart left alone this long starts its tricks, and then one comes every so often.
+const FIRST_MOVE_S: f32 = 3.0;
+const MOVE_GAP_S: (f32, f32) = (3.5, 7.0);
+/// How high a hop lifts the cart, in canvas pixels.
+const HOP: f32 = 9.0;
+/// A cart landing on its place bounces this high, and the bounce dies away this fast a second.
+const LAND: f32 = 5.0;
+const LAND_DECAY: f32 = 5.0;
+/// How far a scroll may overshoot its stop: the shelf is a spring a little under critical.
+const DAMPING: f32 = 1.0;
+/// The carts beside the middle one float this far, each out of step with the next.
+const NEIGHBOUR_BOB: f32 = 1.4;
+
+/// One of the things a cart does when it is left standing: how long it takes, in seconds.
+#[derive(Copy, Clone, PartialEq, Debug)]
+enum Trick {
+    /// A full turn about its upright axis, showing its back.
+    Twirl,
+    /// Two hops, landing with a little roll.
+    Hop,
+    /// A quick shake.
+    Wiggle,
+    /// Turns to look aside and comes back.
+    Peek,
+    /// One turn in the canvas, lifted a little.
+    Cartwheel,
+}
+
+impl Trick {
+    const ALL: [Trick; 5] = [
+        Trick::Twirl,
+        Trick::Hop,
+        Trick::Wiggle,
+        Trick::Peek,
+        Trick::Cartwheel,
+    ];
+
+    fn seconds(self) -> f32 {
+        match self {
+            Trick::Twirl => 1.7,
+            Trick::Hop => 1.1,
+            Trick::Wiggle => 0.9,
+            Trick::Peek => 2.2,
+            Trick::Cartwheel => 1.5,
+        }
+    }
+
+    /// The pose this trick adds `t` of the way through (0 to 1), turning towards `dir` (+1/-1),
+    /// and how much of the resting sway it leaves: none in the middle of it.
+    fn at(self, t: f32, dir: f32) -> (Pose, f32) {
+        let tau = std::f32::consts::TAU;
+        let bell = (std::f32::consts::PI * t).sin();
+        let fade = 1.0 - t;
+        let pose = match self {
+            Trick::Twirl => Pose {
+                yaw: dir * tau * ease(t),
+                lift: 4.0 * bell,
+                roll: 0.0,
+            },
+            Trick::Hop => Pose {
+                yaw: 0.0,
+                lift: HOP * (tau * t).sin().abs() * (1.0 - 0.4 * t),
+                roll: 0.06 * dir * (2.0 * tau * t).sin() * fade,
+            },
+            Trick::Wiggle => Pose {
+                yaw: 0.2 * (3.0 * tau * t + 1.0).sin() * fade,
+                lift: 0.0,
+                roll: 0.11 * dir * (3.0 * tau * t).sin() * fade,
+            },
+            Trick::Peek => Pose {
+                yaw: dir * 0.95 * bell * bell,
+                lift: 3.0 * bell * bell,
+                roll: -0.07 * dir * bell * bell,
+            },
+            Trick::Cartwheel => Pose {
+                yaw: 0.0,
+                lift: 5.0 * bell,
+                roll: dir * tau * ease(t),
+            },
+        };
+        (pose, 1.0 - bell)
+    }
+}
+
 const REPEAT_DELAY_MS: Millis = 400;
 const REPEAT_MS: [Millis; 4] = [110, 85, 65, 50];
 
@@ -146,6 +230,15 @@ pub struct Shelf {
     /// How far the discs have turned about their own middles, in radians.
     spin: f32,
     still: bool,
+    /// How long the middle cart has stood still, and when its next trick starts.
+    idle: f32,
+    next_trick: f32,
+    trick: Option<(Trick, f32, f32)>,
+    /// Seconds since the cart came to rest on its place, for the bounce.
+    landed: f32,
+    was_moving: bool,
+    dice: u32,
+    playful: bool,
 }
 
 impl Shelf {
@@ -166,7 +259,20 @@ impl Shelf {
             age: 0.0,
             spin: 0.0,
             still: false,
+            idle: 0.0,
+            next_trick: FIRST_MOVE_S,
+            trick: None,
+            landed: 10.0,
+            was_moving: false,
+            dice: 0x9E37_79B9,
+            playful: false,
         }
+    }
+
+    /// Lets the carts do more than sway: tricks while one stands alone, a bounce on landing,
+    /// the others floating. A shelf made plain keeps to the sway and the lean.
+    pub fn set_playful(&mut self, on: bool) {
+        self.playful = on;
     }
 
     pub fn select(&mut self, i: usize) {
@@ -423,28 +529,73 @@ impl Shelf {
 
     /// How the selected cart is held right now, wherever it is in the row.
     pub fn pose(&self) -> Pose {
-        self.pose_at(self.scroll_target() - self.scroll)
+        let pose = self.pose_at(self.scroll_target() - self.scroll, self.index);
+        // a cart caught mid-twirl is the same cart a turn on
+        let tau = std::f32::consts::TAU;
+        Pose {
+            yaw: match pose.yaw.abs() > tau / 2.0 {
+                true => (pose.yaw + tau / 2.0).rem_euclid(tau) - tau / 2.0,
+                false => pose.yaw,
+            },
+            ..pose
+        }
+    }
+
+    /// A number from `lo` to `hi`, from a small shuffle of its own: the tricks do not repeat
+    /// in any order the eye could learn.
+    fn roll_dice(&mut self, lo: f32, hi: f32) -> f32 {
+        self.dice ^= self.dice << 13;
+        self.dice ^= self.dice >> 17;
+        self.dice ^= self.dice << 5;
+        lo + (hi - lo) * (self.dice >> 8) as f32 / (1u32 << 24) as f32
     }
 
     /// How a cart `offset` places from the middle of the row is held: the one in the middle
     /// sways and floats while the shelf stands still, and every cart leans into a scroll.
-    fn pose_at(&self, offset: f32) -> Pose {
-        let calm = ease(self.calm) * (1.0 - offset.abs().min(1.0));
+    fn pose_at(&self, offset: f32, cart: usize) -> Pose {
+        let alone = ease(self.calm);
+        let calm = alone * (1.0 - offset.abs().min(1.0));
         let lean = match self.vel.abs() < LEAN_FROM {
             true => 0.0,
             false => (-self.vel * LEAN).clamp(-LEAN_MAX, LEAN_MAX),
         };
         let wave = |period: f32| (self.age * std::f32::consts::TAU / period).sin();
         let seen = |v: f32, least: f32| if v.abs() < least { 0.0 } else { v };
+        let (trick, sway) = match self.trick {
+            Some((trick, t, dir)) if offset.abs() < 0.5 => {
+                let (pose, sway) = trick.at(t, dir);
+                (pose.toward_rest(1.0 - calm), sway)
+            }
+            _ => (Pose::REST, 1.0),
+        };
+        // the landing: a bounce that dies away, for the cart that has just come to its place
+        let settle = (-LAND_DECAY * self.landed).exp() * (1.0 - offset.abs().min(1.0));
+        let land_lift = LAND * settle * (11.0 * self.landed).sin().abs();
+        let land_roll = 0.035 * settle * (14.0 * self.landed).sin();
+        // the others float too, each out of step: never two moving as one
+        let phase = cart as f32 * 2.399;
+        let drift = match self.playful {
+            true => alone * (1.0 - calm) * NEIGHBOUR_BOB,
+            false => 0.0,
+        };
+        let side = drift * (self.age * std::f32::consts::TAU / BOB_S + phase).sin();
+        let side_yaw = drift * 0.02 * (self.age * std::f32::consts::TAU / SWAY_S + phase).sin();
         Pose {
-            yaw: seen(SWAY * calm * wave(SWAY_S) + lean, STILL_YAW),
-            lift: seen(BOB * calm * wave(BOB_S), STILL_LIFT),
+            yaw: seen(
+                SWAY * calm * sway * wave(SWAY_S) + lean + trick.yaw + side_yaw,
+                STILL_YAW,
+            ),
+            lift: seen(
+                BOB * calm * sway * wave(BOB_S) + trick.lift + land_lift + side,
+                STILL_LIFT,
+            ),
+            roll: seen(trick.roll + land_roll, STILL_YAW),
         }
     }
 
     pub fn update(&mut self, dt: f32) {
         self.calm_down(dt);
-        let accel = -2.0 * OMEGA * self.vel - OMEGA * OMEGA * (self.scroll - self.scroll_target());
+        let accel = -2.0 * DAMPING * OMEGA * self.vel - OMEGA * OMEGA * (self.scroll - self.scroll_target());
         self.vel += accel * dt;
         self.scroll += self.vel * dt;
     }
@@ -457,6 +608,14 @@ impl Shelf {
 
     fn calm_down(&mut self, dt: f32) {
         let moving = (self.scroll - self.scroll_target()).abs() > 0.01 || self.vel.abs() > 0.2;
+        if self.playful && self.was_moving && !moving {
+            self.landed = 0.0;
+        }
+        self.was_moving = moving;
+        self.landed = (self.landed + dt).min(10.0);
+        if self.playful {
+            self.tricks(dt, moving || self.still);
+        }
         if moving || self.still {
             self.calm = (self.calm - CALM_OUT * dt).max(0.0);
         } else {
@@ -468,6 +627,29 @@ impl Shelf {
         self.age = (self.age + dt).rem_euclid(LOOP_S);
         self.spin = (self.spin + disc::SPIN * std::f32::consts::TAU * ease(self.calm) * dt)
             .rem_euclid(std::f32::consts::TAU);
+    }
+
+    /// Runs the middle cart's tricks: once it has stood alone a while it starts one, and goes
+    /// on to another every few seconds. A scroll or anything holding it still ends the trick.
+    fn tricks(&mut self, dt: f32, disturbed: bool) {
+        if disturbed {
+            self.idle = 0.0;
+            self.trick = None;
+            self.next_trick = FIRST_MOVE_S;
+            return;
+        }
+        self.idle += dt;
+        if let Some((trick, t, dir)) = self.trick {
+            let t = t + dt / trick.seconds();
+            self.trick = (t < 1.0).then_some((trick, t, dir));
+            if t >= 1.0 {
+                self.next_trick = self.idle + self.roll_dice(MOVE_GAP_S.0, MOVE_GAP_S.1);
+            }
+        } else if self.idle >= self.next_trick && self.calm >= 1.0 {
+            let k = self.roll_dice(0.0, Trick::ALL.len() as f32) as usize;
+            let dir = if self.roll_dice(0.0, 1.0) < 0.5 { -1.0 } else { 1.0 };
+            self.trick = Some((Trick::ALL[k.min(Trick::ALL.len() - 1)], 0.0, dir));
+        }
     }
 
     /// The row, none of its carts held.
@@ -517,7 +699,7 @@ impl Shelf {
             let face = self.faces.get(i).copied();
             // A cart still waiting for its face stands still: only a face can turn.
             let pose = match face {
-                Some(_) => self.pose_at(offset).toward_rest(recede),
+                Some(_) => self.pose_at(offset, i).toward_rest(recede),
                 None => Pose::REST,
             };
             let y = y - pose.lift;
@@ -540,7 +722,7 @@ impl Shelf {
                         meshes.of(model),
                         tex,
                         colour,
-                        0.0,
+                        pose.roll,
                         pose.yaw,
                     )),
                 }
@@ -551,7 +733,7 @@ impl Shelf {
                     out,
                     (x, y, w, h),
                     tex,
-                    0.0,
+                    pose.roll,
                     pose.yaw,
                     alpha * dim,
                     recede_alpha(alpha),
@@ -563,13 +745,13 @@ impl Shelf {
                         (x, y, w, h),
                         tex,
                         recede_alpha(alpha),
-                        0.0,
+                        pose.roll,
                         pose.yaw,
                     ));
                 }
             }
             out.push(match face {
-                Some(tex) => spin::posed_face((x, y, w, h), tex, alpha * dim, 0.0, pose.yaw),
+                Some(tex) => spin::posed_face((x, y, w, h), tex, alpha * dim, pose.roll, pose.yaw),
                 None => {
                     let c = label_colour(&label_text(cart));
                     Draw::Rect {

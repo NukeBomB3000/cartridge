@@ -669,6 +669,7 @@ fn a_stack_goes_in_back_to_front_from_where_a_lone_disc_would() {
             pose: Pose {
                 yaw: 0.2,
                 lift: 2.0,
+                roll: 0.0,
             },
             seat,
             alert: None,

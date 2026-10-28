@@ -25,18 +25,21 @@ const MIN_SIDE_PX: f32 = 0.5;
 /// that, a slice of the face is always hidden behind the face, so it is not drawn there.
 pub const OUTLINE_INSET: f32 = 0.13;
 
-/// How a cart is held: turned `yaw` radians about its upright axis, and lifted `lift` canvas
-/// pixels off where it would stand.
+/// How a cart is held: turned `yaw` radians about its upright axis, lifted `lift` canvas
+/// pixels off where it would stand, and rolled `roll` radians in the canvas.
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
 pub struct Pose {
     pub yaw: f32,
     pub lift: f32,
+    /// Turned this many radians in the canvas, about its middle.
+    pub roll: f32,
 }
 
 impl Pose {
     pub const REST: Pose = Pose {
         yaw: 0.0,
         lift: 0.0,
+        roll: 0.0,
     };
 
     /// This pose `k` of the way back to rest.
@@ -45,6 +48,7 @@ impl Pose {
         Pose {
             yaw: self.yaw * keep,
             lift: self.lift * keep,
+            roll: self.roll * keep,
         }
     }
 }

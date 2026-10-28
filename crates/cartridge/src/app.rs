@@ -494,7 +494,7 @@ fn shelves_of(carts: Vec<Cart>) -> Vec<(Platform, Shelf)> {
         }
     }
     rows.into_iter()
-        .map(|(platform, carts)| (platform, Shelf::new(carts)))
+        .map(|(platform, carts)| (platform, playful(Shelf::new(carts))))
         .collect()
 }
 
@@ -3807,7 +3807,7 @@ impl App {
             self.dropped_faces.extend(shelf.take_faces());
         }
         self.shelves = match focused {
-            Some(carts) if !carts.is_empty() => vec![(carts[0].platform, Shelf::new(carts))],
+            Some(carts) if !carts.is_empty() => vec![(carts[0].platform, playful(Shelf::new(carts)))],
             _ => shelves_of(self.all_carts.clone()),
         };
         self.shelf_at = self
@@ -3886,4 +3886,10 @@ impl App {
         self.focus = games;
         self.lay_out_shelves();
     }
+}
+
+/// A shelf of the launcher's own: its carts do tricks as well as sway.
+fn playful(mut shelf: Shelf) -> Shelf {
+    shelf.set_playful(true);
+    shelf
 }
