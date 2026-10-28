@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- R2 in a Nintendo DS game goes round the screen layouts (Top Dominant, Top Only, Bottom Only,
+  Vertical, Horizontal, Picture in Picture), each kept as the options menu keeps it, in place of
+  fast forward, which a DS game does not have. L2 still swaps the screens; Controls says both.
 - Nintendo DS runs on a core of its own: DSperate's thread layout, which its own frontend has and
   its libretro one lacked, is on. The emulation thread has one core to itself, the 2D engines and
   3D bands two more, and the frontend's threads (audio, video, drivers) the first, so the one

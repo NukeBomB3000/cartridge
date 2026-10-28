@@ -6,11 +6,50 @@
 //!
 //! BENCH_OPTIONS="key=value,key=value" sets core options before the game loads, and BENCH_STATE
 //! names a save state to put in once it has, to time a scene rather than a title screen.
+//! BENCH_PIN=1 puts this thread alone on the last core and every other thread of the process, the
+//! core's own among them, on the first three, as DSperate's thread layout does, to see what that
+//! is worth to a core that has no layout of its own.
 
 use std::path::Path;
 use std::time::Instant;
 
 use cartridge_retro::{ButtonMask, LibretroCore, RetroCore};
+
+extern "C" {
+    fn sched_setaffinity(pid: i32, size: usize, mask: *const u64) -> i32;
+}
+
+/// Puts thread `tid` on the cores in `mask`.
+fn pin(tid: i32, mask: u64) {
+    // SAFETY: the mask is one word, and a refusal only answers -1
+    unsafe { sched_setaffinity(tid, 8, &mask) };
+}
+
+/// Puts this thread on core 3 and every other thread of the process on cores 0 to 2.
+fn pin_threads() {
+    let me = std::fs::read_to_string("/proc/thread-self/stat")
+        .ok()
+        .and_then(|s| {
+            s.split_whitespace()
+                .next()
+                .and_then(|t| t.parse::<i32>().ok())
+        })
+        .unwrap_or(0);
+    pin(me, 1 << 3);
+    if let Ok(dir) = std::fs::read_dir("/proc/self/task") {
+        for entry in dir.flatten() {
+            if let Some(tid) = entry
+                .file_name()
+                .to_str()
+                .and_then(|t| t.parse::<i32>().ok())
+            {
+                if tid != me {
+                    pin(tid, 0b0111);
+                }
+            }
+        }
+    }
+}
 
 const START: u16 = 1 << 3;
 const A: u16 = 1 << 8;
@@ -46,7 +85,12 @@ fn main() {
     let fps = core.av_info().fps;
     let mut window = Instant::now();
     let started = Instant::now();
+    let pinned = std::env::var_os("BENCH_PIN").is_some();
     for n in 0..frames {
+        // the threads a core starts are started by its first frames, so look again for a while
+        if pinned && (n == 0 || n == 60 || n == 600) {
+            pin_threads();
+        }
         // Start then A, a frame each, every two seconds
         let input = match n % 120 {
             0 => START,

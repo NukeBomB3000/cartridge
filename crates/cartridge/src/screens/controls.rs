@@ -56,6 +56,8 @@ impl ControlsView {
         let mut game = Vec::new();
         if platform.game_owns_l2_r2() {
             game.push(("SELECT+R2/×2", "FAST FWD/LATCH"));
+        } else if platform == Platform::Nds {
+            game.extend([("L2", "SWAP SCREENS"), ("R2", "SCREEN LAYOUT")]);
         } else {
             if platform.rewinds() {
                 game.push(("L2", "REWIND"));

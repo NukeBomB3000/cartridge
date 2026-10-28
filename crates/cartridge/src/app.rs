@@ -1127,6 +1127,36 @@ impl App {
         !self.link_active()
     }
 
+    /// R2 in a DS game: the next screen layout, kept as the options menu keeps it and handed to
+    /// the core at once.
+    fn cycle_layout(&mut self) {
+        const KEY: &str = "dsperate_layout";
+        const LAYOUTS: [&str; 6] = [
+            "Top Dominant",
+            "Top Only",
+            "Bottom Only",
+            "Vertical",
+            "Horizontal",
+            "Picture in Picture",
+        ];
+        let kept = self.root.as_deref().and_then(|root| {
+            cartridge_store::ini::value(root, crate::core_options::CORE_OPTIONS_FILE, KEY)
+        });
+        let at = LAYOUTS
+            .iter()
+            .position(|l| Some(*l) == kept.as_deref())
+            .unwrap_or(0);
+        let next = LAYOUTS[(at + 1) % LAYOUTS.len()];
+        if let Some(root) = self.root.as_deref() {
+            if let Err(e) =
+                cartridge_store::ini::write(root, crate::core_options::CORE_OPTIONS_FILE, KEY, next)
+            {
+                eprintln!("cartridge: {}: {e}", crate::core_options::CORE_OPTIONS_FILE);
+            }
+        }
+        self.core_option_pending = Some((KEY.to_string(), next.to_string()));
+    }
+
     pub fn may_fast_forward(&self) -> bool {
         !self.link_active()
     }
@@ -1657,6 +1687,8 @@ impl App {
                 Action::SaveState => self.save_state(),
                 Action::LoadState => self.load_newest(),
                 Action::RewindStart if !self.may_rewind() => self.refuse(),
+                // a DS game has no fast forward, R2 goes round the screen layouts instead
+                Action::FfStart if self.platform == Platform::Nds => self.cycle_layout(),
                 Action::FfStart if !self.may_fast_forward() => self.refuse(),
                 _ => {}
             },

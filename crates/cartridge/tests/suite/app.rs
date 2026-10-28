@@ -2413,3 +2413,47 @@ fn switching_shelves_drops_the_letter_for_the_new_system() {
     tap(&mut a, Btn::R1);
     assert_eq!(a.pill_text(), None);
 }
+
+#[test]
+fn r2_in_a_ds_game_goes_round_the_screen_layouts_instead_of_fast_forwarding() {
+    let d = common::tmp_root_with_carts(&["Emerald", "Zzz"]);
+    let mut a = common::app_playing_in(d.path(), "Emerald");
+    a.set_platform(Platform::Nds);
+    let mut seen = Vec::new();
+    for _ in 0..7 {
+        a.apply(Action::FfStart);
+        a.apply(Action::FfStop);
+        seen.push(a.take_core_option().expect("R2 changed no option").1);
+    }
+    assert_eq!(
+        seen,
+        [
+            "Top Only",
+            "Bottom Only",
+            "Vertical",
+            "Horizontal",
+            "Picture in Picture",
+            "Top Dominant",
+            "Top Only"
+        ]
+    );
+    assert_eq!(
+        cartridge_store::ini::value(
+            d.path(),
+            cartridge::core_options::CORE_OPTIONS_FILE,
+            "dsperate_layout"
+        )
+        .as_deref(),
+        Some("Top Only"),
+        "the layout is not kept"
+    );
+}
+
+#[test]
+fn r2_still_fast_forwards_in_a_game_boy_advance_game() {
+    let d = common::tmp_root_with_carts(&["Emerald", "Zzz"]);
+    let mut a = common::app_playing_in(d.path(), "Emerald");
+    a.set_platform(Platform::Gba);
+    a.apply(Action::FfStart);
+    assert_eq!(a.take_core_option(), None);
+}

@@ -261,7 +261,10 @@ impl Session {
             // over the guide L2 and R2 size its text instead
             Action::RewindStart if !self.app.guide_open() => self.rewinding = true,
             Action::RewindStop => self.rewinding = false,
-            Action::FfStart if !self.app.guide_open() => self.fast = true,
+            // a DS game has no fast forward: its R2 changes the screen layout
+            Action::FfStart if !self.app.guide_open() && self.app.platform() != Platform::Nds => {
+                self.fast = true
+            }
             Action::FfStop => self.fast = false,
             _ => {}
         }
