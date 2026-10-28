@@ -716,6 +716,9 @@ impl Worker {
         let mut served = 0u64;
         let mut ticked = false;
         let mut paced = 0u64;
+        // the slowest frame since the last trace line, and how many ran over 25 ms
+        let mut worst = Duration::ZERO;
+        let mut slow = 0u32;
         let mut scale = 0.0f64;
         let mut rate = TickRate::new(Instant::now(), 0);
         let mut stalled = false;
@@ -885,6 +888,8 @@ impl Worker {
                     }
                     crate::cheevos::frame(core.as_ref());
                     let took = frame_began.elapsed();
+                    worst = worst.max(took);
+                    slow += u32::from(took > Duration::from_millis(25));
                     if last {
                         drawn = took;
                     } else {
@@ -981,8 +986,11 @@ impl Worker {
                     if crate::session::trace() && paced.is_multiple_of(TRACE_EVERY) {
                         let (dropped, starved) = (ring.overruns(), ring.underruns());
                         eprintln!(
-                            "cartridge: audio: {queued}/{target} queued, {dropped} dropped, {starved} starved, locked {lock} at {scale:.5}"
+                            "cartridge: audio: {queued}/{target} queued, {dropped} dropped, {starved} starved, locked {lock} at {scale:.5}; frames over 25 ms {slow}, slowest {:.0} ms",
+                            worst.as_secs_f64() * 1000.0
                         );
+                        worst = Duration::ZERO;
+                        slow = 0;
                     }
                 }
 
