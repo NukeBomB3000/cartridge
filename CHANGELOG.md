@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- The picture no longer stands still each time sound comes back after a few quiet seconds. The
+  audio device is let go after three seconds of silence and opened again with the next sound,
+  which takes longer than the sound ring holds; the emulator, pushing sound into a ring nothing
+  was draining, waited 50 ms for it (a stall of four frames, with a good deal of sound dropped) at
+  every release and every reopen, as a video with pauses in its sound showed. The emulator no
+  longer waits for a device being opened or closed.
 - OpenGL is gone: SwanStation draws in software and the frontend no longer makes a GLES context for
   a core, hands one to it, reads its frames back or holds the GPU at its top clock. On the RG SP
   the readback alone cost 7.4 ms of a 16.7 ms frame. The renderer is no longer among SwanStation's

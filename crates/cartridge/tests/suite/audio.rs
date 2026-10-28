@@ -353,3 +353,31 @@ fn reopening_the_device_forgets_the_released_schedule() {
     pace.reset();
     assert_eq!(pace.wait(start + span * 3), span);
 }
+
+#[test]
+fn a_ring_whose_device_is_being_opened_does_not_hold_the_emulator_up() {
+    use cartridge::audio::Ring;
+    use std::time::{Duration, Instant};
+    let ring = Ring::new(0);
+    ring.reopen(48_000);
+    let full = vec![1i16; ring.capacity_frames() * 2];
+    ring.push(&full);
+    // nothing drains it now: a push would wait the longest it ever does...
+    ring.pause_consuming();
+    let began = Instant::now();
+    ring.push_blocking(&full);
+    assert!(
+        began.elapsed() < Duration::from_millis(10),
+        "the push waited {:?} for a device being opened",
+        began.elapsed()
+    );
+    // ...and the device taking sound again is known by its next read
+    let mut out = vec![0i16; 480];
+    ring.fill(&mut out);
+    let began = Instant::now();
+    ring.push_blocking(&vec![1i16; ring.capacity_frames() * 2]);
+    assert!(
+        began.elapsed() >= Duration::from_millis(30),
+        "the push did not wait for a device that is draining"
+    );
+}

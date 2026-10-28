@@ -228,10 +228,17 @@ impl Playback {
             let hold = silence.hear(&buf, span);
             match (self.pcm, hold) {
                 (Some(_), false) => {
+                    // closing the device can take longer than the ring holds
+                    ring.pause_consuming();
                     self.release();
                     eprintln!("cartridge: audio released after silence");
                 }
-                (None, true) => match self.alsa.open_pcm(self.rate) {
+                (None, true) => match {
+                    // as can opening it: the emulator is not made to wait for either, which
+                    // showed as the picture standing still each time sound came back
+                    ring.pause_consuming();
+                    self.alsa.open_pcm(self.rate)
+                } {
                     Ok(pcm) => {
                         eprintln!("cartridge: audio reopened");
                         self.pcm = Some(pcm);

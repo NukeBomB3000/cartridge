@@ -96,6 +96,13 @@ impl Ring {
         }
     }
 
+    /// The device is not taking sound for a moment, being opened or let go, which can take longer
+    /// than the ring holds: pushes do not wait for it, so the emulator is not held up for it. The
+    /// next `fill` says the device is back.
+    pub fn pause_consuming(&self) {
+        self.consuming.store(false, Ordering::Relaxed);
+    }
+
     pub fn push_blocking(&self, samples: &[i16]) {
         if self.muted() || self.capacity_frames() == 0 || !self.consuming.load(Ordering::Relaxed) {
             self.push(samples);
