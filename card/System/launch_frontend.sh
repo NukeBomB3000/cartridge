@@ -5,6 +5,9 @@ RUN="${AGS_RUN:-/run}"
 LOADER="${AGS_LOADER:-/lib/ld-linux-aarch64.so.1}"
 TMPDIR_RO="${AGS_TMP:-/tmp}"
 export CARTRIDGE_ROOT="$SD"
+# a file TRACE at the card's root has cartridge say what the audio and the pacing are doing, once
+# a second or so, in cartridge.log
+[ -f "$SD/TRACE" ] && export CARTRIDGE_TRACE=1
 
 log() {
 	(echo "$(date '+%H:%M:%S') $*" >> "$SD/cartridge-session.log") 2>/dev/null

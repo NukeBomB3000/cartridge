@@ -86,6 +86,8 @@ fn main() {
     let mut window = Instant::now();
     let started = Instant::now();
     let pinned = std::env::var_os("BENCH_PIN").is_some();
+    // how long each frame took, to find the ones that would be heard as a gap
+    let mut took: Vec<f64> = Vec::with_capacity(frames as usize);
     for n in 0..frames {
         // the threads a core starts are started by its first frames, so look again for a while
         if pinned && (n == 0 || n == 60 || n == 600) {
@@ -97,8 +99,10 @@ fn main() {
             60 => A,
             _ => 0,
         };
+        let began = Instant::now();
         core.run_frame(ButtonMask(input));
         let _ = core.take_audio();
+        took.push(began.elapsed().as_secs_f64() * 1000.0);
         if n % 300 == 299 {
             let secs = window.elapsed().as_secs_f64();
             println!(
@@ -111,6 +115,14 @@ fn main() {
             window = Instant::now();
         }
     }
+    let over = |ms: f64| took.iter().filter(|t| **t > ms).count();
+    let worst = took.iter().cloned().fold(0.0, f64::max);
+    println!(
+        "frames over 20 ms: {}, over 33 ms: {}, over 50 ms: {}, slowest {worst:.1} ms",
+        over(20.0),
+        over(33.0),
+        over(50.0)
+    );
     println!(
         "all {frames}: {:.1} fps",
         frames as f64 / started.elapsed().as_secs_f64()

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A file named TRACE at the card's root has cartridge write what its audio and pacing are doing to
+  cartridge.log, once a second or so, for finding why a game stutters.
 - R2 in a Nintendo DS game goes round the screen layouts (Top Dominant, Top Only, Bottom Only,
   Vertical, Horizontal, Picture in Picture), each kept as the options menu keeps it, in place of
   fast forward, which a DS game does not have. L2 still swaps the screens; Controls says both.
