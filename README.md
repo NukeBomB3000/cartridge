@@ -6,7 +6,7 @@ handheld when you play them. It plays GBA, GBC, GB, Game Gear, NES, SNES, Master
 PC Engine, PlayStation and Nintendo DS games.</p>
 
 <p align="center">
-<a href="https://github.com/NukeBomB3000/omega-zero/releases"><b>Download</b></a> ·
+<a href="https://github.com/NukeBomB3000/cartridge/releases"><b>Download</b></a> ·
 <a href="CHANGELOG.md"><b>Changelog</b></a> ·
 <a href="https://oauramos.github.io/omega-zero/"><b>Upstream site</b></a> ·
 <a href="https://github.com/oauramos/omega-zero/wiki"><b>Upstream wiki</b></a>
@@ -195,7 +195,7 @@ is the most useful thing you can send.
 
 1. Write the [BaseOS image](https://github.com/pvaibhav/BaseOS/releases/latest) for your model to a
    microSD card, put it in **SD1** and boot once.
-2. Copy the contents of the [latest release](https://github.com/NukeBomB3000/omega-zero/releases/latest)
+2. Copy the contents of the [latest release](https://github.com/NukeBomB3000/cartridge/releases/latest)
    to the root of that card.
 3. Put your games in `Games/GBA`, `Games/GB`, `Games/GBC`, `Games/NES`, `Games/SNES`, `Games/MD`,
    `Games/GG`, `Games/SMS`, `Games/PCE`, `Games/PS1` and `Games/NDS` (a `.nds`). An NES game is a `.nes`, a Mega Drive
