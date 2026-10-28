@@ -51,7 +51,7 @@ fn the_badge_follows_the_latch_rather_than_the_button() {
 }
 
 #[test]
-fn the_fast_forward_settings_reach_the_emulator() {
+fn fast_forward_runs_at_6x_without_sound_whatever_an_old_state_file_says() {
     let d = common::tmp_root_with_carts(&["Emerald"]);
     write_app_state(
         d.path(),
@@ -75,12 +75,11 @@ fn the_fast_forward_settings_reach_the_emulator() {
     }
 
     let emu = s.emu().expect("a seated cart has a core");
-    assert_eq!(
-        emu.fast_steps(),
-        2,
-        "the chosen speed never reached the core"
+    assert_eq!(emu.fast_steps(), 6, "an old speed reached the core");
+    assert!(
+        !emu.ff_sound(),
+        "an old fast forward sound reached the core"
     );
-    assert!(emu.ff_sound(), "fast forward sound never reached the core");
 }
 
 fn step(s: &mut Session, now: &mut Millis, ev: Option<RawEvent>) {

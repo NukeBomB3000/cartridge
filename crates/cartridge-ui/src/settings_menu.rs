@@ -54,8 +54,6 @@ impl SettingsGroup {
 /// A row of the settings START opens on the shelf, in the order they are listed.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum SettingsRow {
-    FastForward,
-    FastForwardSound,
     /// The equalizer, in Colour Correction's place, which SELECT+A switches.
     Equalizer,
     /// Five Games: the handheld kept to up to five games picked from the shelves. It took LCD
@@ -69,13 +67,13 @@ pub enum SettingsRow {
     /// THEME on the screen: the background, its motion and the colour everything takes, and the
     /// bar's font.
     Background,
+    /// SLEEP on the screen: when the handheld sleeps by itself and when it powers off asleep.
+    Sleep,
     About,
 }
 
 impl SettingsRow {
-    pub const ALL: [SettingsRow; 11] = [
-        SettingsRow::FastForward,
-        SettingsRow::FastForwardSound,
+    pub const ALL: [SettingsRow; 10] = [
         SettingsRow::Equalizer,
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
@@ -84,6 +82,7 @@ impl SettingsRow {
         SettingsRow::Network,
         SettingsRow::Bluetooth,
         SettingsRow::Background,
+        SettingsRow::Sleep,
         SettingsRow::About,
     ];
 
@@ -93,8 +92,6 @@ impl SettingsRow {
 
     pub fn label(self) -> &'static str {
         match self {
-            SettingsRow::FastForward => "Fast Forward",
-            SettingsRow::FastForwardSound => "Fast Forward Sound",
             SettingsRow::FiveGames => "5 Games",
             SettingsRow::Rumble => "Rumble",
             SettingsRow::Labels => "Labels",
@@ -102,6 +99,7 @@ impl SettingsRow {
             SettingsRow::Network => "Network",
             SettingsRow::Bluetooth => "Bluetooth",
             SettingsRow::Background => "Theme",
+            SettingsRow::Sleep => "Sleep",
             SettingsRow::Equalizer => "Equalizer",
             SettingsRow::About => "About",
         }
@@ -109,9 +107,7 @@ impl SettingsRow {
 
     pub fn group(self) -> SettingsGroup {
         match self {
-            SettingsRow::FastForward
-            | SettingsRow::FastForwardSound
-            | SettingsRow::Equalizer
+            SettingsRow::Equalizer
             | SettingsRow::FiveGames
             | SettingsRow::Rumble
             | SettingsRow::Labels => SettingsGroup::Configs,
@@ -119,6 +115,7 @@ impl SettingsRow {
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
+            | SettingsRow::Sleep
             | SettingsRow::About => SettingsGroup::General,
         }
     }
@@ -134,6 +131,7 @@ impl SettingsRow {
                 | SettingsRow::Network
                 | SettingsRow::Bluetooth
                 | SettingsRow::Background
+                | SettingsRow::Sleep
                 | SettingsRow::Equalizer
                 | SettingsRow::About
         )
@@ -144,7 +142,7 @@ impl SettingsRow {
     pub fn carets(self) -> bool {
         matches!(
             self,
-            SettingsRow::FastForward | SettingsRow::FastForwardSound | SettingsRow::Rumble
+            SettingsRow::Rumble
         )
     }
 

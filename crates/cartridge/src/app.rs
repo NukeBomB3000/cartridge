@@ -45,6 +45,7 @@ use crate::screens::info::InfoScreen;
 use crate::screens::keyboard::typing_of;
 use crate::screens::lone::Lone;
 use crate::screens::power::{PowerScreen, PowerSlide};
+use crate::sleep_screen::SleepScreen;
 use crate::ssh::{ssh_server, Ssh};
 use crate::start_notice::StartNotice;
 use crate::video_mode::{self, VideoMode};
@@ -276,6 +277,8 @@ pub enum Phase {
     Background(BackgroundScreen),
     /// The equalizer, opened from Settings.
     Equalizer(EqualizerScreen),
+    /// When the handheld sleeps and powers off by itself, opened from Settings.
+    Sleep(SleepScreen),
     Doze {
         cart: Option<String>,
     },
@@ -414,6 +417,12 @@ pub struct App {
     pub(crate) clock: f64,
     pub(crate) power: Option<Power>,
     pub(crate) dozed_at: Millis,
+    /// When something was last pressed, for the sleep after the quiet.
+    last_input_at: Millis,
+    /// The handheld went to sleep by itself, its lid open: any button wakes it.
+    dozed_idle: bool,
+    /// The lid is closed.
+    lid_closed: bool,
     pub(crate) woke_on_press: bool,
     /// When the shelf's resting place, changed, is written to the state file: a little after the
     /// last move, so scrolling is not a write for every cart passed.
@@ -451,6 +460,7 @@ pub struct App {
     pub(crate) stale_faces: Vec<(Platform, String)>,
     pub(crate) background_panel: Option<Lone>,
     pub(crate) equalizer_panel: Option<Lone>,
+    pub(crate) sleep_panel: Option<Lone>,
     /// The pattern the shelf is drawn over, the width of its picture, and what it was drawn
     /// as, so a stale one is not shown while the new one is made.
     pub(crate) backdrop_face: Option<(TexId, u32, BackdropStyle, u8)>,
@@ -511,6 +521,7 @@ impl App {
             stale_faces: Vec::new(),
             background_panel: None,
             equalizer_panel: None,
+            sleep_panel: None,
             backdrop_face: None,
             slide: None,
             theme: None,
@@ -603,6 +614,9 @@ impl App {
             clock: 0.0,
             power: None,
             dozed_at: 0,
+            last_input_at: 0,
+            dozed_idle: false,
+            lid_closed: false,
             woke_on_press: false,
             browse_save_at: None,
             autosave_at: AUTOSAVE_MS,
@@ -627,6 +641,10 @@ impl App {
         app.root = Some(root.to_path_buf());
         app.theme = Theme::read_override(root);
         app.state = read_app_state(root);
+        // fast forward is at its one speed, 6X, with no sound; a file that says otherwise is
+        // from before the settings for them were taken out
+        app.state.ff_speed = cartridge_store::FF_SPEED_DEFAULT;
+        app.state.ff_sound = false;
         app.focus = cartridge_store::read_focus(root);
         if app.focus.is_some() {
             app.lay_out_shelves();
@@ -1521,6 +1539,17 @@ impl App {
     }
 
     pub fn apply(&mut self, action: Action) {
+        self.last_input_at = self.now();
+        match action {
+            Action::LidClose => self.lid_closed = true,
+            Action::LidOpen => self.lid_closed = false,
+            // a button on a handheld that slept by itself wakes it, the press woken by going
+            // no further
+            Action::GbaDown(_) if self.dozed_idle && !self.lid_closed => {
+                return self.wake();
+            }
+            _ => {}
+        }
         let taken = self.opening_takes(action) || self.start_notice_takes(action);
         self.press_ends_boot_fade(action);
         if taken {
@@ -1668,6 +1697,7 @@ impl App {
             Phase::Labels(_) => self.labels_input(action),
             Phase::Background(_) => self.background_input(action),
             Phase::Equalizer(_) => self.equalizer_input(action),
+            Phase::Sleep(_) => self.sleep_input(action),
             _ => {}
         }
     }
@@ -2214,6 +2244,10 @@ impl App {
         self.take_labels();
         self.play_hold();
         self.note_browsed();
+        if self.idle_expired() {
+            self.doze();
+            self.dozed_idle = !self.lid_closed;
+        }
         if self.doze_expired() {
             self.on_doze_timeout();
         }
@@ -2478,6 +2512,7 @@ impl App {
             Phase::Controls => self.draw_controls(out),
             Phase::Background(_) => self.draw_background_screen(out),
             Phase::Equalizer(_) => self.draw_equalizer_screen(out),
+            Phase::Sleep(_) => self.draw_sleep_screen(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
             // the modal and its panels stand over the backdrop, with nothing between
             Phase::Network(screen) if screen.typing.is_none() => self.draw_network(out),
@@ -2900,6 +2935,7 @@ impl App {
     }
 
     fn doze(&mut self) {
+        self.dozed_idle = false;
         self.flush_browsed();
         if self.link_active() {
             self.end_link();
@@ -2928,6 +2964,8 @@ impl App {
         let Phase::Doze { cart } = &mut self.phase else {
             return;
         };
+        self.dozed_idle = false;
+        self.last_input_at = self.clock as Millis;
         self.phase = match cart.take() {
             Some(cart) => Phase::Playing { cart },
             None => Phase::Shelf,
@@ -3390,14 +3428,33 @@ impl App {
         self.begin_power_off();
     }
 
-    fn doze_expired(&self) -> bool {
-        if self.link_active() {
+    /// The handheld has been left alone for as long as the settings let it be, where sleeping
+    /// does no harm: not asleep, not in a link game, not going down, not fetching labels.
+    /// Sets the minutes of quiet before sleep and of sleep before power off, 0 for never.
+    pub fn set_sleep(&mut self, idle_min: u8, off_min: u8) {
+        self.state.sleep_idle_min = idle_min;
+        self.state.sleep_off_min = off_min;
+    }
+
+    fn idle_expired(&self) -> bool {
+        let min = self.state.sleep_idle_min;
+        if min == 0 || self.link_active() || self.shutting_down() || self.labels.working() {
             return false;
         }
-        let (Phase::Doze { .. }, Some(power)) = (&self.phase, &self.power) else {
+        if matches!(self.phase, Phase::Doze { .. } | Phase::SetClock { .. }) || self.power.is_none()
+        {
             return false;
-        };
-        self.now().saturating_sub(self.dozed_at) >= power.timeout().as_millis() as Millis
+        }
+        self.now().saturating_sub(self.last_input_at) >= Millis::from(min) * 60_000
+    }
+
+    /// The sleep has lasted as long as the settings let it before the handheld powers off.
+    fn doze_expired(&self) -> bool {
+        let min = self.state.sleep_off_min;
+        if min == 0 || self.link_active() || !matches!(self.phase, Phase::Doze { .. }) {
+            return false;
+        }
+        self.now().saturating_sub(self.dozed_at) >= Millis::from(min) * 60_000
     }
 
     pub fn settle_saves(&mut self) {

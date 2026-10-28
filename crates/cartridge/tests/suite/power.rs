@@ -97,19 +97,79 @@ fn lid_close_over_the_switcher_wakes_into_the_game() {
 }
 
 #[test]
-fn a_doze_that_outlasts_the_timeout_powers_off_by_itself() {
+fn a_doze_that_outlasts_the_setting_powers_off_by_itself() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
     a.set_power(panel(d.path(), Duration::from_secs(2)).0);
+    a.set_sleep(0, 1);
     a.apply(Action::LidClose);
-    for _ in 0..100 {
-        a.update(1.0 / 60.0);
-    }
-    assert!(!a.powering_off(), "1.6 s is short of the 2 s timeout");
-    for _ in 0..40 {
-        a.update(1.0 / 60.0);
-    }
+    let closed = a.now();
+    a.tick_ms(closed + 59_000);
+    assert!(!a.powering_off(), "59 s is short of the minute");
+    a.tick_ms(closed + 61_000);
     assert!(a.powering_off());
+}
+
+#[test]
+fn a_doze_never_powers_off_when_the_setting_is_never() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.set_power(panel(d.path(), Duration::from_secs(2)).0);
+    a.set_sleep(0, 0);
+    a.apply(Action::LidClose);
+    a.tick_ms(24 * 3_600_000);
+    assert!(!a.powering_off());
+    assert!(matches!(a.phase(), Phase::Doze { .. }));
+}
+
+#[test]
+fn a_handheld_left_alone_sleeps_and_any_button_wakes_it() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.set_power(panel(d.path(), Duration::from_secs(300)).0);
+    a.set_sleep(2, 0);
+    a.tick_ms(119_000);
+    assert!(
+        matches!(a.phase(), Phase::Playing { .. }),
+        "119 s is short of two minutes"
+    );
+    a.apply(Action::GbaDown(Btn::A));
+    a.apply(Action::GbaUp(Btn::A));
+    a.tick_ms(119_000 + 119_000);
+    assert!(
+        matches!(a.phase(), Phase::Playing { .. }),
+        "a press starts the quiet over"
+    );
+    a.tick_ms(119_000 + 121_000);
+    assert!(matches!(a.phase(), Phase::Doze { .. }), "two quiet minutes");
+    a.apply(Action::GbaDown(Btn::B));
+    assert!(
+        matches!(a.phase(), Phase::Playing { .. }),
+        "a button wakes it"
+    );
+}
+
+#[test]
+fn a_lid_that_is_shut_wakes_only_when_it_opens() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.set_power(panel(d.path(), Duration::from_secs(300)).0);
+    a.set_sleep(0, 0);
+    a.apply(Action::LidClose);
+    a.apply(Action::GbaDown(Btn::A));
+    assert!(matches!(a.phase(), Phase::Doze { .. }));
+    a.apply(Action::LidOpen);
+    assert!(matches!(a.phase(), Phase::Playing { .. }));
+}
+
+#[test]
+fn nothing_sleeps_by_itself_when_the_setting_is_never() {
+    let d = tmp_root_with_carts(&["Emerald"]);
+    let mut a = app_playing_in(d.path(), "Emerald");
+    a.set_power(panel(d.path(), Duration::from_secs(300)).0);
+    a.set_sleep(0, 0);
+    a.tick_ms(24 * 3_600_000);
+    assert!(matches!(a.phase(), Phase::Playing { .. }));
 }
 
 #[test]
@@ -265,14 +325,13 @@ fn a_dozing_device_powers_off_by_itself_rather_than_waiting_for_the_lid() {
     let d = tmp_root_with_carts(&["Emerald"]);
     let mut a = app_playing_in(d.path(), "Emerald");
     a.set_power(panel(d.path(), Duration::from_secs(2)).0);
+    a.set_sleep(0, 1);
     a.apply(Action::LidClose);
+    a.tick_ms(a.now() + 61_000);
+    assert!(a.powering_off(), "a minute is past the setting");
     for _ in 0..180 {
         a.update(1.0 / 60.0);
     }
-    assert!(
-        a.powering_off(),
-        "three seconds is past the two second timeout"
-    );
     assert!(
         a.ready_to_power_off(),
         "the shutdown screen has had its time and the machine is still not allowed to stop"

@@ -2,7 +2,7 @@
 //! right change in place, and GENERAL, whose rows open a screen of their own.
 
 use cartridge_input::{Action, Btn};
-use cartridge_store::{FF_SPEEDS, RUMBLE_LEVEL_MAX};
+use cartridge_store::RUMBLE_LEVEL_MAX;
 use cartridge_ui::{date_time_text, Draw, QuickValue, RowShown, SettingsFaces, SettingsMenu};
 
 pub use cartridge_ui::{SettingsGroup, SettingsRow};
@@ -14,6 +14,7 @@ use crate::equalizer_screen::{preset_of, EqualizerScreen};
 use crate::label_screen::LabelsScreen;
 use crate::nav::Dir;
 use crate::screens::clock::clock_screen;
+use crate::sleep_screen::{minutes_text, SleepScreen};
 use crate::wifi_screen::{Summary, WifiScreen};
 
 impl App {
@@ -28,8 +29,6 @@ impl App {
     /// What a config row is set to; a row that opens a screen shows none of these.
     pub fn settings_value(&self, row: SettingsRow) -> Option<QuickValue> {
         match row {
-            SettingsRow::FastForward => QuickValue::speed(self.state.ff_speed),
-            SettingsRow::FastForwardSound => Some(QuickValue::flag(self.state.ff_sound)),
             SettingsRow::Rumble => Some(QuickValue::rumble(
                 self.state.rumble,
                 self.state.rumble_level,
@@ -40,6 +39,7 @@ impl App {
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
+            | SettingsRow::Sleep
             | SettingsRow::Equalizer
             | SettingsRow::About => None,
         }
@@ -61,6 +61,7 @@ impl App {
                 BluetoothSummary::On => QuickValue::On.text().to_string(),
                 BluetoothSummary::Connected(name) => name.to_uppercase(),
             }),
+            SettingsRow::Sleep => Some(minutes_text(self.state.sleep_idle_min)),
             SettingsRow::Equalizer => Some(
                 preset_of(self.eq_gains())
                     .unwrap_or("Custom")
@@ -142,11 +143,9 @@ impl App {
             SettingsRow::Bluetooth => Phase::Bluetooth(BluetoothScreen::default()),
             SettingsRow::Background => Phase::Background(BackgroundScreen::default()),
             SettingsRow::Equalizer => Phase::Equalizer(EqualizerScreen::default()),
+            SettingsRow::Sleep => Phase::Sleep(SleepScreen::default()),
             SettingsRow::About => Phase::About,
-            SettingsRow::FastForward
-            | SettingsRow::FastForwardSound
-            | SettingsRow::Rumble
-            | SettingsRow::FiveGames => return,
+            SettingsRow::Rumble | SettingsRow::FiveGames => return,
         };
         self.go(to, Dir::Deeper);
     }
@@ -154,14 +153,6 @@ impl App {
     pub(crate) fn change_setting(&mut self, row: SettingsRow, right: bool) {
         let s = &mut self.state;
         match row {
-            SettingsRow::FastForward => {
-                let to = ff_next(s.ff_speed, right);
-                if to == s.ff_speed {
-                    return;
-                }
-                s.ff_speed = to;
-            }
-            SettingsRow::FastForwardSound => s.ff_sound = !s.ff_sound,
             SettingsRow::Rumble => {
                 // OFF, LOW, MED and HIGH in a row, stopping at either end
                 let at = if s.rumble { s.rumble_level } else { 0 };
@@ -190,6 +181,7 @@ impl App {
             | SettingsRow::Network
             | SettingsRow::Bluetooth
             | SettingsRow::Background
+            | SettingsRow::Sleep
             | SettingsRow::Equalizer
             | SettingsRow::About => return,
         }
@@ -228,10 +220,4 @@ impl App {
         }
         .draw(out)
     }
-}
-
-fn ff_next(from: u8, right: bool) -> u8 {
-    let at = FF_SPEEDS.iter().position(|&v| v == from).unwrap_or(0);
-    let to = if right { at + 1 } else { at.saturating_sub(1) };
-    FF_SPEEDS[to.min(FF_SPEEDS.len() - 1)]
 }

@@ -66,6 +66,9 @@ over on first boot.
 - **A five-band equalizer** in Settings, with a test sound, for the handhelds' small speakers.
 - **The in-game guide follows the theme.** `GUIDES/<system>/<game>.txt` or `.html`, on a short
   MENU press.
+- **Sleep and power off by themselves:** after ten idle minutes the handheld sleeps, any button wakes
+  it; three minutes into any sleep, lid shut included, it powers off. Both times are set in
+  Settings > Sleep.
 - **Battery and card:** each system gets the CPU clock it needs, and the autosave writes a game's
   save every minute but its resume state every five, so the card is spared.
 
@@ -136,9 +139,8 @@ is the most useful thing you can send.
 - Link play between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,
   Advance Wars, Mario Kart and Tetris.
 - Settings on START, in windows in the style of Mega Man Zero's menus that slide from screen to
-  screen, over a background that keeps moving: CONFIGS (Fast Forward, Fast Forward Sound, Equalizer,
-  LCD Ghosting, Rumble, Labels) and GENERAL (Date & Time, Network, Bluetooth, Theme,
-  About).
+  screen, over a background that keeps moving: CONFIGS (Equalizer, 5 Games, Rumble, Labels) and GENERAL (Date & Time, Network, Bluetooth, Theme,
+  Sleep, About).
 - On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
 - A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game, on one panel.
 - Network: home Wi-Fi, network time, and SSH and SFTP, each ON or OFF. Y on one opens its panel:

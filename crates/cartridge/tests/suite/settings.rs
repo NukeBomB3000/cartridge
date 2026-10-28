@@ -61,13 +61,13 @@ fn open_at(a: &mut App, row: SettingsRow) {
 fn start_opens_settings_with_its_top_row_selected_every_time() {
     let (_d, mut a, _) = on_carousel();
     press(&mut a, Btn::Start);
-    assert_eq!(a.settings_row(), Some(SettingsRow::FastForward));
+    assert_eq!(a.settings_row(), Some(SettingsRow::Equalizer));
     press(&mut a, Btn::Down);
     press(&mut a, Btn::Start);
     press(&mut a, Btn::Start);
     assert_eq!(
         a.settings_row(),
-        Some(SettingsRow::FastForward),
+        Some(SettingsRow::Equalizer),
         "the menu opened where it was last left"
     );
 }
@@ -135,8 +135,6 @@ fn up_and_down_move_the_bar_and_wrap_at_the_ends() {
         "up from the top did not wrap to the bottom"
     );
     for want in [
-        SettingsRow::FastForward,
-        SettingsRow::FastForwardSound,
         SettingsRow::Equalizer,
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
@@ -145,8 +143,9 @@ fn up_and_down_move_the_bar_and_wrap_at_the_ends() {
         SettingsRow::Network,
         SettingsRow::Bluetooth,
         SettingsRow::Background,
+        SettingsRow::Sleep,
         SettingsRow::About,
-        SettingsRow::FastForward,
+        SettingsRow::Equalizer,
     ] {
         press(&mut a, Btn::Down);
         assert_eq!(a.settings_row(), Some(want));
@@ -154,65 +153,26 @@ fn up_and_down_move_the_bar_and_wrap_at_the_ends() {
 }
 
 #[test]
-fn fast_forward_steps_through_its_speeds_and_saves_each_one() {
+fn rumble_steps_through_its_strengths_and_saves() {
     let (d, mut a, _) = on_carousel();
-    open_at(&mut a, SettingsRow::FastForward);
-    for (btn, want) in [
-        (Btn::Left, 4),
-        (Btn::Left, 3),
-        (Btn::Left, 2),
-        (Btn::Left, 2),
-        (Btn::Right, 3),
-        (Btn::Right, 4),
-        (Btn::Right, 6),
-        (Btn::Right, 6),
-        (Btn::Left, 4),
-    ] {
-        press(&mut a, btn);
-        assert_eq!(a.ff_speed(), want, "{btn:?}");
-        assert_eq!(read_app_state(d.path()).ff_speed, want, "not on the card");
-        assert_eq!(
-            a.settings_value(SettingsRow::FastForward),
-            QuickValue::speed(want)
-        );
-    }
-}
-
-#[test]
-fn fast_forward_sound_flips_and_rumble_steps_through_its_strengths_and_both_save() {
-    let (d, mut a, _) = on_carousel();
-    let card = |d: &TempDir| {
-        let s = read_app_state(d.path());
-        (s.ff_sound, s.rumble)
-    };
-    open_at(&mut a, SettingsRow::FastForwardSound);
-    press(&mut a, Btn::Left);
-    assert_eq!(card(&d), (true, true));
-    assert_eq!(
-        a.settings_value(SettingsRow::FastForwardSound),
-        Some(QuickValue::On)
-    );
-    press(&mut a, Btn::Right);
-    assert_eq!(card(&d), (false, true));
-    press(&mut a, Btn::Down);
-    press(&mut a, Btn::Down);
-    press(&mut a, Btn::Down);
+    let card = |d: &TempDir| read_app_state(d.path()).rumble;
+    open_at(&mut a, SettingsRow::Rumble);
     assert_eq!(
         a.settings_value(SettingsRow::Rumble),
         Some(QuickValue::High)
     );
     press(&mut a, Btn::Right);
-    assert_eq!(card(&d), (false, true), "HIGH went past the top");
+    assert!(card(&d), "HIGH went past the top");
     for want in [QuickValue::Med, QuickValue::Low, QuickValue::Off] {
         press(&mut a, Btn::Left);
         assert_eq!(a.settings_value(SettingsRow::Rumble), Some(want));
     }
-    assert_eq!(card(&d), (false, false));
+    assert!(!card(&d));
     assert!(!a.rumble_enabled());
     press(&mut a, Btn::Right);
     assert_eq!(a.settings_value(SettingsRow::Rumble), Some(QuickValue::Low));
     assert_eq!(read_app_state(d.path()).rumble_level, 1);
-    assert_eq!(card(&d), (false, true));
+    assert!(card(&d));
 }
 
 #[test]
@@ -361,7 +321,7 @@ fn the_first_boot_clock_still_has_no_way_back() {
 #[test]
 fn brightness_and_volume_still_answer_over_settings() {
     let (d, mut a, _) = on_carousel();
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     let before = read_app_state(d.path());
     a.apply(Action::BrightnessUp);
     a.apply(Action::VolumeDown);
@@ -372,7 +332,7 @@ fn brightness_and_volume_still_answer_over_settings() {
     );
     assert_eq!(
         a.settings_row(),
-        Some(SettingsRow::FastForward),
+        Some(SettingsRow::Equalizer),
         "a level moved the menu"
     );
     let gauge = a.hud().gauge().expect("the level shows no gauge");
@@ -391,7 +351,7 @@ fn brightness_and_volume_still_answer_over_settings() {
 /// and 111, and each row 200 and its index.
 fn fake_faces(a: &mut App) -> SettingsFaces {
     let id = TexId::from_raw;
-    let frame = settings_frame(6, palette(0));
+    let frame = settings_frame(4, palette(0));
     let mut faces = SettingsFaces::new(&frame, id(100), [(id(110), [42, 11]), (id(111), [42, 11])]);
     for row in a.settings_rows() {
         faces.rows[row.index()] = Some((id(200 + row.index()), [270, ROW_H]));
@@ -453,7 +413,7 @@ fn the_modal_fills_the_page_and_the_lit_title_follows_the_cursor() {
 fn the_title_lights_over_the_frame_and_the_rows_over_both() {
     let (_d, mut a, _) = on_carousel();
     fake_faces(&mut a);
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     let out = frame(&a);
     let at = |id: usize| {
         out.iter()
@@ -468,7 +428,7 @@ fn the_title_lights_over_the_frame_and_the_rows_over_both() {
 fn every_row_is_drawn_in_its_panels_well() {
     let (_d, mut a, _) = on_carousel();
     let faces = fake_faces(&mut a);
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     let out = frame(&a);
     for (row, rect) in settings_row_rects(&a.settings_rows(), faces.wells) {
         let [x, y, ..] = at_2x(rect);
@@ -489,7 +449,7 @@ fn every_row_is_drawn_in_its_panels_well() {
 fn settings_no_longer_lays_a_plate_over_the_backdrop() {
     let (_d, mut a, _) = on_carousel();
     fake_faces(&mut a);
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     let see_through = frame(&a).into_iter().any(
         |d| matches!(d, Draw::Rect { w, h, colour, .. } if w >= out_w() as f32 && h >= 100.0 && colour[3] < 1.0),
     );
@@ -508,15 +468,13 @@ fn the_rows_say_what_is_set_in_flows_capitals() {
         rumble: true,
         ..AppState::default()
     });
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     let said = |a: &App| SettingsRow::ALL.map(|r| a.settings_text(r));
     let text = |s: &str| Some(s.to_string());
     let clock_text = text(&date_time_text(a.wall_secs()));
     assert_eq!(
         said(&a),
         [
-            text("4X"),
-            text("ON"),
             text("FLAT"),
             text("OFF"),
             text("HIGH"),
@@ -525,6 +483,7 @@ fn the_rows_say_what_is_set_in_flows_capitals() {
             text("OFF"),
             text("OFF"),
             None,
+            text("10 MIN"),
             None,
         ]
     );
@@ -604,7 +563,7 @@ fn without_a_radio_network_is_not_listed_drawn_or_stepped_onto() {
         .settings_shown()
         .iter()
         .all(|s| s.row != SettingsRow::Network));
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     for _ in 0..SettingsRow::DateTime.index() {
         press(&mut a, Btn::Down);
     }
@@ -628,7 +587,7 @@ fn without_a_radio_network_is_not_listed_drawn_or_stepped_onto() {
 #[test]
 fn nothing_is_drawn_before_its_faces_are_made() {
     let (_d, mut a, _) = on_carousel();
-    open_at(&mut a, SettingsRow::FastForward);
+    open_at(&mut a, SettingsRow::Equalizer);
     assert!(a.settings_faces().is_none());
     let out = frame(&a);
     assert!(

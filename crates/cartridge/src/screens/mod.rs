@@ -17,4 +17,5 @@ pub mod network;
 pub mod power;
 pub mod settings;
 pub mod shelf;
+pub mod sleep;
 pub mod ssh;

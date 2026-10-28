@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The handheld sleeps by itself after ten minutes without a press and powers itself off three
+  minutes into any sleep, the lid shut, POWER tapped or idle alike. Settings > Sleep sets both:
+  SLEEP AFTER (never, 1, 2, 5, 10, 15, 30 minutes) and POWER OFF AFTER (never, 1, 3, 5, 10, 30,
+  60). A sleep the handheld fell into by itself wakes on any button; a shut lid only when it
+  opens. No sleep while a link game runs or labels are fetched (`screenshots/sleep-settings.png`).
+- Fast Forward and Fast Forward Sound are gone from Settings to make room: it is always 6X, with
+  no sound.
 - The shelf opens on the cart it was left on when no game is to resume. The cart, its system and its
   place on the shelf are kept in the state file two seconds after the shelf comes to rest, and when
   the handheld goes to sleep or off. If that game is gone from the card, the shelf opens at the same

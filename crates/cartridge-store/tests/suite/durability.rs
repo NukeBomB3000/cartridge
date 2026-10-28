@@ -187,6 +187,8 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
         AppState {
             cart: Some("Emerald".into()),
             cart_platform: None,
+            sleep_idle_min: 10,
+            sleep_off_min: 3,
             browsed: None,
             browsed_platform: None,
             browsed_index: 0,
@@ -774,4 +776,27 @@ fn an_equalizer_out_of_reach_reads_as_flat() {
         .unwrap();
         assert_eq!(read_app_state(d.path()).eq, [0; 5], "{eq}");
     }
+}
+
+#[test]
+fn the_sleep_settings_round_trip_and_default_for_an_older_file() {
+    let d = tmp_root();
+    let s = AppState {
+        clock_set: true,
+        sleep_idle_min: 5,
+        sleep_off_min: 0,
+        ..Default::default()
+    };
+    write_app_state(d.path(), &s).unwrap();
+    let back = read_app_state(d.path());
+    assert_eq!((back.sleep_idle_min, back.sleep_off_min), (5, 0));
+    let text = std::fs::read_to_string(d.path().join("Config/cartridge.state")).unwrap();
+    let old: String = text
+        .lines()
+        .filter(|l| !l.starts_with("sleep_"))
+        .map(|l| format!("{l}\n"))
+        .collect();
+    std::fs::write(d.path().join("Config/cartridge.state"), old).unwrap();
+    let back = read_app_state(d.path());
+    assert_eq!((back.sleep_idle_min, back.sleep_off_min), (10, 3));
 }

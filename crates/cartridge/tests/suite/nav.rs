@@ -325,13 +325,13 @@ fn every_move_between_screens_slides_the_way_it_goes() {
 
     for close in [Btn::B, Btn::Start] {
         press(&mut a, Btn::Start);
-        slid(&a, &settings(SettingsRow::FastForward), Dir::Aside, &shelf);
+        slid(&a, &settings(SettingsRow::Equalizer), Dir::Aside, &shelf);
         press(&mut a, close);
         slid(
             &a,
             &shelf,
             Dir::FromAside,
-            &settings(SettingsRow::FastForward),
+            &settings(SettingsRow::Equalizer),
         );
     }
     press(&mut a, Btn::Start);
@@ -340,7 +340,7 @@ fn every_move_between_screens_slides_the_way_it_goes() {
         &a,
         &shelf,
         Dir::FromAside,
-        &settings(SettingsRow::FastForward),
+        &settings(SettingsRow::Equalizer),
     );
 
     press(&mut a, Btn::Start);
@@ -457,7 +457,7 @@ fn a_press_during_a_slide_finishes_it_and_acts() {
     assert!(a.slide().is_none(), "the press left the slide running");
     assert_eq!(
         a.settings_row(),
-        Some(SettingsRow::FastForwardSound),
+        Some(SettingsRow::FiveGames),
         "the press was spent on the slide"
     );
     a.apply_at(Action::GbaDown(Btn::B), 5_100);
@@ -465,12 +465,12 @@ fn a_press_during_a_slide_finishes_it_and_acts() {
         &a,
         &Phase::Shelf,
         Dir::FromAside,
-        &settings(SettingsRow::FastForwardSound),
+        &settings(SettingsRow::FiveGames),
     );
     a.apply_at(Action::GbaDown(Btn::Start), 5_120);
     slid(
         &a,
-        &settings(SettingsRow::FastForward),
+        &settings(SettingsRow::Equalizer),
         Dir::Aside,
         &Phase::Shelf,
     );

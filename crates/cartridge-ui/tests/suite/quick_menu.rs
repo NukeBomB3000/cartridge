@@ -24,14 +24,13 @@ fn px(face: &UndoFace, x: u32, y: u32) -> Option<[u8; 3]> {
 /// The rows as flow.html's Settings shows them, with `lit` under the cursor.
 fn flow_rows(lit: SettingsRow) -> Vec<RowShown> {
     let value = |row| match row {
-        SettingsRow::FastForward => Some("6X"),
-        SettingsRow::FastForwardSound => Some("OFF"),
         SettingsRow::Equalizer => Some("FLAT"),
         SettingsRow::Rumble => Some("ON"),
         SettingsRow::FiveGames => Some("OFF"),
         SettingsRow::DateTime => Some("OCT 10 16:00"),
         SettingsRow::Network => Some("HOME"),
         SettingsRow::Bluetooth => Some("8BITDO SN30 PRO"),
+        SettingsRow::Sleep => Some("10 MIN"),
         _ => None,
     };
     SettingsRow::ALL
@@ -139,7 +138,7 @@ fn configs_is_as_tall_as_its_rows_and_general_takes_the_rest() {
 
 #[test]
 fn every_row_stands_in_its_own_panels_well() {
-    let frame = settings_frame(6, palette(NIGHT));
+    let frame = settings_frame(4, palette(NIGHT));
     let rects = settings_row_rects(&SettingsRow::ALL, frame.wells);
     for (row, [x, y, w, h]) in &rects {
         let [wx, wy, ww, wh] = frame.wells[row.group().index()];
@@ -148,7 +147,7 @@ fn every_row_stands_in_its_own_panels_well() {
     }
     let at = |row: SettingsRow| rects.iter().find(|(r, _)| *r == row).unwrap().1;
     assert_eq!(
-        at(SettingsRow::FastForward)[1],
+        at(SettingsRow::Equalizer)[1],
         frame.wells[0][1],
         "CONFIGS' first row is not at its well's top"
     );
@@ -171,7 +170,7 @@ fn without_a_radio_the_rows_after_network_close_up_and_the_panels_stay() {
         .filter(|r| *r != SettingsRow::Network)
         .collect();
     let frame = settings_frame(cartridge_ui::configs_in(&rows), palette(NIGHT));
-    let all = settings_frame(6, palette(NIGHT));
+    let all = settings_frame(4, palette(NIGHT));
     assert_eq!(frame.wells, all.wells, "hiding Network moved a panel");
     let rects = settings_row_rects(&rows, frame.wells);
     let y = |row: SettingsRow| rects.iter().find(|(r, _)| *r == row).unwrap().1[1];
@@ -180,7 +179,8 @@ fn without_a_radio_the_rows_after_network_close_up_and_the_panels_stay() {
         y(SettingsRow::Background),
         y(SettingsRow::DateTime) + 2 * ROW_H
     );
-    assert_eq!(y(SettingsRow::About), y(SettingsRow::DateTime) + 3 * ROW_H);
+    assert_eq!(y(SettingsRow::Sleep), y(SettingsRow::DateTime) + 3 * ROW_H);
+    assert_eq!(y(SettingsRow::About), y(SettingsRow::DateTime) + 4 * ROW_H);
     assert!(rects.iter().all(|(r, _)| *r != SettingsRow::Network));
 }
 
@@ -238,7 +238,7 @@ fn the_lit_row_is_a_band_and_the_others_are_clear_round_their_words() {
         value: Some("6X".into()),
         lit,
     };
-    let lit = settings_row_face(w, &shown(SettingsRow::FastForward, true), pal);
+    let lit = settings_row_face(w, &shown(SettingsRow::Equalizer, true), pal);
     assert_eq!((lit.w, lit.h), (w, ROW_H));
     // the band: a frame line with its corner pixels left out, round the tab colour
     assert_eq!(px(&lit, 0, 0), None, "the band's corner");
@@ -251,7 +251,7 @@ fn the_lit_row_is_a_band_and_the_others_are_clear_round_their_words() {
     );
     assert_eq!(px(&lit, 2, 2), Some(pal.tab), "the band's fill");
     assert_eq!(px(&lit, w / 2, ROW_H - 2), Some(pal.tab), "the band's fill");
-    let plain = settings_row_face(w, &shown(SettingsRow::FastForward, false), pal);
+    let plain = settings_row_face(w, &shown(SettingsRow::Equalizer, false), pal);
     for (x, y) in [(1, 0), (0, 1), (2, 2), (w / 2, ROW_H - 2)] {
         assert_eq!(
             px(&plain, x, y),
@@ -285,11 +285,7 @@ fn the_rows_left_and_right_change_step_between_arrows_and_the_rows_that_open_end
         .collect();
     assert_eq!(
         carets,
-        [
-            SettingsRow::FastForward,
-            SettingsRow::FastForwardSound,
-            SettingsRow::Rumble
-        ]
+        [SettingsRow::Rumble]
     );
     let pal = palette(NIGHT);
     let w = settings_row_width(268);
@@ -319,14 +315,14 @@ fn the_rows_left_and_right_change_step_between_arrows_and_the_rows_that_open_end
 }
 
 /// flow.html's Settings, screenshotted by settings/make-refs.sh: the modal at one pixel to an
-/// art pixel, at each canvas, in Night with the cursor on Fast Forward and in Amber with it on
+/// art pixel, at each canvas, in Night with the cursor on Equalizer and in Amber with it on
 /// Date & Time.
 const FLOW_REFS: [(&str, u8, SettingsRow); 5] = [
-    ("640x480-night-0", NIGHT, SettingsRow::FastForward),
-    ("720x480-night-0", NIGHT, SettingsRow::FastForward),
-    ("720x720-night-0", NIGHT, SettingsRow::FastForward),
-    ("640x480-amber-6", AMBER, SettingsRow::DateTime),
-    ("720x480-amber-6", AMBER, SettingsRow::DateTime),
+    ("640x480-night-0", NIGHT, SettingsRow::Equalizer),
+    ("720x480-night-0", NIGHT, SettingsRow::Equalizer),
+    ("720x720-night-0", NIGHT, SettingsRow::Equalizer),
+    ("640x480-amber-4", AMBER, SettingsRow::DateTime),
+    ("720x480-amber-4", AMBER, SettingsRow::DateTime),
 ];
 
 #[test]
@@ -363,7 +359,7 @@ fn settings_is_flows_pixel_for_pixel() {
 #[test]
 fn a_sync_bakes_the_frame_once_and_a_row_only_when_it_changes() {
     let mut baked = SettingsBaked::default();
-    let rows = flow_rows(SettingsRow::FastForward);
+    let rows = flow_rows(SettingsRow::Equalizer);
     let first = baked.rebake(NIGHT, &rows);
     assert!(first.frame, "the first sync baked no frame");
     assert_eq!(first.rows, rows, "the first sync left rows unbaked");
@@ -396,7 +392,7 @@ fn a_sync_bakes_the_frame_once_and_a_row_only_when_it_changes() {
     let rebaked: Vec<SettingsRow> = plan.rows.iter().map(|s| s.row).collect();
     assert_eq!(
         rebaked,
-        [SettingsRow::FastForward, SettingsRow::FastForwardSound]
+        [SettingsRow::Equalizer, SettingsRow::FiveGames]
     );
     assert!(!plan.frame, "moving the cursor baked the frame");
 
@@ -418,7 +414,7 @@ fn a_sync_bakes_the_frame_once_and_a_row_only_when_it_changes() {
 
 #[test]
 fn the_palette_tints_every_face() {
-    let rows = flow_rows(SettingsRow::FastForward);
+    let rows = flow_rows(SettingsRow::Equalizer);
     for colour in [NIGHT, AMBER] {
         let pal = palette(colour);
         let frame = settings_frame(5, pal);
@@ -459,8 +455,6 @@ fn the_rows_run_in_the_order_the_user_chose() {
     assert_eq!(
         labels,
         [
-            "Fast Forward",
-            "Fast Forward Sound",
             "Equalizer",
             "5 Games",
             "Rumble",
@@ -469,6 +463,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
             "Network",
             "Bluetooth",
             "Theme",
+            "Sleep",
             "About"
         ]
     );
@@ -483,6 +478,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
             SettingsRow::Network,
             SettingsRow::Bluetooth,
             SettingsRow::Background,
+            SettingsRow::Sleep,
             SettingsRow::About
         ]
     );
@@ -495,7 +491,7 @@ fn the_configs_come_first_and_the_handheld_itself_after() {
         .iter()
         .take_while(|g| **g == SettingsGroup::Configs)
         .count();
-    assert_eq!(configs, 6, "{groups:?}");
+    assert_eq!(configs, 4, "{groups:?}");
     assert!(
         groups[configs..]
             .iter()
@@ -521,7 +517,7 @@ fn a_hidden_row_is_stepped_over_both_ways() {
         .collect();
     assert_eq!(SettingsRow::DateTime.down_in(&rows), SettingsRow::Bluetooth);
     assert_eq!(SettingsRow::Bluetooth.up_in(&rows), SettingsRow::DateTime);
-    assert_eq!(SettingsRow::About.down_in(&rows), SettingsRow::FastForward);
+    assert_eq!(SettingsRow::About.down_in(&rows), SettingsRow::Equalizer);
     assert_eq!(SettingsRow::DateTime.down(), SettingsRow::Network);
 }
 

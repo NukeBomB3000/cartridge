@@ -32,6 +32,11 @@ pub struct AppState {
     pub cart_platform: Option<Platform>,
     /// The cart the shelf last rested on, its platform and its place on that shelf: where the shelf
     /// opens when no game is to resume. The place is only a fallback, for a card that changed.
+    /// Minutes without a press after which the handheld goes to sleep, 0 for never.
+    pub sleep_idle_min: u8,
+    /// Minutes asleep after which it powers off, 0 for never: for the lid closed, a press of POWER
+    /// and the idle sleep alike.
+    pub sleep_off_min: u8,
     pub browsed: Option<String>,
     pub browsed_platform: Option<Platform>,
     pub browsed_index: usize,
@@ -88,6 +93,8 @@ impl Default for AppState {
         AppState {
             cart: None,
             cart_platform: None,
+            sleep_idle_min: 10,
+            sleep_off_min: 3,
             browsed: None,
             browsed_platform: None,
             browsed_index: 0,
@@ -133,12 +140,18 @@ pub fn read_app_state(root: &Path) -> AppState {
         .unwrap_or_default()
 }
 
+/// The minutes of quiet the handheld may be left for before it sleeps, 0 for never.
+pub const SLEEP_IDLE_CHOICES: [u8; 7] = [0, 1, 2, 5, 10, 15, 30];
+
+/// The minutes it may sleep before it powers itself off, 0 for never.
+pub const SLEEP_OFF_CHOICES: [u8; 7] = [0, 1, 3, 5, 10, 30, 60];
+
 /// The strongest rumble level, the motor full on.
 pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\ntv_ghosting={}\nbrowsed={}\nbrowsed_platform={}\nbrowsed_index={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\ntv_ghosting={}\nsleep_idle_min={}\nsleep_off_min={}\nbrowsed={}\nbrowsed_platform={}\nbrowsed_index={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -167,6 +180,8 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         eq_text(&s.eq),
         eq_text(&s.eq_hp),
         s.tv_ghosting as u8,
+        s.sleep_idle_min,
+        s.sleep_off_min,
         s.browsed.as_deref().unwrap_or(""),
         s.browsed_platform.map_or(String::new(), platform_key),
         s.browsed_index,
@@ -204,6 +219,8 @@ fn parse(text: &str) -> Option<AppState> {
     let mut eq = None;
     let mut eq_hp = None;
     let mut tv_ghosting = None;
+    let mut sleep_idle_min = None;
+    let mut sleep_off_min = None;
     let mut browsed = None;
     let mut browsed_platform = None;
     let mut browsed_index = None;
@@ -248,6 +265,8 @@ fn parse(text: &str) -> Option<AppState> {
             "eq" => eq = eq_value(value),
             "eq_hp" => eq_hp = eq_value(value),
             "tv_ghosting" => tv_ghosting = flag(value),
+            "sleep_idle_min" => sleep_idle_min = value.parse().ok(),
+            "sleep_off_min" => sleep_off_min = value.parse().ok(),
             "browsed" => browsed = Some(value.to_string()),
             "browsed_platform" => browsed_platform = platform_value(value),
             "browsed_index" => browsed_index = value.parse().ok(),
@@ -259,6 +278,8 @@ fn parse(text: &str) -> Option<AppState> {
     Some(AppState {
         cart: (!cart.is_empty()).then_some(cart),
         cart_platform,
+        sleep_idle_min: sleep_idle_min.unwrap_or(fallback.sleep_idle_min),
+        sleep_off_min: sleep_off_min.unwrap_or(fallback.sleep_off_min),
         browsed: browsed.filter(|b| !b.is_empty()),
         browsed_platform,
         browsed_index: browsed_index.unwrap_or(0),

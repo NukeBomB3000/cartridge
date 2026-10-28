@@ -43,6 +43,7 @@ pub mod screens;
 pub mod session;
 pub mod shader;
 pub mod shell_screen;
+pub mod sleep_screen;
 pub mod spawn;
 pub mod ssh;
 pub mod start_notice;
