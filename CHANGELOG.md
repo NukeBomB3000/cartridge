@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- SwanStation draws in software now, on a thread of its own, at the PlayStation's own size. On the
+  RG SP that runs a 3D scene of 007 at 138 frames a second where the OpenGL renderer runs it at 61
+  (headless), and in the game the OpenGL path costs 7.4 ms of every 16.7 ms frame in reading the
+  picture back from the GPU and let the sound run dry. OpenGL stays a choice in the core's options;
+  the GPU is only held at its top clock when it is chosen.
+- A PlayStation game on a CHD no longer takes the frontend down when RetroAchievements is signed
+  in: the track handle's first word, which tells it from the default reader's, was not first in
+  its struct (`repr(C)`). The hash is now made for such a game as for any other.
 - A file named TRACE at the card's root has cartridge write what its audio and pacing are doing to
   cartridge.log, once a second or so, for finding why a game stutters.
 - R2 in a Nintendo DS game goes round the screen layouts (Top Dominant, Top Only, Bottom Only,

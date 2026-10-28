@@ -410,11 +410,14 @@ pub fn core_options(
             put("pcsx_rearmed_memcard2", "none");
             put("pcsx_rearmed_vibration", "enabled");
         }
-        // SwanStation draws with the GPU through the GLES 3 context it asks the frontend for,
-        // at the PlayStation's own resolution, falling back on software where there is none,
-        // and runs the BIOS it finds among BIOS/ by its hash; it has none built in
+        // SwanStation draws in software, on a thread of its own, at the PlayStation's own
+        // resolution: on this handheld that runs a 3D scene at 138 frames a second where the
+        // GLES 3 renderer, with the picture read back from the GPU each frame, runs it at 61, and
+        // it is steadier. OpenGL stays a choice in its options. It runs the BIOS it finds among
+        // BIOS/ by its hash; it has none built in
         Core::Swanstation => {
-            put("swanstation_GPU_Renderer", "Auto");
+            put("swanstation_GPU_Renderer", "Software");
+            put("swanstation_GPU_UseThread", "true");
             put("swanstation_GPU_ResolutionScale", "1");
             put("swanstation_CPU_ExecutionMode", "Recompiler");
             put("swanstation_Main_ApplyGameSettings", "true");

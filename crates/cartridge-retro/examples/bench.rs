@@ -6,6 +6,8 @@
 //!
 //! BENCH_OPTIONS="key=value,key=value" sets core options before the game loads, and BENCH_STATE
 //! names a save state to put in once it has, to time a scene rather than a title screen.
+//! BENCH_SAVE names a file the core's state is written to once the frames have run, for a scene to
+//! time again with BENCH_STATE.
 //! BENCH_PIN=1 puts this thread alone on the last core and every other thread of the process, the
 //! core's own among them, on the first three, as DSperate's thread layout does, to see what that
 //! is worth to a core that has no layout of its own.
@@ -127,6 +129,11 @@ fn main() {
         "all {frames}: {:.1} fps",
         frames as f64 / started.elapsed().as_secs_f64()
     );
+    if let Ok(path) = std::env::var("BENCH_SAVE") {
+        let state = core.serialize().unwrap_or_else(|e| panic!("state: {e}"));
+        std::fs::write(&path, state).unwrap_or_else(|e| panic!("{path}: {e}"));
+        println!("state saved to {path}");
+    }
     if let Some(out) = args.get(4) {
         let (w, h) = core.video_size();
         let mut ppm = format!("P6\n{w} {h}\n255\n").into_bytes();

@@ -11,6 +11,9 @@ use crate::ffi;
 
 const CHD_MAGIC: u64 = 0x4348445F534C4F54; // "CHD_SLOT"
 
+/// `repr(C)`: the handle is told from the default reader's by its first word, which Rust is free to
+/// put anywhere in a struct that is not.
+#[repr(C)]
 struct ChdTrack {
     #[allow(dead_code)]
     magic: u64,
