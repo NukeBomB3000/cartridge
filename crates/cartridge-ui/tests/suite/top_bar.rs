@@ -1,6 +1,6 @@
 use cartridge_power::{Battery, Charge};
 use cartridge_ui::kit::palette::{palette, rgba, Palette};
-use cartridge_ui::kit::pixel::{letters, ACCENT, ADVANCE, CAP};
+use cartridge_ui::kit::pixel::{ACCENT, CAP};
 use cartridge_ui::kit::text::{text_face, AIR, WORD_H};
 use cartridge_ui::{
     bolt_face, link_face, out_w, ChromeColours, Draw, Link, LinkFaces, Links, Printed, TexId,
@@ -16,7 +16,7 @@ const PX: f32 = SPRITE_PX as f32;
 const CLOCK_W: u32 = 30;
 const FIGURE_W: u32 = 24;
 
-/// Every item's faces, in art pixels: the icons a cell square, ssh a word cut to its ink.
+/// Every item's faces, in art pixels: the icons, a cell square each.
 fn faces() -> LinkFaces {
     let pair = |base: usize, w: u32| {
         [
@@ -27,7 +27,7 @@ fn faces() -> LinkFaces {
     LinkFaces {
         wifi: pair(10, CELL),
         bluetooth: pair(20, CELL),
-        ssh: pair(30, 20),
+        cheevos: pair(30, CELL),
     }
 }
 
@@ -103,7 +103,7 @@ fn every_face_on_the_bar_is_drawn_whole_on_the_art_grid() {
         Links {
             wifi: true,
             bluetooth: Some(true),
-            ssh: true,
+            cheevos: Some(true),
         },
         battery(Charge::Charging),
         Some(TexId::from_raw(3)),
@@ -111,7 +111,7 @@ fn every_face_on_the_bar_is_drawn_whole_on_the_art_grid() {
     let faces = faces();
     let words = [(1, CLOCK_W, WORD_H), (2, FIGURE_W, WORD_H), (3, CELL, CELL)]
         .map(|(id, w, h)| (TexId::from_raw(id), w, h));
-    let mut all = [faces.wifi, faces.bluetooth, faces.ssh].concat();
+    let mut all = [faces.wifi, faces.bluetooth, faces.cheevos].concat();
     all.extend(words);
     let size = |tex: TexId| -> (u32, u32) {
         let (_, w, h) = all.iter().find(|f| f.0 == tex).expect("a face");
@@ -136,21 +136,24 @@ fn every_face_on_the_bar_is_drawn_whole_on_the_art_grid() {
 }
 
 #[test]
-fn the_links_line_up_from_the_left_margin_wifi_then_bluetooth_then_ssh() {
+fn the_links_line_up_from_the_left_margin_wifi_then_bluetooth_then_the_trophy() {
     let out = bar(
         Links {
             wifi: true,
             bluetooth: Some(false),
-            ssh: true,
+            cheevos: Some(true),
         },
         None,
         None,
     );
     let wifi = tex_x(&out, 11).expect("Wi-Fi is not drawn on");
     let bluetooth = tex_x(&out, 20).expect("Bluetooth is not drawn off");
-    let ssh = tex_x(&out, 31).expect("ssh is not drawn on");
+    let trophy = tex_x(&out, 31).expect("the trophy is not drawn on");
     assert_eq!(wifi.0, MARGIN);
-    assert!(wifi.1 < bluetooth.0 && bluetooth.1 < ssh.0, "out of order");
+    assert!(
+        wifi.1 < bluetooth.0 && bluetooth.1 < trophy.0,
+        "out of order"
+    );
     for off in [10, 21, 30] {
         assert!(!drawn(&out, off), "face {off} is drawn in the wrong state");
     }
@@ -159,14 +162,21 @@ fn the_links_line_up_from_the_left_margin_wifi_then_bluetooth_then_ssh() {
 #[test]
 fn every_link_shows_whether_it_is_on() {
     for (links, wanted) in [
-        (Links::default(), [10, 30]),
+        (Links::default(), vec![10]),
+        (
+            Links {
+                cheevos: Some(false),
+                ..Links::default()
+            },
+            vec![10, 30],
+        ),
         (
             Links {
                 wifi: true,
                 bluetooth: None,
-                ssh: true,
+                cheevos: Some(true),
             },
-            [11, 31],
+            vec![11, 31],
         ),
     ] {
         let out = bar(links, None, None);
@@ -174,6 +184,12 @@ fn every_link_shows_whether_it_is_on() {
             assert!(drawn(&out, id), "{links:?} does not draw face {id}");
         }
     }
+}
+
+#[test]
+fn the_trophy_is_hidden_while_retroachievements_is_off() {
+    let out = bar(Links::default(), None, None);
+    assert!(!drawn(&out, 30) && !drawn(&out, 31));
 }
 
 #[test]
@@ -197,7 +213,7 @@ fn everything_on_the_bar_stays_inside_it() {
         Links {
             wifi: true,
             bluetooth: Some(true),
-            ssh: true,
+            cheevos: Some(true),
         },
         battery(Charge::Charging),
         Some(TexId::from_raw(3)),
@@ -303,8 +319,8 @@ fn every_icon_is_one_square_cell_of_pixel_art() {
 
 #[test]
 fn words_stand_exactly_as_tall_as_the_icons() {
-    let ssh = link_face(Link::Ssh, true, &ChromeColours::default());
-    assert_eq!(ssh.h, CELL, "ssh is not as tall as the icons");
+    let trophy = link_face(Link::Cheevos, true, &ChromeColours::default());
+    assert_eq!(trophy.h, CELL, "the trophy is not as tall as the icons");
     for word in ["100%", "16:00"] {
         let rows = inked_rows(&text_face(word, LINK_ON));
         assert_eq!(
@@ -322,7 +338,7 @@ fn every_item_stands_in_the_same_band() {
         Links {
             wifi: true,
             bluetooth: Some(true),
-            ssh: true,
+            cheevos: Some(true),
         },
         battery(Charge::Charging),
         Some(TexId::from_raw(3)),
@@ -390,25 +406,20 @@ fn the_bar_is_drawn_in_the_colours_it_is_handed() {
     assert_ne!(night_colours.ink, amber_colours.ink);
 }
 
-/// ssh is drawn bold the kit's way, not in Pixel Code's own bold: each letter of the plain face
-/// drawn again a pixel to its right, every pixel solid.
+/// The trophy is solid pixels, as tall as the other icons, lit in the ink and dim when off.
 #[test]
-fn ssh_is_bolder_than_the_plain_face() {
-    let face = link_face(Link::Ssh, true, &ChromeColours::default());
-    let solid = face.rgba.chunks(4).filter(|p| p[3] == 255).count();
-    let plain: usize = letters("ssh", ADVANCE)
-        .iter()
-        .map(|r| r.bytes().filter(|&b| b == b'#').count())
-        .sum();
+fn the_trophy_is_solid_and_dims_when_off() {
+    let colours = ChromeColours::default();
+    let on = link_face(Link::Cheevos, true, &colours);
+    let off = link_face(Link::Cheevos, false, &colours);
+    assert_eq!((on.w, on.h), (CELL, CELL));
     assert!(
-        solid > plain * 3 / 2,
-        "{solid} solid pixels to the plain face's {plain}: ssh is not bold"
+        on.rgba.chunks(4).all(|p| p[3] == 0 || p[3] == 255),
+        "the trophy has soft edges"
     );
-    assert!(
-        face.rgba.chunks(4).all(|p| p[3] == 0 || p[3] == 255),
-        "ssh has soft edges"
-    );
-    assert!(face.h * SPRITE_PX <= TOP_BAR_H as u32);
+    assert_eq!(inks(&on), vec![colours.ink]);
+    assert_eq!(inks(&off), vec![colours.ink_off]);
+    assert!(on.h * SPRITE_PX <= TOP_BAR_H as u32);
 }
 
 fn colour(name: &str) -> &'static Palette {

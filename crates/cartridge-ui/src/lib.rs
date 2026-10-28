@@ -73,6 +73,7 @@ pub use keyboard::{
     KeyboardPlace, KeyboardScreen, KeyboardStale, Layer, BOTTOM, FIELD_H, KEYS_H, KEYS_W, KEY_COLS,
     KEY_GAP, KEY_H, KEY_ROWS, KEY_W, MAX_TEXT,
 };
+pub use kit::action::{title_face as shelf_title_face, title_room as shelf_title_room};
 pub use kit::badge::BadgeIcon;
 pub use kit::gauge::GaugeIcon;
 pub use label_cut::{

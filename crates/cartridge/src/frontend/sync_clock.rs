@@ -60,7 +60,9 @@ pub(crate) fn sync_clock(app: &mut App, compositor: &mut Compositor, clocks: &mu
         if title.0.is_empty() {
             app.clear_shelf_title();
         } else {
-            let face = pill_face(&title.0, app.palette());
+            let room =
+                cartridge_ui::shelf_title_room(cartridge_gfx::out_w() / cartridge_ui::SPRITE_PX);
+            let face = cartridge_ui::shelf_title_face(&title.0, room, app.palette());
             let id = upload_nearest(compositor, &mut clocks.title_tex, &face);
             app.set_shelf_title_face(id, face.w);
         }

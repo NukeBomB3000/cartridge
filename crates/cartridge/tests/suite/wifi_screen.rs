@@ -1016,21 +1016,14 @@ fn joined_it_waits_for_an_address_then_leaves_it_to_ssh() {
 }
 
 #[test]
-fn the_top_bar_lights_wifi_and_ssh_once_a_network_is_joined() {
+fn the_top_bar_lights_wifi_once_a_network_is_joined() {
     let mut r = Rig::new();
-    assert!(
-        !r.a.links().wifi && !r.a.links().ssh,
-        "lit before Wi-Fi is on"
-    );
+    assert!(!r.a.links().wifi, "lit before Wi-Fi is on");
     r.on_with(&[("Home", -48, true)], &[(0, "Home")]);
     assert!(!r.a.links().wifi, "lit with Wi-Fi on but nothing joined");
     r.radio.say(joined("Home", Some("192.168.1.20")));
     r.tick(16);
     assert!(r.a.links().wifi, "Wi-Fi is not lit once joined");
-    assert!(
-        r.a.links().ssh,
-        "ssh is not lit once the handheld can be reached"
-    );
     assert_eq!(
         r.a.links().bluetooth,
         Some(false),

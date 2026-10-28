@@ -15,10 +15,10 @@ use crate::battery::{draw_gauge, gauge_width, FIGURE_AT};
 use crate::chrome::ChromeColours;
 use crate::footer::Printed;
 use crate::hud::HUD_INK;
-use crate::kit::pixel::{blank, letters, quad, ACCENT, ADVANCE};
+use crate::kit::pixel::{quad, ACCENT};
 use crate::kit::text::{AIR, WORD_H};
 use crate::plate::UndoFace;
-use crate::sprite::{cropped, sprite_face, Rows, CELL, CELL_PX, SPRITE_PX};
+use crate::sprite::{sprite_face, Rows, CELL, CELL_PX, SPRITE_PX};
 
 pub const TOP_BAR_H: f32 = 36.0;
 const MARGIN: f32 = 24.0;
@@ -52,23 +52,36 @@ const BLUETOOTH: Rows = [
     "...#...",
 ];
 
+/// RetroAchievements' trophy.
+#[rustfmt::skip]
+const TROPHY: Rows = [
+    "#.###.#",
+    "#.###.#",
+    ".#####.",
+    "..###..",
+    "...#...",
+    "..###..",
+    ".#####.",
+];
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Link {
     Wifi,
     Bluetooth,
-    Ssh,
+    /// RetroAchievements: lit while the account is signed in.
+    Cheevos,
 }
 
 impl Link {
-    pub const ALL: [Link; 3] = [Link::Wifi, Link::Bluetooth, Link::Ssh];
+    pub const ALL: [Link; 3] = [Link::Wifi, Link::Bluetooth, Link::Cheevos];
 
     /// The icon's sprite. A cell this small has no room to cross an icon out, so off is told
     /// by its ink alone and the shape stays put.
-    fn sprite(self) -> Option<&'static Rows> {
+    fn sprite(self) -> &'static Rows {
         match self {
-            Link::Wifi => Some(&WIFI),
-            Link::Bluetooth => Some(&BLUETOOTH),
-            Link::Ssh => None,
+            Link::Wifi => &WIFI,
+            Link::Bluetooth => &BLUETOOTH,
+            Link::Cheevos => &TROPHY,
         }
     }
 }
@@ -79,38 +92,15 @@ pub struct Links {
     pub wifi: bool,
     /// None on a handheld with no Bluetooth radio, which then shows no icon for it.
     pub bluetooth: Option<bool>,
-    /// The handheld can be reached over SSH and SFTP.
-    pub ssh: bool,
+    /// None while RetroAchievements is switched off, which then shows no icon; else whether the
+    /// account is signed in.
+    pub cheevos: Option<bool>,
 }
 
 /// One item's face, on or off in the ink of `colours`, one texel to an art pixel: an icon one
-/// cell square, or "ssh" in bold cut to its ink.
+/// cell square.
 pub fn link_face(link: Link, on: bool, colours: &ChromeColours) -> UndoFace {
-    let ink = colours.link_ink(on);
-    match link.sprite() {
-        Some(rows) => sprite_face(rows, ink),
-        None => ssh_face(ink),
-    }
-}
-
-/// "ssh", in its own case, in Pixel Code drawn bold the kit's way: each letter a face pixel to
-/// an art pixel and drawn again a pixel to its right, a pixel of air between letters. The h
-/// stands a cell tall, the same as the icons, and the word has no descender, so its ink fills
-/// the band exactly.
-fn ssh_face(ink: [u8; 3]) -> UndoFace {
-    let rows = letters("ssh", ADVANCE + 1);
-    let w = rows[0].len();
-    let mut face = blank(w as u32, rows.len() as u32);
-    for (y, row) in rows.iter().enumerate() {
-        let row = row.as_bytes();
-        for x in 0..w {
-            if row[x] == b'#' || (x > 0 && row[x - 1] == b'#') {
-                let i = (y * w + x) * 4;
-                face.rgba[i..i + 4].copy_from_slice(&[ink[0], ink[1], ink[2], 255]);
-            }
-        }
-    }
-    cropped(face)
+    sprite_face(link.sprite(), colours.link_ink(on))
 }
 
 /// A face uploaded, and its size in art pixels.
@@ -121,7 +111,7 @@ pub type Face = (TexId, u32, u32);
 pub struct LinkFaces {
     pub wifi: [Face; 2],
     pub bluetooth: [Face; 2],
-    pub ssh: [Face; 2],
+    pub cheevos: [Face; 2],
 }
 
 impl LinkFaces {
@@ -129,7 +119,7 @@ impl LinkFaces {
         let pair = match link {
             Link::Wifi => self.wifi,
             Link::Bluetooth => self.bluetooth,
-            Link::Ssh => self.ssh,
+            Link::Cheevos => self.cheevos,
         };
         pair[usize::from(on)]
     }
@@ -232,7 +222,9 @@ impl TopBar<'_> {
         if let Some(on) = l.bluetooth {
             items.push((Link::Bluetooth, on));
         }
-        items.push((Link::Ssh, l.ssh));
+        if let Some(on) = l.cheevos {
+            items.push((Link::Cheevos, on));
+        }
         items
     }
 }

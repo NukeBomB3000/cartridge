@@ -538,32 +538,33 @@ fn the_switch_changes_the_shelfs_system_and_says_nothing() {
 /// The shelf's pill names its system by its folder, GBA, GB or GBC, and follows the shoulders
 /// round the shelves.
 #[test]
-fn the_pill_names_the_shelfs_system_and_follows_the_shoulders() {
+fn the_pill_no_longer_names_the_shelfs_system_whatever_the_shoulders_do() {
     let mut a = app_with_platforms(&[
         (Platform::Gba, "Emerald"),
         (Platform::Gb, "Tetris"),
         (Platform::Gbc, "Chromatic"),
     ]);
-    assert_eq!(a.pill_text().as_deref(), Some("GBA"));
+    assert_eq!(
+        a.pill_text(),
+        None,
+        "the carts say the system, not the pill"
+    );
     for (btn, want) in [
-        (Btn::R1, "GB"),
-        (Btn::R1, "GBC"),
-        (Btn::R1, "GBA"),
-        (Btn::L1, "GBC"),
+        (Btn::R1, "Tetris"),
+        (Btn::R1, "Chromatic"),
+        (Btn::R1, "Emerald"),
+        (Btn::L1, "Chromatic"),
     ] {
         a.apply_at(Action::GbaDown(btn), 1_000);
         assert_eq!(
-            a.pill_text().as_deref(),
+            a.selected_stem(),
             Some(want),
-            "{btn:?} left the wrong system in the pill"
+            "{btn:?} did not switch shelves"
         );
+        assert_eq!(a.pill_text(), None, "{btn:?} put the system in the pill");
     }
     a.update(5.0);
-    assert_eq!(
-        a.pill_text().as_deref(),
-        Some("GBC"),
-        "the pill let go of the system"
-    );
+    assert_eq!(a.pill_text(), None);
 }
 
 /// There is nowhere to switch to from a card's one shelf, but its pill still says which system
@@ -577,8 +578,8 @@ fn a_card_on_one_shelf_has_nowhere_to_switch_to_and_its_pill_still_names_the_sys
         "a card with only Game Boy Advance carts has somewhere to switch to"
     );
     assert_eq!(
-        alone.pill_text().as_deref(),
-        Some("GBA"),
+        alone.pill_text(),
+        None,
         "a card on one shelf has nothing in its pill"
     );
     for btn in [Btn::L1, Btn::R1] {
@@ -589,13 +590,13 @@ fn a_card_on_one_shelf_has_nowhere_to_switch_to_and_its_pill_still_names_the_sys
             "{btn:?} switched to a shelf on a card that has one"
         );
         assert_eq!(
-            alone.pill_text().as_deref(),
-            Some("GBA"),
+            alone.pill_text(),
+            None,
             "{btn:?} changed the pill on a card with one shelf"
         );
     }
     let gb = app_with_platforms(&[(Platform::Gb, "Tetris"), (Platform::Gb, "Kirby")]);
-    assert_eq!(gb.pill_text().as_deref(), Some("GB"));
+    assert_eq!(gb.pill_text(), None);
 
     let two = app_with_platforms(&[(Platform::Gba, "Emerald"), (Platform::Gb, "Tetris")]);
     assert_eq!(
@@ -2352,8 +2353,8 @@ fn a_letter_jump_shows_the_letter_in_the_pill_then_the_system_comes_back() {
     let mut a = app_with_carts(&["Alpha", "Bravo"]);
     let face = TexId::from_raw(77);
     assert_eq!(
-        a.pill_text().as_deref(),
-        Some("GBA"),
+        a.pill_text(),
+        None,
         "a one shelf card has nothing in its pill"
     );
     run_pill(&mut a, 500, face);
@@ -2373,9 +2374,9 @@ fn a_letter_jump_shows_the_letter_in_the_pill_then_the_system_comes_back() {
     );
     run_pill(&mut a, 400, face);
     assert_eq!(
-        a.pill_text().as_deref(),
-        Some("GBA"),
-        "the system did not come back after the letter's time"
+        a.pill_text(),
+        None,
+        "the pill did not empty after the letter's time"
     );
 
     // a second jump shows its letter its whole time, counted from that jump
@@ -2391,7 +2392,7 @@ fn a_letter_jump_shows_the_letter_in_the_pill_then_the_system_comes_back() {
         "a second jump did not start the letter's time again"
     );
     run_pill(&mut a, 400, face);
-    assert_eq!(a.pill_text().as_deref(), Some("GBA"));
+    assert_eq!(a.pill_text(), None);
 }
 
 /// A shoulder press while a letter is shown takes the pill straight to the new shelf's system.
@@ -2405,5 +2406,5 @@ fn switching_shelves_drops_the_letter_for_the_new_system() {
     a.apply(Action::GbaDown(Btn::Down));
     assert_eq!(a.pill_text().as_deref(), Some("B"));
     tap(&mut a, Btn::R1);
-    assert_eq!(a.pill_text().as_deref(), Some("GB"));
+    assert_eq!(a.pill_text(), None);
 }

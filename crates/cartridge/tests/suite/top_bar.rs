@@ -17,6 +17,7 @@ use tempfile::TempDir;
 /// Each link's faces, off then on.
 const WIFI: [TexId; 2] = [TexId::from_raw(900), TexId::from_raw(901)];
 const BLUETOOTH: [TexId; 2] = [TexId::from_raw(902), TexId::from_raw(903)];
+/// RetroAchievements' trophy: it shows, unlit, while no account is signed in.
 const SSH: [TexId; 2] = [TexId::from_raw(904), TexId::from_raw(905)];
 
 const FRAME_MS: Millis = 16;
@@ -116,7 +117,7 @@ impl Rig {
         a.set_link_faces(LinkFaces {
             wifi: WIFI.map(|t| (t, 16, 16)),
             bluetooth: BLUETOOTH.map(|t| (t, 16, 16)),
-            ssh: SSH.map(|t| (t, 24, 16)),
+            cheevos: SSH.map(|t| (t, 16, 16)),
         });
         assert!(matches!(a.phase(), Phase::Shelf), "{:?}", a.phase());
         Rig {
@@ -177,24 +178,10 @@ fn wifi_joined_after_boot_lights_the_top_bar_within_a_glance() {
 }
 
 #[test]
-fn ssh_lights_with_a_network_joined_after_boot_within_a_glance() {
-    let mut r = Rig::booted(false);
-    r.frames(3_000);
-    assert_eq!(r.lit(SSH), Some(false), "ssh lit with nothing joined");
-    r.air.set_joined(true);
-    let took = r.until(SSH, true, 5 * GLANCE_MS);
-    assert!(
-        took.is_some_and(|ms| ms <= LAG_MS),
-        "ssh lit after {took:?} ms, not within {LAG_MS}"
-    );
-}
-
-#[test]
-fn a_network_lost_puts_wifi_and_ssh_out_within_a_glance() {
+fn a_network_lost_puts_wifi_out_within_a_glance() {
     let mut r = Rig::booted(true);
     r.frames(FRAME_MS);
     assert_eq!(r.lit(WIFI), Some(true), "Wi-Fi is not lit once joined");
-    assert_eq!(r.lit(SSH), Some(true), "ssh is not lit once joined");
     r.frames(3_000);
     r.air.set_joined(false);
     let took = r.until(WIFI, false, 5 * GLANCE_MS);
@@ -202,5 +189,4 @@ fn a_network_lost_puts_wifi_and_ssh_out_within_a_glance() {
         took.is_some_and(|ms| ms <= LAG_MS),
         "Wi-Fi went out after {took:?} ms, not within {LAG_MS}"
     );
-    assert_eq!(r.lit(SSH), Some(false), "ssh stayed lit with Wi-Fi out");
 }

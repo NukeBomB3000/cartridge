@@ -155,6 +155,15 @@ pub fn actions_on(phase: &Phase) -> Option<Actions> {
 /// screen: before the cart, pulled down, reaches it.
 const SUNK_AT: f32 = 0.62;
 
+/// How far above the title, in art pixels, the pill of a letter jumped to or of Five Games'
+/// picking stands.
+const PILL_GAP: u32 = 5;
+
+/// Where the pill stands on a screen `h` tall: over the title, on the row the title used to have.
+pub fn pill_top(h: u32) -> f32 {
+    BarLayout::top(h) - ((cartridge_ui::kit::action::BAR + PILL_GAP) * SPRITE_PX) as f32
+}
+
 /// How far the bar has sunk `seat` of the way through a cart's way in (0 on the shelf, 1 in
 /// the handheld): gone, eased, by `SUNK_AT`, and back as the cart comes out.
 fn sunk_for(seat: f32) -> u32 {
@@ -350,7 +359,8 @@ impl App {
             if sink < SINK {
                 let w = self.shelf_platform.w;
                 let x = (cartridge_gfx::out_w() / SPRITE_PX / 2).saturating_sub(w / 2);
-                let y = BarLayout::top(h) + px(sink as i32);
+                // above the title, on the row the title used to stand on
+                let y = pill_top(h) + px(sink as i32);
                 out.push(quad(
                     tex,
                     w,

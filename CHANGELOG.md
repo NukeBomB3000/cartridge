@@ -6,6 +6,12 @@
   bottom bar, leaving the system's pill; the top bar has no ground or rule, only its icons and
   figures on the background; and the cart the shelf rests on stands 12 % bigger than the ones
   beside it, keeping that size as it goes in.
+- The system's name is gone from the bottom of the shelf: the carts say it. The game's title stands
+  there instead, lower, in the theme's cream over a soft shadow between two thin rules that end in
+  a diamond; the letter jumped to and Five Games' PICK count still show, in a pill over it
+  (`screenshots/shelf-title.png`).
+- The top bar shows RetroAchievements where it showed "ssh": a trophy, lit while the account is
+  signed in, dim while it is not, and not there with RetroAchievements switched off.
 - Settings is one list, SETTINGS, with no CONFIGS and GENERAL panels: Equalizer, 5 Games, Rumble,
   Labels, Achievements, Date & Time, Network, Bluetooth, Theme, Sleep, About.
 - About names @NUKEBOMB3000 as the author of Cartridge.

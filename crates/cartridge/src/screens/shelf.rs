@@ -9,9 +9,6 @@ use crate::nav::Offsets;
 
 const CORE_PICKER_RECEDE: f32 = 0.26;
 const CORE_PICKER_DIM: f32 = 0.614;
-/// How far above the bottom bar the pill with the selected game's name stands, in art pixels:
-/// clear of the tallest cart's foot, the PC Engine's HuCard.
-const TITLE_GAP: u32 = 5;
 
 impl App {
     /// The shelf, its carts moved `off.carts_dx` across and `off.carts_dy` down, its top bar
@@ -40,7 +37,8 @@ impl App {
             let h = cartridge_ui::kit::action::BAR;
             let x = (cartridge_gfx::out_w() / px / 2).saturating_sub(w / 2) * px;
             let bar_top = cartridge_ui::kit::bar::BarLayout::top(cartridge_gfx::out_h());
-            let y = bar_top - ((h + TITLE_GAP) * px) as f32;
+            // the bar's own row: its corners and its pill are gone, the title stands there
+            let y = bar_top;
             let at = out.len();
             out.push(cartridge_ui::kit::pixel::quad(tex, w, h, x as f32, y));
             shift(&mut out[at..], off.carts_dx, off.carts_dy);

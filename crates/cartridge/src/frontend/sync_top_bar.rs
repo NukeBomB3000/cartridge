@@ -18,7 +18,7 @@ use crate::frontend::lone::Baked;
 pub(crate) struct TopBarTexes {
     /// The ink, on and off, the icons and the bolt were baked in.
     ink: Option<([u8; 3], [u8; 3])>,
-    /// Wi-Fi's, Bluetooth's and SSH's faces, each off then on.
+    /// Wi-Fi's, Bluetooth's and RetroAchievements' faces, each off then on.
     links: [[Option<TexId>; 2]; 3],
     bolt: Option<TexId>,
     clock: Baked<(String, [u8; 3])>,
@@ -39,11 +39,11 @@ pub(crate) fn sync_top_bar(app: &mut App, compositor: &mut Compositor, texes: &m
                 (tex, face.w, face.h)
             })
         };
-        let [wifi, bluetooth, ssh] = &mut texes.links;
+        let [wifi, bluetooth, cheevos] = &mut texes.links;
         app.set_link_faces(LinkFaces {
             wifi: pair(wifi, Link::Wifi),
             bluetooth: pair(bluetooth, Link::Bluetooth),
-            ssh: pair(ssh, Link::Ssh),
+            cheevos: pair(cheevos, Link::Cheevos),
         });
         let bolt = bolt_face(colours.ink);
         readouts.bolt = Some(upload_nearest(compositor, &mut texes.bolt, &bolt));

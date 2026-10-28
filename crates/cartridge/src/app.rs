@@ -898,7 +898,12 @@ impl App {
         Links {
             wifi: joined,
             bluetooth: self.bluetooth.present().then(|| self.bluetooth.enabled()),
-            ssh: joined && self.state.ssh && self.ssh.present(),
+            cheevos: self.state.cheevos.then(|| {
+                matches!(
+                    crate::cheevos::status(),
+                    crate::cheevos::Status::SignedIn(_)
+                )
+            }),
         }
     }
 
@@ -915,26 +920,13 @@ impl App {
         self.shelf_platform = cartridge_ui::Printed::default();
     }
 
-    /// What the shelf's pill shows: the letter jumped to, or the shelf's system.
+    /// What the shelf's pill shows, over the title: the count while Five Games' games are picked,
+    /// or the letter jumped to. The system's name is not shown: the carts say it.
     pub fn pill_text(&self) -> Option<String> {
         if let Some(n) = self.picking_count() {
             return Some(format!("PICK {n}/{}", cartridge_store::FOCUS_MAX));
         }
-        if self.focus_on() {
-            // Five Games' one shelf holds several systems: the pill names the cart's
-            return self
-                .shelf()
-                .carts
-                .get(self.shelf().index)
-                .map(|c| c.platform.dir_name().to_string());
-        }
-        match self.pill_letter {
-            Some(letter) => Some(letter.to_string()),
-            None => self
-                .shelves
-                .get(self.shelf_at)
-                .map(|(platform, _)| platform.dir_name().to_string()),
-        }
+        self.pill_letter.map(|letter| letter.to_string())
     }
 
     /// How far below its place the shelf's pill is, in art pixels: it rises into place as a

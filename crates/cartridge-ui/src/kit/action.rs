@@ -308,3 +308,61 @@ pub fn pill_face(text: &str, pal: &Palette) -> UndoFace {
     );
     face
 }
+
+/// How long the rules either side of a shelf title are, and how far they stand from its letters,
+/// in art pixels.
+const TITLE_RULE: u32 = 18;
+const TITLE_GAP: u32 = 5;
+
+/// The most art pixels wide a title's letters are let to be, `room` being what the screen has
+/// across: the rules and their gaps are taken off it.
+pub fn title_room(room: u32) -> u32 {
+    room.saturating_sub(2 * (TITLE_RULE + TITLE_GAP) + 8)
+}
+
+/// The shelf's title for the game the shelf rests on: its name in the palette's cream over a soft
+/// shadow, between two thin rules that end in a small diamond, all in the frame's colours. It
+/// stands on the bar's own row, a `BAR` tall.
+pub fn title_face(text: &str, room: u32, pal: &Palette) -> UndoFace {
+    let mut shown = text.to_string();
+    let mut cut = false;
+    while text_width(&shown) > room && !shown.is_empty() {
+        shown.pop();
+        cut = true;
+    }
+    if cut {
+        shown = format!("{}…", shown.trim_end());
+    }
+    let tw = text_width(&shown);
+    let side = TITLE_RULE + TITLE_GAP;
+    let w = side * 2 + tw + 1;
+    let mut face = blank(w, BAR);
+    // the capitals' middle row
+    let mid = (HINT_TOP + 5) as i32;
+    let left = side as i32;
+    // the letters, a shade of the ground under them first
+    let rows = letters(&shown, ADVANCE);
+    ink(&mut face, &rows, left + 1, HINT_TOP as i32 + 1, pal.edge);
+    ink(&mut face, &rows, left, HINT_TOP as i32, pal.cream);
+    // each rule: a line in the frame's colour, thinning to a dim one at its far end, and a
+    // diamond of the lit colour at its outer tip
+    for (x0, dir) in [
+        (left - TITLE_GAP as i32 - 1, -1i32),
+        (left + tw as i32 + TITLE_GAP as i32 - 1, 1),
+    ] {
+        for i in 0..(TITLE_RULE as i32 - 4) {
+            let x = x0 + dir * i;
+            let colour = if i > (TITLE_RULE as i32 - 4) * 2 / 3 {
+                pal.dim
+            } else {
+                pal.frame
+            };
+            fill(&mut face, [x, mid, 1, 1], colour);
+        }
+        let tip = x0 + dir * (TITLE_RULE as i32 - 3);
+        for (dx, dy) in [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)] {
+            fill(&mut face, [tip + dx, mid + dy, 1, 1], pal.frame_hi);
+        }
+    }
+    face
+}

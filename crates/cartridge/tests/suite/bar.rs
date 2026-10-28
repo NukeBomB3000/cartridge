@@ -267,7 +267,13 @@ fn the_bar_draws_nothing_between_its_actions_but_the_hints_and_the_shelfs_pill()
         let top = BarLayout::top(out_h());
         let mut want = vec![quad(ours[2], width - lw - rw, BAR, px(lw), top)];
         if actions == Actions::Shelf {
-            want.push(quad(ours[3], PILL_W, BAR, px(width / 2 - PILL_W / 2), top));
+            want.push(quad(
+                ours[3],
+                PILL_W,
+                BAR,
+                px(width / 2 - PILL_W / 2),
+                cartridge::screens::bar::pill_top(out_h()),
+            ));
         }
         want.extend([
             quad(ours[0], lw, set.left.2, 0.0, rest_y()),
@@ -296,7 +302,7 @@ fn the_shelfs_system_is_a_pill_in_the_middle_between_the_actions() {
             common::write_gb_cart(&d, "Tetris", "TETRIS");
         }
         let mut a = booted(&d);
-        assert_eq!(a.pill_text().as_deref(), Some("GBA"));
+        assert_eq!(a.pill_text(), None, "the system is not named");
         assert_eq!(pill(&frame(&a)), None, "a pill is drawn with no face baked");
         pill_up(&mut a);
         let out = frame(&a);
@@ -307,7 +313,11 @@ fn the_shelfs_system_is_a_pill_in_the_middle_between_the_actions() {
             (PILL_W as f32 * art, BAR as f32 * art),
             "the pill is not its face at the art grid's size"
         );
-        assert_eq!(y, BarLayout::top(out_h()), "the pill is not on the bar");
+        assert_eq!(
+            y,
+            cartridge::screens::bar::pill_top(out_h()),
+            "the pill is not on the bar"
+        );
         assert_eq!(x % art, 0.0, "the pill is off the art grid");
         let (left, _) = at(&out, SHELF_LEFT).unwrap();
         let (right, _) = at(&out, SHELF_RIGHT).unwrap();
@@ -333,8 +343,7 @@ fn the_pill_rises_into_place_with_each_system() {
     let d = tmp_root_with_carts(&["Emerald", "Fusion"]);
     common::write_gb_cart(&d, "Tetris", "TETRIS");
     let mut a = booted(&d);
-    assert_eq!(a.pill_text().as_deref(), Some("GBA"));
-    let top = BarLayout::top(out_h());
+    let top = cartridge::screens::bar::pill_top(out_h());
     for (round, tex) in [(0, PILL), (1, PILL + 1)] {
         a.set_shelf_platform_face(TexId::from_raw(tex), PILL_W);
         a.update(0.0);
@@ -385,7 +394,7 @@ fn the_pill_rises_into_place_with_each_system() {
         if round == 0 {
             a.apply(Action::GbaDown(Btn::R1));
             a.apply(Action::GbaUp(Btn::R1));
-            assert_eq!(a.pill_text().as_deref(), Some("GB"));
+            assert_eq!(a.pill_text(), None);
             assert_eq!(
                 pill(&frame(&a)),
                 None,
@@ -419,7 +428,7 @@ fn the_pill_is_not_shown_while_the_core_picker_is_open() {
     assert_eq!(a.core_picker(), None, "B did not close the picker");
     assert_eq!(
         pill(&frame(&a)).map(|p| p[1]),
-        Some(BarLayout::top(out_h())),
+        Some(cartridge::screens::bar::pill_top(out_h())),
         "the pill did not come back as the picker shut"
     );
 }
@@ -430,7 +439,7 @@ fn the_pill_is_not_shown_while_the_core_picker_is_open() {
 fn the_pill_sinks_and_rises_with_the_shelfs_actions_as_the_shelf_slides_to_a_menu_and_back() {
     let (_d, mut a) = on_shelf();
     pill_up(&mut a);
-    let top = BarLayout::top(out_h());
+    let top = cartridge::screens::bar::pill_top(out_h());
     for (btn, way) in [(Btn::Start, "leaving"), (Btn::B, "coming back")] {
         press(&mut a, btn);
         let mut moved = false;
@@ -468,7 +477,7 @@ fn the_pill_sinks_with_the_actions_as_a_cart_goes_in_and_rises_back_on_eject() {
     pill_up(&mut a);
     press(&mut a, Btn::A);
     assert!(matches!(a.phase(), Phase::Inserting { .. }));
-    let top = BarLayout::top(out_h());
+    let top = cartridge::screens::bar::pill_top(out_h());
     let mut sank = false;
     for _ in 0..60 {
         let out = frame(&a);

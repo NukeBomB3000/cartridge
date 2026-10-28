@@ -33,27 +33,3 @@ pub fn sprite_face(rows: &[&str], ink: [u8; 3]) -> UndoFace {
     }
     UndoFace { rgba, w, h }
 }
-
-/// `face` cut down to the box around its ink, so it can be placed by what is drawn and not by
-/// the air its renderer left round it.
-pub fn cropped(face: UndoFace) -> UndoFace {
-    let inked = |x: u32, y: u32| face.rgba[((y * face.w + x) * 4 + 3) as usize] > 0;
-    let rows: Vec<u32> = (0..face.h)
-        .filter(|&y| (0..face.w).any(|x| inked(x, y)))
-        .collect();
-    let cols: Vec<u32> = (0..face.w)
-        .filter(|&x| (0..face.h).any(|y| inked(x, y)))
-        .collect();
-    let (Some(&y0), Some(&y1), Some(&x0), Some(&x1)) =
-        (rows.first(), rows.last(), cols.first(), cols.last())
-    else {
-        return face;
-    };
-    let (w, h) = (x1 - x0 + 1, y1 - y0 + 1);
-    let mut rgba = Vec::with_capacity((w * h * 4) as usize);
-    for y in y0..=y1 {
-        let start = ((y * face.w + x0) * 4) as usize;
-        rgba.extend_from_slice(&face.rgba[start..start + (w * 4) as usize]);
-    }
-    UndoFace { rgba, w, h }
-}

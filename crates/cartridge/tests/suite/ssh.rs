@@ -392,16 +392,10 @@ fn ssh_left_on_is_left_as_it_is_as_cartridge_starts() {
 }
 
 #[test]
-fn the_top_bar_shows_ssh_while_it_is_on_and_a_network_is_joined() {
-    let mut r = Rig::new();
-    assert!(!r.a.links().ssh, "lit with no network joined");
-    r.join("rg35xxsp");
-    assert!(r.a.links().ssh, "not lit once joined");
-    r.open_ssh_row();
-    r.press(Btn::Right);
-    assert!(!r.a.links().ssh, "lit with SSH off");
-    r.press(Btn::Right);
-    assert!(r.a.links().ssh, "not lit once on again");
+fn the_top_bar_no_longer_shows_ssh_but_whether_retroachievements_is_connected() {
+    let r = Rig::new();
+    // RetroAchievements is on, with no account signed in: the trophy shows, unlit
+    assert_eq!(r.a.links().cheevos, Some(false));
 }
 
 #[test]
