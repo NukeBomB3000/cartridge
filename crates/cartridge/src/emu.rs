@@ -718,6 +718,10 @@ impl Worker {
         let mut paced = 0u64;
         // the slowest frame since the last trace line, and how many ran over 25 ms
         let mut worst = Duration::ZERO;
+        // where the time between two presented frames went, for a gap long enough to be heard
+        let mut last_done = Instant::now();
+        let mut cmd_ms = 0.0f64;
+        let mut last_took = Duration::ZERO;
         let mut slow = 0u32;
         let mut scale = 0.0f64;
         let mut rate = TickRate::new(Instant::now(), 0);
@@ -732,9 +736,11 @@ impl Worker {
         let mut cable_wait = Duration::ZERO;
         let mut ff = (0u32, 0u32, Duration::ZERO, Instant::now());
         while !self.shared.stop.load(Ordering::Relaxed) {
+            let cmds_at = Instant::now();
             for cmd in self.cmds.try_iter() {
                 self.apply(cmd, core.as_mut(), &mut transport, &mut cable, &link);
             }
+            cmd_ms += cmds_at.elapsed().as_secs_f64() * 1000.0;
             crate::cheevos::idle(core.as_ref());
 
             if let Some(t) = transport.as_mut() {
@@ -889,6 +895,7 @@ impl Worker {
                     crate::cheevos::frame(core.as_ref());
                     let took = frame_began.elapsed();
                     worst = worst.max(took);
+                    last_took = took;
                     slow += u32::from(took > Duration::from_millis(25));
                     if last {
                         drawn = took;
@@ -981,7 +988,19 @@ impl Worker {
                         &mut out,
                         self.shared.volume.load(Ordering::Relaxed),
                     );
+                    let push_at = Instant::now();
                     ring.push_blocking(&out);
+                    let push_ms = push_at.elapsed().as_secs_f64() * 1000.0;
+                    let gap = last_done.elapsed();
+                    last_done = Instant::now();
+                    if crate::session::trace() && gap > Duration::from_millis(60) {
+                        eprintln!(
+                            "cartridge: emu: {:.0} ms between two frames: {:.0} ms in the last frame, {cmd_ms:.0} ms in commands, {push_ms:.0} ms pushing sound",
+                            gap.as_secs_f64() * 1000.0,
+                            last_took.as_secs_f64() * 1000.0
+                        );
+                    }
+                    cmd_ms = 0.0;
                     paced += 1;
                     if crate::session::trace() && paced.is_multiple_of(TRACE_EVERY) {
                         let (dropped, starved) = (ring.overruns(), ring.underruns());
