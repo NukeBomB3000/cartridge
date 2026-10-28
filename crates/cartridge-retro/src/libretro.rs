@@ -60,6 +60,8 @@ struct Host {
     defaults: std::collections::HashMap<String, std::ffi::CString>,
     /// The GL context of a core that draws with the GPU, once it asked for one.
     hw: Option<HwGl>,
+    /// The core's memory as it maps it, for RetroAchievements.
+    memory_map: Vec<crate::memory::MemoryDescriptor>,
 }
 
 impl Host {
@@ -92,6 +94,7 @@ impl Host {
             labels: Vec::new(),
             defaults: std::collections::HashMap::new(),
             hw: None,
+            memory_map: Vec::new(),
         }
     }
 
@@ -186,6 +189,9 @@ unsafe extern "C" fn get_current_framebuffer() -> usize {
 
 unsafe extern "C" fn environment(cmd: c_uint, data: *mut c_void) -> bool {
     match cmd {
+        crate::memory::SET_MEMORY_MAPS | crate::memory::SET_MEMORY_MAPS_PLAIN => {
+            with_host(|h| h.memory_map = crate::memory::descriptors(data)).is_some()
+        }
         // GLES only, the one GL this hardware has; the context is made on the thread the core
         // loads on, which is the one it runs on, and a core told no draws in software
         GET_PREFERRED_HW_RENDER => {
@@ -887,6 +893,19 @@ impl Drop for LibretroCore {
 }
 
 impl RetroCore for LibretroCore {
+    fn memory_map(&self) -> &[crate::memory::MemoryDescriptor] {
+        &self.host.memory_map
+    }
+
+    fn core_memory(&self, id: u32) -> Option<(*mut u8, usize)> {
+        let data = unsafe { (self.api.get_memory_data)(id) };
+        let len = unsafe { (self.api.get_memory_size)(id) };
+        if data.is_null() || len == 0 {
+            return None;
+        }
+        Some((data as *mut u8, len))
+    }
+
     fn set_option(&mut self, key: &str, value: &str) {
         LibretroCore::set_option(self, key, value);
     }

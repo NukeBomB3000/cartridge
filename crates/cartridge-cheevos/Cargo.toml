@@ -1,0 +1,21 @@
+[package]
+name = "cartridge-cheevos"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[dependencies]
+cartridge-retro = { path = "../cartridge-retro" }
+cartridge-store = { path = "../cartridge-store" }
+png = { workspace = true }
+ureq = { version = "2", default-features = false, features = ["tls"] }
+chd = "0.4.0"
+zip = { version = "9.1.2", default-features = false, features = ["deflate"] }
+
+[build-dependencies]
+cc = "1"
+
+[dev-dependencies]
+tempfile = { workspace = true }

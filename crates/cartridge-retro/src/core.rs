@@ -105,6 +105,15 @@ pub trait RetroCore: Send {
         Vec::new()
     }
     fn set_frame_skip(&mut self, _skip: bool) {}
+    /// The game's memory as the core maps it, for RetroAchievements.
+    fn memory_map(&self) -> &[crate::memory::MemoryDescriptor] {
+        &[]
+    }
+    /// A raw core memory region by id (0 System RAM, 1 Save RAM), for the addresses the map
+    /// leaves out.
+    fn core_memory(&self, _id: u32) -> Option<(*mut u8, usize)> {
+        None
+    }
     /// The last picture the core drew, XRGB8888 in rows `video_size().0` pixels long.
     fn video_xrgb8888(&self) -> &[u8];
     /// How big that picture is, width by height. A core that never says draws the GBA's screen.

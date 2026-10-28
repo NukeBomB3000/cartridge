@@ -10,6 +10,7 @@ pub use cartridge_ui::{SettingsGroup, SettingsRow};
 use crate::app::{App, Phase};
 use crate::background_screen::BackgroundScreen;
 use crate::bluetooth_screen::{BluetoothScreen, Summary as BluetoothSummary};
+use crate::cheevos_screen::CheevosScreen;
 use crate::equalizer_screen::{preset_of, EqualizerScreen};
 use crate::label_screen::LabelsScreen;
 use crate::nav::Dir;
@@ -35,6 +36,7 @@ impl App {
             )),
             SettingsRow::FiveGames => Some(QuickValue::flag(self.focus_on())),
             SettingsRow::Labels
+            | SettingsRow::Cheevos
             | SettingsRow::DateTime
             | SettingsRow::Network
             | SettingsRow::Bluetooth
@@ -62,6 +64,11 @@ impl App {
                 BluetoothSummary::Connected(name) => name.to_uppercase(),
             }),
             SettingsRow::Sleep => Some(minutes_text(self.state.sleep_idle_min)),
+            SettingsRow::Cheevos => Some(match (crate::cheevos::status(), self.state.cheevos) {
+                (_, false) => QuickValue::Off.text().to_string(),
+                (crate::cheevos::Status::SignedIn(user), _) => user.to_uppercase(),
+                _ => "SIGN IN".to_string(),
+            }),
             SettingsRow::Equalizer => Some(
                 preset_of(self.eq_gains())
                     .unwrap_or("Custom")
@@ -138,6 +145,7 @@ impl App {
         }
         let to = match row {
             SettingsRow::Labels => Phase::Labels(LabelsScreen::default()),
+            SettingsRow::Cheevos => Phase::Cheevos(CheevosScreen::default()),
             SettingsRow::DateTime => clock_screen(self.utc_secs(), self.state.utc_offset_min, true),
             SettingsRow::Network => Phase::Network(WifiScreen::default()),
             SettingsRow::Bluetooth => Phase::Bluetooth(BluetoothScreen::default()),
@@ -182,6 +190,7 @@ impl App {
             | SettingsRow::Bluetooth
             | SettingsRow::Background
             | SettingsRow::Sleep
+            | SettingsRow::Cheevos
             | SettingsRow::Equalizer
             | SettingsRow::About => return,
         }

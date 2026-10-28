@@ -27,6 +27,7 @@ use crate::background_screen::{Backdrop, BackgroundScreen};
 use crate::bluetooth::bluetooth_jobs;
 use crate::bluetooth_screen::{Bluetooth, BluetoothScreen};
 use crate::boot_fade::BootFade;
+use crate::cheevos_screen::CheevosScreen;
 use crate::core_picker::{Chip, CorePicker, Outcome, Press};
 use crate::disc_screen::{DiscBar, DiscScreen};
 use crate::equalizer_screen::EqualizerScreen;
@@ -274,6 +275,8 @@ pub enum Phase {
     /// The panel Y opened on one of Network's rows: Wi-Fi, network time or SSH.
     Info(InfoScreen),
     Labels(LabelsScreen),
+    /// RetroAchievements, opened from Settings.
+    Cheevos(CheevosScreen),
     Background(BackgroundScreen),
     /// The equalizer, opened from Settings.
     Equalizer(EqualizerScreen),
@@ -456,6 +459,7 @@ pub struct App {
     pub(crate) bluetooth_faces: Option<cartridge_ui::network::NetworkFaces>,
     pub(crate) labels: Labels,
     pub(crate) labels_panel: Option<Lone>,
+    pub(crate) cheevos_panel: Option<Lone>,
     /// Carts whose labels arrived and whose faces are still drawn without them.
     pub(crate) stale_faces: Vec<(Platform, String)>,
     pub(crate) background_panel: Option<Lone>,
@@ -518,6 +522,7 @@ impl App {
             bluetooth_faces: None,
             labels: Labels::new(Box::new(NoKey::default()), None),
             labels_panel: None,
+            cheevos_panel: None,
             stale_faces: Vec::new(),
             background_panel: None,
             equalizer_panel: None,
@@ -1695,6 +1700,7 @@ impl App {
             Phase::Bluetooth(_) => self.bluetooth_input(action),
             Phase::Info(_) => self.info_input(action),
             Phase::Labels(_) => self.labels_input(action),
+            Phase::Cheevos(_) => self.cheevos_input(action),
             Phase::Background(_) => self.background_input(action),
             Phase::Equalizer(_) => self.equalizer_input(action),
             Phase::Sleep(_) => self.sleep_input(action),
@@ -1776,11 +1782,18 @@ impl App {
         match self.phase {
             Phase::Network(_) | Phase::Info(_) => Watch::Networks,
             Phase::Settings { .. } => Watch::Status,
-            Phase::Shelf | Phase::Inserting { .. } | Phase::Ejecting { .. } | Phase::Labels(_) => {
-                Watch::Glance
-            }
+            Phase::Shelf
+            | Phase::Inserting { .. }
+            | Phase::Ejecting { .. }
+            | Phase::Labels(_)
+            | Phase::Cheevos(_) => Watch::Glance,
             _ => Watch::Idle,
         }
+    }
+
+    /// RetroAchievements is switched on.
+    pub fn cheevos_on(&self) -> bool {
+        self.state.cheevos
     }
 
     /// Wi-Fi has a network joined.
@@ -2514,10 +2527,11 @@ impl App {
             Phase::Equalizer(_) => self.draw_equalizer_screen(out),
             Phase::Sleep(_) => self.draw_sleep_screen(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
+            Phase::Cheevos(_) if typing_of(phase).is_none() => self.draw_cheevos(out),
             // the modal and its panels stand over the backdrop, with nothing between
             Phase::Network(screen) if screen.typing.is_none() => self.draw_network(out),
             // the keyboard's modal stands on the backdrop itself
-            Phase::Network(_) | Phase::Labels(_) => {
+            Phase::Network(_) | Phase::Labels(_) | Phase::Cheevos(_) => {
                 if let Some(t) = typing_of(phase) {
                     self.draw_keyboard(&t, out);
                 }

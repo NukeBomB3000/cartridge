@@ -30,6 +30,7 @@ use cartridge_ui::{ease, Millis, SPRITE_PX};
 
 use crate::app::{App, Phase};
 use crate::core_picker::CorePicker;
+use crate::screens::cheevos::cheevos_hints;
 use crate::screens::labels::labels_hints;
 use crate::screens::power::PowerScreen;
 
@@ -139,6 +140,7 @@ pub fn actions_on(phase: &Phase) -> Option<Actions> {
         | Phase::Bluetooth(_)
         | Phase::Info(_)
         | Phase::Labels(_)
+        | Phase::Cheevos(_)
         | Phase::Background(_)
         | Phase::Equalizer(_)
         | Phase::Sleep(_)
@@ -264,6 +266,11 @@ impl App {
             Phase::Labels(screen) if screen.typing.is_none() => {
                 labels_hints(&screen.view(&self.labels, self.online()).legend)
             }
+            Phase::Cheevos(screen) if screen.typing.is_none() => cheevos_hints(
+                &screen
+                    .view(&crate::cheevos::status(), self.online(), self.state.cheevos)
+                    .legend,
+            ),
             _ => Vec::new(),
         }
     }

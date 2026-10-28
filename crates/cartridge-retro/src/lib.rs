@@ -3,6 +3,7 @@ mod ffi;
 mod hw;
 mod libretro;
 mod link;
+mod memory;
 mod mock;
 mod rumble;
 
@@ -15,5 +16,6 @@ pub use ffi::{
 };
 pub use libretro::LibretroCore;
 pub use link::{Link, LinkChannel, LoopbackLink};
+pub use memory::MemoryDescriptor;
 pub use mock::MockCore;
 pub use rumble::Rumble;

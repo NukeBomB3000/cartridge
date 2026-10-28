@@ -21,6 +21,8 @@ mod bootlogo;
 mod build_info;
 mod cable;
 mod cable_session;
+mod cheevos_overlay;
+mod cheevos_screen;
 mod clock;
 mod controls;
 mod core_options;

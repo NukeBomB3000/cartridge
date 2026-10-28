@@ -27,6 +27,7 @@ mod sync_about;
 mod sync_background;
 mod sync_bar;
 mod sync_bluetooth;
+mod sync_cheevos;
 mod sync_clock;
 mod sync_controls;
 mod sync_core_options;
@@ -53,6 +54,7 @@ use sync_about::sync_about;
 use sync_background::{sync_background, BackdropTex};
 use sync_bar::{sync_bar, BarTexes};
 use sync_bluetooth::{sync_bluetooth, BluetoothTexes};
+use sync_cheevos::sync_cheevos;
 use sync_clock::{sync_clock, Clocks};
 use sync_controls::sync_controls;
 use sync_core_options::sync_core_options;
@@ -117,6 +119,7 @@ pub struct Frontend {
     keyboard: KeyboardTexes,
     info: InfoTexes,
     labels: Baked<(ListView, u8)>,
+    cheevos: Baked<(ListView, u8)>,
     controls: Baked<(crate::screens::controls::ControlsView, u8)>,
     background: Baked<(ListView, u8)>,
     equalizer: Baked<(crate::equalizer_screen::EqView, u8)>,
@@ -181,6 +184,7 @@ impl Frontend {
     pub fn boot(platform: Box<dyn Platform>) -> Self {
         let now = Instant::now();
         let mut session = Session::boot(platform.root().to_path_buf());
+        crate::cheevos::start(platform.root());
         session
             .app_mut()
             .set_power(Power::new(platform, DOZE_TIMEOUT));
@@ -211,6 +215,7 @@ impl Frontend {
             keyboard: KeyboardTexes::default(),
             info: InfoTexes::default(),
             labels: Baked::default(),
+            cheevos: Baked::default(),
             controls: Baked::default(),
             background: Baked::default(),
             equalizer: Baked::default(),
@@ -379,6 +384,7 @@ impl Frontend {
         sync_info(self.session.app_mut(), compositor, &mut self.info);
         sync_controls(self.session.app_mut(), compositor, &mut self.controls);
         sync_labels(self.session.app_mut(), compositor, &mut self.labels);
+        sync_cheevos(self.session.app_mut(), compositor, &mut self.cheevos);
         sync_background(
             self.session.app_mut(),
             compositor,
@@ -419,6 +425,14 @@ impl Frontend {
         self.drop_boot_logo(compositor);
         self.draws.clear();
         self.session.app().draw(&mut self.draws);
+        crate::cheevos::set_online(self.session.app().online());
+        crate::cheevos::set_enabled(self.session.app().cheevos_on());
+        crate::cheevos::overlay(
+            compositor,
+            &mut self.draws,
+            out_w() as f32,
+            self.session.app().palette(),
+        );
         compositor.draw_list(&self.draws);
     }
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- RetroAchievements, softcore only, ported from nickclyde's slot-plus through fragilesilver's
+  slot-fragile (rcheevos 12.5): Settings > Achievements takes the player's own account on the
+  keyboard screen (Y logs out) and switches the service on or off. A signed-in game is followed
+  by its core's memory and unlocks, the game's progress and completion pop up across the top in
+  the theme's colours, with their badges; they queue while a game is still booting and are sent
+  once back online. The password is kept only until the first sign-in has handed back a token.
+  Hardcore is not offered, so saves, states, rewind and fast forward all work.
 - The handheld sleeps by itself after ten minutes without a press and powers itself off three
   minutes into any sleep, the lid shut, POWER tapped or idle alike. Settings > Sleep sets both:
   SLEEP AFTER (never, 1, 2, 5, 10, 15, 30 minutes) and POWER OFF AFTER (never, 1, 3, 5, 10, 30,

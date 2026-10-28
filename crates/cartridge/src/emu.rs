@@ -677,6 +677,7 @@ impl Worker {
                 self.shared.sav_refused.store(true, Ordering::Release);
             }
         }
+        let _cheevos = crate::cheevos::loaded(&rom, resume.is_some());
         if let Some(resume) = resume {
             if let Err(e) = core.unserialize(&self.for_core(resume)) {
                 eprintln!("cartridge: resume: {e}");
@@ -731,6 +732,7 @@ impl Worker {
             for cmd in self.cmds.try_iter() {
                 self.apply(cmd, core.as_mut(), &mut transport, &mut cable, &link);
             }
+            crate::cheevos::idle(core.as_ref());
 
             if let Some(t) = transport.as_mut() {
                 match cable.as_mut() {
@@ -746,6 +748,7 @@ impl Worker {
                             } else {
                                 match core.unserialize(&state) {
                                     Ok(()) => {
+                                        crate::cheevos::reset();
                                         eprintln!(
                                         "cartridge: cable: restored {} bytes, running the host's game",
                                         state.len()
@@ -880,6 +883,7 @@ impl Worker {
                         }
                         None => core.run_frame(input),
                     }
+                    crate::cheevos::frame(core.as_ref());
                     let took = frame_began.elapsed();
                     if last {
                         drawn = took;
@@ -1073,6 +1077,7 @@ impl Worker {
                 if let Err(e) = core.unserialize(&self.for_core(state)) {
                     eprintln!("cartridge: {e}");
                 }
+                crate::cheevos::reset();
             }
             Cmd::Sav(reply) => {
                 let _ = reply.send(core.save_ram());

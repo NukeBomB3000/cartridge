@@ -66,6 +66,9 @@ over on first boot.
 - **A five-band equalizer** in Settings, with a test sound, for the handhelds' small speakers.
 - **The in-game guide follows the theme.** `GUIDES/<system>/<game>.txt` or `.html`, on a short
   MENU press.
+- **RetroAchievements**, softcore: sign in under Settings > Achievements and the game in the core is
+  followed for unlocks, which pop up over it in the theme's colours. Saves, states, rewind and
+  fast forward all stay on; there is no hardcore mode.
 - **Sleep and power off by themselves:** after ten idle minutes the handheld sleeps, any button wakes
   it; three minutes into any sleep, lid shut included, it powers off. Both times are set in
   Settings > Sleep.
@@ -210,7 +213,9 @@ Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero) by *
   [Brandon T. Kowalski](https://github.com/BrandonKowalski) (GPL-3.0). The code that hosts the
   cores, with their saves, sound and input, is still largely his.
 - [slot-fragile](https://github.com/fragilesilver/slot-fragile) by fragilesilver: the Nintendo DS
-  card, the cart pigments and the idea of Gambatte and of kinder card writes.
+  card, the cart pigments, the idea of Gambatte and of kinder card writes, and the
+  RetroAchievements client, which began in nickclyde's slot-plus. It runs on
+  [rcheevos](https://github.com/RetroAchievements/rcheevos) (MIT), shipped in `System/licenses/`.
 - [BaseOS](https://github.com/pvaibhav/BaseOS) by pvaibhav.
 - Emulation by [mGBA](https://mgba.io) (MPL-2.0) and [gpSP](https://github.com/libretro/gpsp)
   (GPL-2.0) for the Game Boys; [FCEUmm](https://github.com/libretro/libretro-fceumm) (GPL-2.0)

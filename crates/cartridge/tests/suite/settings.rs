@@ -139,6 +139,7 @@ fn up_and_down_move_the_bar_and_wrap_at_the_ends() {
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
         SettingsRow::Labels,
+        SettingsRow::Cheevos,
         SettingsRow::DateTime,
         SettingsRow::Network,
         SettingsRow::Bluetooth,
@@ -351,7 +352,7 @@ fn brightness_and_volume_still_answer_over_settings() {
 /// and 111, and each row 200 and its index.
 fn fake_faces(a: &mut App) -> SettingsFaces {
     let id = TexId::from_raw;
-    let frame = settings_frame(4, palette(0));
+    let frame = settings_frame(5, palette(0));
     let mut faces = SettingsFaces::new(&frame, id(100), [(id(110), [42, 11]), (id(111), [42, 11])]);
     for row in a.settings_rows() {
         faces.rows[row.index()] = Some((id(200 + row.index()), [270, ROW_H]));
@@ -479,6 +480,7 @@ fn the_rows_say_what_is_set_in_flows_capitals() {
             text("OFF"),
             text("HIGH"),
             None,
+            text("SIGN IN"),
             clock_text,
             text("OFF"),
             text("OFF"),

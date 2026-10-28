@@ -61,6 +61,8 @@ pub enum SettingsRow {
     FiveGames,
     Rumble,
     Labels,
+    /// ACHIEVEMENTS on the screen: RetroAchievements on or off and its account.
+    Cheevos,
     DateTime,
     Network,
     Bluetooth,
@@ -73,11 +75,12 @@ pub enum SettingsRow {
 }
 
 impl SettingsRow {
-    pub const ALL: [SettingsRow; 10] = [
+    pub const ALL: [SettingsRow; 11] = [
         SettingsRow::Equalizer,
         SettingsRow::FiveGames,
         SettingsRow::Rumble,
         SettingsRow::Labels,
+        SettingsRow::Cheevos,
         SettingsRow::DateTime,
         SettingsRow::Network,
         SettingsRow::Bluetooth,
@@ -95,6 +98,7 @@ impl SettingsRow {
             SettingsRow::FiveGames => "5 Games",
             SettingsRow::Rumble => "Rumble",
             SettingsRow::Labels => "Labels",
+            SettingsRow::Cheevos => "Achievements",
             SettingsRow::DateTime => "Date & Time",
             SettingsRow::Network => "Network",
             SettingsRow::Bluetooth => "Bluetooth",
@@ -110,7 +114,8 @@ impl SettingsRow {
             SettingsRow::Equalizer
             | SettingsRow::FiveGames
             | SettingsRow::Rumble
-            | SettingsRow::Labels => SettingsGroup::Configs,
+            | SettingsRow::Labels
+            | SettingsRow::Cheevos => SettingsGroup::Configs,
             SettingsRow::DateTime
             | SettingsRow::Network
             | SettingsRow::Bluetooth
@@ -126,6 +131,7 @@ impl SettingsRow {
         matches!(
             self,
             SettingsRow::Labels
+                | SettingsRow::Cheevos
                 | SettingsRow::FiveGames
                 | SettingsRow::DateTime
                 | SettingsRow::Network
@@ -140,10 +146,7 @@ impl SettingsRow {
     /// The row's value stands between a ◀ and a ▶ while it is lit: every row Left and Right
     /// change, Fast Forward's speeds and the ON/OFF switches alike, as on the Network screen.
     pub fn carets(self) -> bool {
-        matches!(
-            self,
-            SettingsRow::Rumble
-        )
+        matches!(self, SettingsRow::Rumble)
     }
 
     /// The row above this one among `rows`, the rows a handheld shows, wrapping at the top.

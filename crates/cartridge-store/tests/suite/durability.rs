@@ -187,6 +187,7 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
         AppState {
             cart: Some("Emerald".into()),
             cart_platform: None,
+            cheevos: true,
             sleep_idle_min: 10,
             sleep_off_min: 3,
             browsed: None,

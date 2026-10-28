@@ -7,6 +7,8 @@ pub mod boot_fade;
 pub mod bootlogo;
 pub mod build_info;
 pub mod cable;
+pub mod cheevos;
+pub mod cheevos_screen;
 pub mod core;
 pub mod core_options;
 pub mod core_picker;

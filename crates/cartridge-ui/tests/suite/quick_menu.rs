@@ -31,6 +31,7 @@ fn flow_rows(lit: SettingsRow) -> Vec<RowShown> {
         SettingsRow::Network => Some("HOME"),
         SettingsRow::Bluetooth => Some("8BITDO SN30 PRO"),
         SettingsRow::Sleep => Some("10 MIN"),
+        SettingsRow::Cheevos => Some("SIGN IN"),
         _ => None,
     };
     SettingsRow::ALL
@@ -138,7 +139,7 @@ fn configs_is_as_tall_as_its_rows_and_general_takes_the_rest() {
 
 #[test]
 fn every_row_stands_in_its_own_panels_well() {
-    let frame = settings_frame(4, palette(NIGHT));
+    let frame = settings_frame(5, palette(NIGHT));
     let rects = settings_row_rects(&SettingsRow::ALL, frame.wells);
     for (row, [x, y, w, h]) in &rects {
         let [wx, wy, ww, wh] = frame.wells[row.group().index()];
@@ -157,7 +158,7 @@ fn every_row_stands_in_its_own_panels_well() {
         "GENERAL's first row is not at its well's top"
     );
     assert_eq!(
-        at(SettingsRow::Labels)[1] + ROW_H,
+        at(SettingsRow::Cheevos)[1] + ROW_H,
         frame.wells[0][1] + frame.wells[0][3],
         "CONFIGS does not hug its rows"
     );
@@ -170,7 +171,7 @@ fn without_a_radio_the_rows_after_network_close_up_and_the_panels_stay() {
         .filter(|r| *r != SettingsRow::Network)
         .collect();
     let frame = settings_frame(cartridge_ui::configs_in(&rows), palette(NIGHT));
-    let all = settings_frame(4, palette(NIGHT));
+    let all = settings_frame(5, palette(NIGHT));
     assert_eq!(frame.wells, all.wells, "hiding Network moved a panel");
     let rects = settings_row_rects(&rows, frame.wells);
     let y = |row: SettingsRow| rects.iter().find(|(r, _)| *r == row).unwrap().1[1];
@@ -283,10 +284,7 @@ fn the_rows_left_and_right_change_step_between_arrows_and_the_rows_that_open_end
         .into_iter()
         .filter(|r| r.carets())
         .collect();
-    assert_eq!(
-        carets,
-        [SettingsRow::Rumble]
-    );
+    assert_eq!(carets, [SettingsRow::Rumble]);
     let pal = palette(NIGHT);
     let w = settings_row_width(268);
     let face = |row, lit| {
@@ -321,8 +319,8 @@ const FLOW_REFS: [(&str, u8, SettingsRow); 5] = [
     ("640x480-night-0", NIGHT, SettingsRow::Equalizer),
     ("720x480-night-0", NIGHT, SettingsRow::Equalizer),
     ("720x720-night-0", NIGHT, SettingsRow::Equalizer),
-    ("640x480-amber-4", AMBER, SettingsRow::DateTime),
-    ("720x480-amber-4", AMBER, SettingsRow::DateTime),
+    ("640x480-amber-5", AMBER, SettingsRow::DateTime),
+    ("720x480-amber-5", AMBER, SettingsRow::DateTime),
 ];
 
 #[test]
@@ -390,10 +388,7 @@ fn a_sync_bakes_the_frame_once_and_a_row_only_when_it_changes() {
     moved[1].lit = true;
     let plan = baked.rebake(NIGHT, &moved);
     let rebaked: Vec<SettingsRow> = plan.rows.iter().map(|s| s.row).collect();
-    assert_eq!(
-        rebaked,
-        [SettingsRow::Equalizer, SettingsRow::FiveGames]
-    );
+    assert_eq!(rebaked, [SettingsRow::Equalizer, SettingsRow::FiveGames]);
     assert!(!plan.frame, "moving the cursor baked the frame");
 
     // a new palette: everything
@@ -459,6 +454,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
             "5 Games",
             "Rumble",
             "Labels",
+            "Achievements",
             "Date & Time",
             "Network",
             "Bluetooth",
@@ -474,6 +470,7 @@ fn the_rows_run_in_the_order_the_user_chose() {
             SettingsRow::Equalizer,
             SettingsRow::FiveGames,
             SettingsRow::Labels,
+            SettingsRow::Cheevos,
             SettingsRow::DateTime,
             SettingsRow::Network,
             SettingsRow::Bluetooth,
@@ -491,7 +488,7 @@ fn the_configs_come_first_and_the_handheld_itself_after() {
         .iter()
         .take_while(|g| **g == SettingsGroup::Configs)
         .count();
-    assert_eq!(configs, 4, "{groups:?}");
+    assert_eq!(configs, 5, "{groups:?}");
     assert!(
         groups[configs..]
             .iter()

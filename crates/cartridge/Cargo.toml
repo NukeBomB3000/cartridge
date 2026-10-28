@@ -11,6 +11,7 @@ host = ["dep:winit", "dep:cpal", "dep:gilrs", "cartridge-gfx/host"]
 device = ["cartridge-gfx/device"]
 
 [dependencies]
+cartridge-cheevos = { path = "../cartridge-cheevos" }
 cartridge-gfx = { path = "../cartridge-gfx", default-features = false }
 cartridge-input = { path = "../cartridge-input" }
 cartridge-power = { path = "../cartridge-power" }
