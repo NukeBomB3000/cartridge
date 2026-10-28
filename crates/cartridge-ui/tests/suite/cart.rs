@@ -4,12 +4,12 @@ use std::time::{Duration, SystemTime};
 use cartridge_store::{scan, Platform};
 use cartridge_ui::{
     cart_face, clean_label, cut_label, cut_path, foot_y, gb_label_panel, gb_silhouette,
-    generated_face, label_colour, label_panel, label_text, label_uncut, model_box, model_of,
-    model_scale, model_shadow, model_shelf_box, out_w, rest_y, seated_box, shelf_box, shell_for,
-    silhouette, snes_silhouette, stage_y, sway_reach, wears_label, CartModel, Finish, GbShell,
-    SnesShell, BAR_H, CART_H, CART_W, GB_CART_H, GB_CART_W, GB_LABEL_H, GB_LABEL_W, GB_LABEL_X,
-    GB_LABEL_Y, GB_SHELF_SCALE, LABEL_H, LABEL_W, LABEL_X, LABEL_Y, MOCKUP_H, SFC_SHELL,
-    SNES_SHELL, TOP_BAR_H,
+    generated_face, label_colour, label_ink, label_panel, label_text, label_uncut, model_box,
+    model_of, model_scale, model_shadow, model_shelf_box, out_w, rest_y, seated_box, shelf_box,
+    shell_for, silhouette, snes_silhouette, stage_y, sway_reach, wears_label, CartModel, Finish,
+    GbShell, SnesShell, BAR_H, CART_H, CART_W, GB_CART_H, GB_CART_W, GB_LABEL_H, GB_LABEL_W,
+    GB_LABEL_X, GB_LABEL_Y, GB_SHELF_SCALE, LABEL_H, LABEL_W, LABEL_X, LABEL_Y, MOCKUP_H,
+    SFC_SHELL, SNES_SHELL, TOP_BAR_H,
 };
 use tempfile::TempDir;
 
@@ -281,23 +281,23 @@ fn a_long_title_stays_inside_the_label() {
         let d = tmp_root();
         std::fs::write(d.path().join(format!("Games/GBA/{stem}.gba")), [0u8; 8]).unwrap();
         let face = cart_face(&scan(d.path()).unwrap()[0]);
-        let bg = label_colour(stem);
+        let ink = label_ink(stem);
         let margin = 5;
         for y in 0..LABEL_H {
             for x in 0..LABEL_W {
                 let edge =
                     x < margin || y < margin || x >= LABEL_W - margin || y >= LABEL_H - margin;
                 if edge {
-                    assert_eq!(
+                    assert_ne!(
                         label_pixel(&face, x, y),
-                        bg,
+                        ink,
                         "{stem}: text spills into the border at {x},{y}"
                     );
                 }
             }
         }
         assert!(
-            (0..LABEL_H * LABEL_W).any(|i| label_pixel(&face, i % LABEL_W, i / LABEL_W) != bg),
+            (0..LABEL_H * LABEL_W).any(|i| label_pixel(&face, i % LABEL_W, i / LABEL_W) == ink),
             "{stem}: no text was drawn"
         );
     }
@@ -1031,11 +1031,11 @@ fn a_snes_cart_with_no_label_art_is_labelled_with_its_name() {
     for stem in ["Super Metroid (USA)", "Rockman X (Japan)"] {
         let cart = snes_cart(&carts, stem);
         let face = cart_face(cart);
-        let bg = label_colour(&label_text(cart));
-        let (x0, y0, x1, y1) = colour_box(&face, bg).expect("no generated label");
+        let ink = label_ink(&label_text(cart));
+        let (x0, y0, x1, y1) = colour_box(&face, ink).expect("no generated label");
         let inked = (y0..=y1)
             .flat_map(|y| (x0..=x1).map(move |x| (x, y)))
-            .filter(|&(x, y)| pixel(&face, x, y) != bg)
+            .filter(|&(x, y)| pixel(&face, x, y) == ink)
             .count();
         assert!(inked > 100, "{stem}: no title on its label");
     }
@@ -1225,11 +1225,14 @@ fn a_generated_title_is_set_one_art_pixel_to_a_face_pixel() {
         ("Tetris", gb("Tetris"), 2),
         ("Links Awakening", gb("Links Awakening"), 2),
     ] {
-        let bg = label_colour(stem);
-        let ink = |x: u32, y: u32| pixel(&face, lx + x, ly + y) != bg;
+        let ink_colour = label_ink(stem);
+        let ink = |x: u32, y: u32| pixel(&face, lx + x, ly + y) == ink_colour;
         let rows: Vec<u32> = (0..lh).filter(|&y| (0..lw).any(|x| ink(x, y))).collect();
         let caps = 1 + rows.windows(2).take_while(|r| r[1] == r[0] + 1).count() as u32;
-        assert_eq!(caps, 7 * face_px, "{stem}: capitals {caps} rows tall");
+        assert!(
+            caps > 0 && caps % (7 * face_px) == 0,
+            "{stem}: capitals {caps} rows tall, not whole steps of the grid"
+        );
         for y in 0..lh {
             let mut run = 0;
             for x in 0..=lw {
@@ -1254,7 +1257,7 @@ fn a_game_boy_title_stays_inside_its_near_square_label() {
         let d = tmp_root();
         write_gb_rom(&d, "GB", &format!("{stem}.gb"), 0x00);
         let face = cart_face(&scan(d.path()).unwrap()[0]);
-        let bg = label_colour(stem);
+        let ink = label_ink(stem);
         let at = |x: u32, y: u32| pixel(&face, GB_LABEL_X + x, GB_LABEL_Y + y);
         let margin = 5;
         for y in 0..GB_LABEL_H {
@@ -1264,16 +1267,16 @@ fn a_game_boy_title_stays_inside_its_near_square_label() {
                     || x >= GB_LABEL_W - margin
                     || y >= GB_LABEL_H - margin;
                 if edge {
-                    assert_eq!(
+                    assert_ne!(
                         at(x, y),
-                        bg,
+                        ink,
                         "{stem}: text spills into the border at {x},{y}"
                     );
                 }
             }
         }
         assert!(
-            (0..GB_LABEL_H * GB_LABEL_W).any(|i| at(i % GB_LABEL_W, i / GB_LABEL_W) != bg),
+            (0..GB_LABEL_H * GB_LABEL_W).any(|i| at(i % GB_LABEL_W, i / GB_LABEL_W) == ink),
             "{stem}: no text was drawn"
         );
     }
@@ -1421,5 +1424,38 @@ fn a_clear_cart_lights_its_label_recess_no_brighter_than_its_plastic() {
     assert!(
         luma(lit) <= luma(plastic) * 13 / 10 + 4,
         "the recess edge {lit:?} glares against the plastic {plastic:?}"
+    );
+}
+
+#[test]
+fn a_short_title_is_set_bigger_than_a_long_one() {
+    let height = |stem: &str| {
+        let d = tmp_root();
+        std::fs::write(d.path().join(format!("Games/GBA/{stem}.gba")), [0u8; 8]).unwrap();
+        let face = cart_face(&scan(d.path()).unwrap()[0]);
+        let ink = label_ink(stem);
+        (0..LABEL_H)
+            .filter(|&y| (0..LABEL_W).any(|x| label_pixel(&face, x, y) == ink))
+            .count()
+    };
+    assert!(
+        height("Zelda") > 2 * height("Super Mario Kart World Tour Championship Edition") / 5,
+        "a short name was not scaled up to the room"
+    );
+}
+
+#[test]
+fn a_title_that_fits_on_many_lines_is_not_cut_short() {
+    let d = tmp_root();
+    let stem = "Teenage Mutant Ninja Turtles The Hyperstone Heist";
+    std::fs::write(d.path().join(format!("Games/GBA/{stem}.gba")), [0u8; 8]).unwrap();
+    let face = cart_face(&scan(d.path()).unwrap()[0]);
+    let ink = label_ink(stem);
+    let lines = (0..LABEL_H)
+        .filter(|&y| (0..LABEL_W).any(|x| label_pixel(&face, x, y) == ink))
+        .count();
+    assert!(
+        lines >= 3 * 7,
+        "the title was cut short: {lines} rows of ink"
     );
 }

@@ -52,11 +52,25 @@ pub const GB_LABEL_W: u32 = gb_label_panel(GB_CART_W, GB_CART_H).2 - GB_LABEL_X;
 pub const GB_LABEL_H: u32 = gb_label_panel(GB_CART_W, GB_CART_H).3 - GB_LABEL_Y;
 
 pub(crate) const PAD: u32 = 10;
-const MAX_LINES: usize = 3;
-/// A generated label's title is set in Pixel Code at one art pixel (two of the face's pixels) to
-/// one of the face's, the size every word in the UI is set at, on up to three lines.
-const MAX_PX: f32 = 18.0;
+const MAX_LINES: usize = 8;
+/// A generated label's title is set in Pixel Code, as big as it will go on the label (a whole
+/// step of the grid, so every stroke is whole art pixels), from three steps for a short name
+/// down to the size every word in the UI is set at, on as many lines as the label has room for.
+const MAX_PX: f32 = 54.0;
 const MIN_PX: f32 = 18.0;
+/// How far a generated label's frame stands in from its edge, and how thick its lines are.
+const FRAME_INSET: u32 = 6;
+const FRAME_LINE: u32 = 2;
+/// How much lighter the top of a generated label is than its colour, and how much darker the
+/// foot, in 255ths.
+const SHEEN: (i32, i32) = (34, -44);
+/// How far the lettering's shadow falls, down and to the right.
+const SHADOW: u32 = 2;
+/// How much thicker than the font's own the lettering of a generated label is drawn, in face
+/// pixels: one art pixel.
+const BOLD: u32 = 2;
+/// How far in from the label's edge the lettering may reach: clear of the frame.
+const ROOM: u32 = FRAME_INSET + 3 * FRAME_LINE + 8;
 
 const RIM: u32 = (4 * CART_W + SEATED_W / 2) / SEATED_W;
 const GB_RIM: u32 = (7 * GB_CART_W + SEATED_W / 2) / SEATED_W;
@@ -608,24 +622,96 @@ fn paste_label(s: &Spec, face: &mut CartFace, label: &[u8]) {
 fn generated_label(s: &Spec, title: &str) -> Vec<u8> {
     let (_, _, lw, lh) = s.label;
     let bg = label_colour(title);
+    let ink = ink(bg);
     let mut rgba = Vec::with_capacity((lw * lh * 4) as usize);
-    for _ in 0..lw * lh {
-        rgba.extend_from_slice(&[bg[0], bg[1], bg[2], 255]);
+    for y in 0..lh {
+        // lit from above: the colour lightens towards the top and darkens towards the foot
+        let k = y as i32 * 255 / lh.max(1) as i32;
+        let shift = SHEEN.0 + (SHEEN.1 - SHEEN.0) * k / 255;
+        let c = bg.map(|c| (c as i32 + shift).clamp(0, 255) as u8);
+        for _ in 0..lw {
+            rgba.extend_from_slice(&[c[0], c[1], c[2], 255]);
+        }
     }
+    frame(&mut rgba, (lw, lh), ink);
 
     if let Some(font) = text::label_font() {
         let layout = text::fit_box(
             font,
             title,
-            (lw - 2 * PAD) as f32,
-            s.max_h,
+            (lw - 2 * ROOM) as f32,
+            s.max_h - 2.0 * (ROOM - PAD) as f32,
             MAX_LINES,
             MAX_PX,
             MIN_PX,
         );
-        text::draw_centred(&mut rgba, lw, lh, &layout, ink(bg));
+        let shadow = bg.map(|c| c / 3);
+        let cover = embolden(&text::coverage(lw, lh, &layout), lw as usize);
+        let mut paint = |colour: [u8; 3], (dx, dy): (u32, u32), share: u32| {
+            for y in dy..lh {
+                for x in dx..lw {
+                    let a = cover[((y - dy) * lw + x - dx) as usize] as u32 * share / 255;
+                    if a > 0 {
+                        let i = ((y * lw + x) * 4) as usize;
+                        for c in 0..3 {
+                            rgba[i + c] = ((colour[c] as u32 * a + rgba[i + c] as u32 * (255 - a))
+                                / 255) as u8;
+                        }
+                    }
+                }
+            }
+        };
+        paint(shadow, (SHADOW, SHADOW), 153);
+        paint(ink, (0, 0), 255);
     }
     rgba
+}
+
+/// `cover`, lettering `w` wide, with each stroke one art pixel thicker to the right: a pixel
+/// face set bold, so a name reads from across a room.
+fn embolden(cover: &[u8], w: usize) -> Vec<u8> {
+    (0..cover.len())
+        .map(|i| {
+            let col = i % w;
+            (0..=BOLD as usize)
+                .filter(|k| col >= *k)
+                .map(|k| cover[i - k])
+                .max()
+                .unwrap_or(0)
+        })
+        .collect()
+}
+
+/// A frame of two thin lines standing in from the label's edge, in the colour of its lettering
+/// and softly: the way a printed label has its rule.
+fn frame(rgba: &mut [u8], (w, h): (u32, u32), ink: [u8; 3]) {
+    let line = |rgba: &mut [u8], x: u32, y: u32, a: u32| {
+        let i = ((y * w + x) * 4) as usize;
+        for c in 0..3 {
+            rgba[i + c] = ((ink[c] as u32 * a + rgba[i + c] as u32 * (255 - a)) / 255) as u8;
+        }
+    };
+    for (gap, a) in [(0, 110u32), (FRAME_LINE + 2, 55)] {
+        let m = FRAME_INSET + gap;
+        if w <= 2 * (m + FRAME_LINE) || h <= 2 * (m + FRAME_LINE) {
+            continue;
+        }
+        for t in 0..FRAME_LINE {
+            for x in m..w - m {
+                line(rgba, x, m + t, a);
+                line(rgba, x, h - m - 1 - t, a);
+            }
+            for y in m..h - m {
+                line(rgba, m + t, y, a);
+                line(rgba, w - m - 1 - t, y, a);
+            }
+        }
+    }
+}
+
+/// The colour a generated label's lettering is printed in: the one that reads on its ground.
+pub fn label_ink(title: &str) -> [u8; 3] {
+    ink(label_colour(title))
 }
 
 fn ink(bg: [u8; 3]) -> [u8; 3] {

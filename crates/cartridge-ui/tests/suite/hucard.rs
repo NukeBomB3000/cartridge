@@ -3,7 +3,7 @@
 
 use cartridge_store::{scan, Cart, Platform};
 use cartridge_ui::{
-    cart_face, hucard_silhouette, label_colour, label_text, model_box, model_of, model_shadow,
+    cart_face, hucard_silhouette, label_ink, label_text, model_box, model_of, model_shadow,
     seated_box, shell_for, CartFace, CartModel, Finish, HUCARD_SHELL, TURBOCHIP_SHELL,
 };
 use tempfile::TempDir;
@@ -145,11 +145,11 @@ fn a_hucard_with_no_label_art_is_labelled_with_its_name() {
     let carts = scan(d.path()).unwrap();
     let c = cart(&carts, "Bonk's Adventure (USA)");
     let face = cart_face(c);
-    let bg = label_colour(&label_text(c));
-    let (x0, y0, x1, y1) = colour_box(&face, bg).expect("no generated label");
+    let ink = label_ink(&label_text(c));
+    let (x0, y0, x1, y1) = colour_box(&face, ink).expect("no generated label");
     let inked = (y0..=y1)
         .flat_map(|y| (x0..=x1).map(move |x| (x, y)))
-        .filter(|&(x, y)| pixel(&face, x, y) != bg)
+        .filter(|&(x, y)| pixel(&face, x, y) == ink)
         .count();
     assert!(inked > 100, "no title on its label");
 }

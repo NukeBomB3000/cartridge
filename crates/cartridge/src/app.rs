@@ -3807,7 +3807,9 @@ impl App {
             self.dropped_faces.extend(shelf.take_faces());
         }
         self.shelves = match focused {
-            Some(carts) if !carts.is_empty() => vec![(carts[0].platform, playful(Shelf::new(carts)))],
+            Some(carts) if !carts.is_empty() => {
+                vec![(carts[0].platform, playful(Shelf::new(carts)))]
+            }
             _ => shelves_of(self.all_carts.clone()),
         };
         self.shelf_at = self

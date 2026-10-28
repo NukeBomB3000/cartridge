@@ -474,7 +474,11 @@ fn a_scroll_ends_a_trick_and_the_cart_bounces_as_it_lands() {
     s.right();
     run(&mut s, 0.15);
     let p = s.pose();
-    assert_eq!((p.lift, p.roll), (0.0, 0.0), "a trick went on through the scroll");
+    assert_eq!(
+        (p.lift, p.roll),
+        (0.0, 0.0),
+        "a trick went on through the scroll"
+    );
     let mut best = 0f32;
     for _ in 0..90 {
         s.update(DT);
@@ -506,4 +510,41 @@ fn the_others_float_a_little_out_of_step() {
         before.iter().zip(side_ys(&s)).any(|(a, b)| *a != b),
         "the neighbours stand dead still"
     );
+}
+
+#[test]
+fn every_model_has_a_back_as_big_as_its_face_outline() {
+    use cartridge_ui::{cart_mesh, outline};
+    let area = |v: &[cartridge_gfx::MeshVertex], z: f32, floor: f32| -> f32 {
+        v.chunks(3)
+            .filter(|t| t.iter().all(|p| p.normal[2] == z && p.xyz[2] <= floor))
+            .map(|t| {
+                let (a, b, c) = (t[0].xyz, t[1].xyz, t[2].xyz);
+                ((b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1])).abs() / 2.0
+            })
+            .sum()
+    };
+    for model in CartModel::ALL {
+        let mesh = cart_mesh(model);
+        // the plain back, not what is moulded on it
+        let back = area(&mesh, 1.0, model.thick() + 1e-6);
+        assert!(back > 0.0, "{model:?} has no back");
+        if model == CartModel::Disc {
+            continue;
+        }
+        let (points, (uw, uh)) = outline(model);
+        let shoelace: f32 = (0..points.len())
+            .map(|i| {
+                let (a, b) = (points[i], points[(i + 1) % points.len()]);
+                a.0 * b.1 - b.0 * a.1
+            })
+            .sum::<f32>()
+            .abs()
+            / 2.0
+            / (uw * uh);
+        assert!(
+            (back - shoelace).abs() < 0.002,
+            "{model:?}: the back covers {back} of the drawing, its outline {shoelace}"
+        );
+    }
 }

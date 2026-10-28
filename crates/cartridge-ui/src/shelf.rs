@@ -595,7 +595,8 @@ impl Shelf {
 
     pub fn update(&mut self, dt: f32) {
         self.calm_down(dt);
-        let accel = -2.0 * DAMPING * OMEGA * self.vel - OMEGA * OMEGA * (self.scroll - self.scroll_target());
+        let accel = -2.0 * DAMPING * OMEGA * self.vel
+            - OMEGA * OMEGA * (self.scroll - self.scroll_target());
         self.vel += accel * dt;
         self.scroll += self.vel * dt;
     }
@@ -647,7 +648,11 @@ impl Shelf {
             }
         } else if self.idle >= self.next_trick && self.calm >= 1.0 {
             let k = self.roll_dice(0.0, Trick::ALL.len() as f32) as usize;
-            let dir = if self.roll_dice(0.0, 1.0) < 0.5 { -1.0 } else { 1.0 };
+            let dir = if self.roll_dice(0.0, 1.0) < 0.5 {
+                -1.0
+            } else {
+                1.0
+            };
             self.trick = Some((Trick::ALL[k.min(Trick::ALL.len() - 1)], 0.0, dir));
         }
     }
@@ -714,9 +719,14 @@ impl Shelf {
                 };
                 match self.stack_at(i) {
                     // a game on several discs is each of them, one behind the other
-                    Some(stack) => {
-                        disc::push_stack(out, (x, y, w, h), &stack, colour, self.spin, pose.yaw)
-                    }
+                    Some(stack) => disc::push_stack(
+                        out,
+                        (x, y, w, h),
+                        &stack,
+                        colour,
+                        self.spin + pose.roll,
+                        pose.yaw,
+                    ),
                     None => out.push(spin::posed_cart(
                         (x, y, w, h),
                         meshes.of(model),

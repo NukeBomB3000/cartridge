@@ -181,7 +181,7 @@ fn plain(ax: u32, ay: u32, accent: [u8; 3]) -> [u8; 4] {
 
 /// Where a face with no label prints its title, above the hole, and its disc's number, below
 /// it: `x, y, w, h` in the face's pixels, each on the art grid and inside the print.
-const TITLE_BOX: (u32, u32, u32, u32) = (64, 22, 160, 66);
+const TITLE_BOX: (u32, u32, u32, u32) = (72, 26, 144, 62);
 const NUMBER_BOX: (u32, u32, u32, u32) = (84, 202, 120, 36);
 
 /// One disc's face, `DISC_PX` square: disc `disc` of `discs` of the game called `title`, with
@@ -206,13 +206,14 @@ fn disc_face(title: &str, disc: usize, discs: usize, art: Option<&[u8]>) -> Vec<
         }
     }
     if art.is_none() {
-        print(&mut rgba, title, TITLE_BOX, 3, INK);
+        print(&mut rgba, title, TITLE_BOX, 3, text::FONT_GRID * 2.0, INK);
         if discs > 1 {
             print(
                 &mut rgba,
                 &format!("DISC {}", disc + 1),
                 NUMBER_BOX,
                 1,
+                text::FONT_GRID,
                 accent,
             );
         }
@@ -239,13 +240,29 @@ fn print(
     words: &str,
     (bx, by, bw, bh): (u32, u32, u32, u32),
     lines: usize,
+    biggest: f32,
     ink: [u8; 3],
 ) {
     let Some(font) = text::label_font() else {
         return;
     };
-    let px = text::FONT_GRID;
-    let layout = text::fit_box(font, words, bw as f32, bh as f32, lines, px, px);
+    let mut layout = text::fit_box(
+        font,
+        words,
+        bw as f32,
+        bh as f32,
+        lines,
+        biggest,
+        text::FONT_GRID,
+    );
+    // a name too long for the room ends in two dots, not in a cut word
+    let letters = |s: &str| s.chars().filter(|c| !c.is_whitespace()).count();
+    if layout.lines.iter().map(|l| letters(l)).sum::<usize>() < letters(words) {
+        if let Some(last) = layout.lines.last_mut() {
+            let keep = last.chars().count().saturating_sub(2).max(1);
+            *last = last.chars().take(keep).collect::<String>() + "..";
+        }
+    }
     let cover = text::coverage_in(font, bw, bh, &layout);
     let inked = |i: usize| cover[i] >= 128;
     let first =
@@ -487,6 +504,73 @@ fn layer_at(disc: usize, discs: usize, z: f32, up: f32) -> Vec<MeshVertex> {
         for c in 0..FACE_CELLS {
             let (p, q, s, t) = (at(c, r), at(c + 1, r), at(c + 1, r + 1), at(c, r + 1));
             out.extend([p, q, s, p, s, t]);
+        }
+    }
+    out.extend(underside(disc, discs, z, up, shade));
+    out
+}
+
+/// How many wedges a ring of the underside is cut in.
+const WEDGES: usize = 24;
+
+/// The underside of a disc: the side of a real one that is read, a silver mirror with the
+/// light across it in the same two wedges as the face's mirror band, the clear hub round the
+/// hole and the rim. Laid one disc's thickness behind the face, of the texture's own colours.
+fn underside(disc: usize, discs: usize, z: f32, up: f32, shade: f32) -> Vec<MeshVertex> {
+    // a pixel of each colour in the face's own texture: the underside paints with these
+    let find = |want: &dyn Fn(u32, u32) -> bool| {
+        (0..ACROSS * ACROSS)
+            .map(|i| (i % ACROSS, i / ACROSS))
+            .find(|&(ax, ay)| want(ax, ay))
+            .map(|(ax, ay)| {
+                let (x, y) = ((ax * SPRITE_PX + 1) as f32, (ay * SPRITE_PX + 1) as f32);
+                [
+                    (disc as f32 + x / DISC_PX as f32) / discs as f32,
+                    y / DISC_PX as f32,
+                ]
+            })
+            .unwrap_or([0.5, 0.5])
+    };
+    // the rim's own silvery grey, which no label covers: the mirror is that, lit and in shade
+    let (lip, hub, edge) = (
+        find(&|ax, ay| ring(from_middle(ax, ay)) == Ring::Lip),
+        find(&|ax, ay| ring(from_middle(ax, ay)) == Ring::Hub),
+        find(&|ax, ay| ring(from_middle(ax, ay)) == Ring::Edge),
+    );
+    let at = |radius: f32, k: usize, uv: [f32; 2], shade: f32| {
+        let t = k as f32 / WEDGES as f32 * 2.0 * PI;
+        let r = radius / R * 0.5;
+        MeshVertex {
+            xyz: [0.5 + r * t.cos(), 0.5 + r * t.sin() - up, z + THICK],
+            normal: [0.0, 0.0, 1.0],
+            uv,
+            shade,
+        }
+    };
+    let mut out = Vec::new();
+    // each ring, from its inner radius to its outer, with how it is lit by the wedge it is in
+    let rings = [
+        (HOLE, LIP, lip, lip, 0.8),
+        (LIP, HUB, hub, hub, 0.85),
+        (HUB, EDGE, edge, edge, 1.0),
+        (EDGE, R, edge, edge, 0.9),
+    ];
+    for (from, to, bright, dim, k) in rings {
+        for w in 0..WEDGES {
+            let mid = (w as f32 + 0.5) / WEDGES as f32 * 2.0 * PI;
+            let off = (mid - PI / 4.0).rem_euclid(PI);
+            let caught = off.min(PI - off).to_degrees() < 14.0;
+            let uv = if caught { bright } else { dim };
+            // the light across the mirror: bright in its two wedges, dull between
+            let glint = match (from >= HUB && to <= EDGE, caught) {
+                (true, true) => 1.45,
+                (true, false) => 0.9,
+                _ => 1.0,
+            };
+            let shade = shade * k * glint;
+            let (a, b) = (at(from, w, uv, shade), at(from, w + 1, uv, shade));
+            let (c, d) = (at(to, w + 1, uv, shade), at(to, w, uv, shade));
+            out.extend([a, b, c, a, c, d]);
         }
     }
     out

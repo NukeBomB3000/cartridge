@@ -261,16 +261,103 @@ pub fn cart_mesh(model: CartModel) -> Vec<MeshVertex> {
         CartModel::Disc => disc::mesh(),
         _ => {
             let (points, units) = outline(model);
-            extruded(&points, units, model.thick())
+            extruded(model, &points, units, model.thick())
         }
     }
+}
+
+/// How much light a back gets: the shell's plastic, a little in the shade of the face.
+const BACK_SHADE: f32 = 0.86;
+
+/// The back of a cart whose outline is `points`, at `thick`: the outline filled in flat, all
+/// one colour, the plastic of the longest side's face just inside its edge.
+fn back(
+    model: CartModel,
+    points: &[(f32, f32)],
+    (uw, uh): (f32, f32),
+    thick: f32,
+) -> Vec<MeshVertex> {
+    let n = points.len();
+    let Some((a, b)) = (0..n)
+        .map(|i| (points[i], points[(i + 1) % n]))
+        .max_by(|p, q| edge_len(*p).total_cmp(&edge_len(*q)))
+    else {
+        return Vec::new();
+    };
+    let len = edge_len((a, b)).max(1e-3);
+    let normal = [(b.1 - a.1) / len, -(b.0 - a.0) / len];
+    let mid = (
+        (a.0 + b.0) / 2.0 - normal[0] * SIDE_SAMPLE,
+        (a.1 + b.1) / 2.0 - normal[1] * SIDE_SAMPLE,
+    );
+    let uv = [mid.0 / uw, mid.1 / uh];
+    let vertex = |p: (f32, f32)| MeshVertex {
+        xyz: [p.0 / uw, p.1 / uh, thick],
+        normal: [0.0, 0.0, 1.0],
+        uv,
+        shade: BACK_SHADE,
+    };
+    let mut out: Vec<MeshVertex> = triangulate(points)
+        .into_iter()
+        .flat_map(|[i, j, k]| [vertex(points[i]), vertex(points[j]), vertex(points[k])])
+        .collect();
+    out.extend(crate::back::relief(model, uv, (uw, uh), thick, BACK_SHADE));
+    out
+}
+
+fn edge_len((a, b): ((f32, f32), (f32, f32))) -> f32 {
+    ((b.0 - a.0).powi(2) + (b.1 - a.1).powi(2)).sqrt()
+}
+
+/// The triangles, as indices, that fill the simple polygon `points`, by cutting off its ears.
+fn triangulate(points: &[(f32, f32)]) -> Vec<[usize; 3]> {
+    let cross = |a: (f32, f32), b: (f32, f32), c: (f32, f32)| {
+        (b.0 - a.0) * (c.1 - a.1) - (b.1 - a.1) * (c.0 - a.0)
+    };
+    let area: f32 = (0..points.len())
+        .map(|i| {
+            let (a, b) = (points[i], points[(i + 1) % points.len()]);
+            a.0 * b.1 - b.0 * a.1
+        })
+        .sum();
+    let sign = area.signum();
+    let inside = |p: (f32, f32), a: (f32, f32), b: (f32, f32), c: (f32, f32)| {
+        sign * cross(a, b, p) >= 0.0 && sign * cross(b, c, p) >= 0.0 && sign * cross(c, a, p) >= 0.0
+    };
+    let mut rest: Vec<usize> = (0..points.len()).collect();
+    let mut out = Vec::new();
+    while rest.len() > 3 {
+        let m = rest.len();
+        let ear = (0..m).find(|&i| {
+            let (p, q, r) = (rest[(i + m - 1) % m], rest[i], rest[(i + 1) % m]);
+            let (a, b, c) = (points[p], points[q], points[r]);
+            sign * cross(a, b, c) > 1e-6
+                && rest
+                    .iter()
+                    .filter(|&&k| k != p && k != q && k != r)
+                    .all(|&k| !inside(points[k], a, b, c))
+        });
+        // a polygon with no ear left is degenerate: take what is there
+        let i = ear.unwrap_or(0);
+        out.push([rest[(i + m - 1) % m], rest[i], rest[(i + 1) % m]]);
+        rest.remove(i);
+    }
+    if rest.len() == 3 {
+        out.push([rest[0], rest[1], rest[2]]);
+    }
+    out
 }
 
 /// A cart in few polygons: its face, the whole texture laid over a few cells, whose outline
 /// the texture's own alpha cuts; and its sides, one flat polygon for each cut of its outline
 /// `points` (in drawing units, the drawing `uw` by `uh`), back to `thick`, each taking its
 /// colour from the face just inside its edge. Sides come first, so the face covers them.
-pub(crate) fn extruded(points: &[(f32, f32)], (uw, uh): (f32, f32), thick: f32) -> Vec<MeshVertex> {
+pub(crate) fn extruded(
+    model: CartModel,
+    points: &[(f32, f32)],
+    (uw, uh): (f32, f32),
+    thick: f32,
+) -> Vec<MeshVertex> {
     let mut out = Vec::new();
     for (i, &a) in points.iter().enumerate() {
         let b = points[(i + 1) % points.len()];
@@ -299,6 +386,7 @@ pub(crate) fn extruded(points: &[(f32, f32)], (uw, uh): (f32, f32), thick: f32) 
         );
         out.extend([a0, b0, b1, a0, b1, a1]);
     }
+    out.extend(back(model, points, (uw, uh), thick));
     let (cols, rows) = FACE_CELLS;
     let at = |c: usize, r: usize| {
         let (u, v) = (c as f32 / cols as f32, r as f32 / rows as f32);
