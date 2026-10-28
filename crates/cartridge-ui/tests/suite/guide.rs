@@ -199,3 +199,79 @@ fn an_entry_makes_room_for_its_picture_and_dims_when_locked() {
     // the words stand clear of the picture
     assert!(laid.lines[0].runs[0].x >= size);
 }
+
+/// With BADGE_DIR naming a folder holding `earned.rgba` and `locked.rgba` (64 by 64 RGBA), the
+/// achievements list is drawn to `BADGE_DIR/achievements.png`, for looking at.
+#[test]
+fn the_achievements_list_draws_with_its_badges() {
+    use cartridge_ui::guide::{
+        lay_out, render_page, Advances, Block, Glyphs, GuideInk, Page, Word,
+    };
+    use std::sync::Arc;
+    let Ok(dir) = std::env::var("BADGE_DIR") else {
+        return;
+    };
+    let read = |n: &str| Arc::new(std::fs::read(format!("{dir}/{n}.rgba")).expect("a badge"));
+    let (earned, locked) = (read("earned"), read("locked"));
+    let words = |t: &str| {
+        t.split_whitespace()
+            .map(|w| Word {
+                text: w.into(),
+                bold: false,
+                src: 0,
+            })
+            .collect::<Vec<_>>()
+    };
+    let mut blocks = vec![Block::Heading {
+        words: words("2 of 4 unlocked, 15 of 60 points"),
+        level: 2,
+    }];
+    for (title, text, icon, lock) in [
+        ("Rookie (5)", "Finish the first level", &earned, false),
+        (
+            "Collector (10)",
+            "Pick up every coin of the second stage without dying",
+            &earned,
+            false,
+        ),
+        (
+            "Speedrunner (20)",
+            "Beat the game in under an hour",
+            &locked,
+            true,
+        ),
+        (
+            "Perfectionist (25)",
+            "Get every achievement in the game",
+            &locked,
+            true,
+        ),
+    ] {
+        blocks.push(Block::Entry {
+            icon: Some(icon.clone()),
+            title: words(title),
+            detail: words(text),
+            locked: lock,
+        });
+    }
+    let mut adv = Advances::default();
+    let (w, h) = (720, 480);
+    let laid = lay_out(&mut adv, &blocks, 680.0, 16.0);
+    let tabs = ["GUIDE", "ACHIEVEMENTS", "SETTINGS"];
+    let page = Page {
+        title: "",
+        keys: "L1/R1 TAB   ◀▶ PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK",
+        ink: GuideInk::of(cartridge_ui::kit::palette::palette(0)),
+        tabs: &tabs,
+        tab: 1,
+    };
+    let rgba = render_page(&mut Glyphs::default(), &laid, 0.0, &page, w, h);
+    let mut png = Vec::new();
+    {
+        let mut e = png::Encoder::new(&mut png, w, h);
+        e.set_color(png::ColorType::Rgba);
+        e.set_depth(png::BitDepth::Eight);
+        e.write_header().unwrap().write_image_data(&rgba).unwrap();
+    }
+    std::fs::write(format!("{dir}/achievements.png"), png).unwrap();
+}
