@@ -235,6 +235,13 @@ Every change is in the [changelog](CHANGELOG.md).
 </p>
 
 <p align="center">
+<img src="screenshots/crt-md-plain.png" width="250" alt="A Mega Drive game as it is drawn without a screen look">
+<img src="screenshots/crt-md-scanlines.png" width="250" alt="The same game with scanlines">
+<img src="screenshots/crt-md.png" width="250" alt="The same game in the CRT look: curved edges, a vignette and the glow of phosphor">
+<br><sub>SELECT+X goes round the screen looks of a television's console: none, scanlines, CRT</sub>
+</p>
+
+<p align="center">
 <img src="site/media/network.png" width="380" alt="Network: Wi-Fi, Network Time and SSH on, and the networks around with their padlocks, signal and CONNECTED">
 <img src="site/media/bluetooth.png" width="380" alt="Bluetooth: the radio on, and a gamepad connected, headphones paired, a keyboard and a smart band">
 <br><sub>Network and Bluetooth</sub>

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Screenshots of the screen looks on a 640x480 RG40XX V: `crt-md-plain.png`, `crt-md-scanlines.png`,
+  `crt-md.png`.
 - Every cart and disc has a back now. Seen from behind (the new twirl shows it) the models were
   open: only the face and the sides were drawn. The back is the plastic of the cart's own shell,
   moulded the way each one is: a shallow recess with small print and grip ridges, screw wells on
