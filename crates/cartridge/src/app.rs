@@ -1060,10 +1060,6 @@ impl App {
         self.platform
     }
 
-    fn frontend_owns_the_shoulders(&self) -> bool {
-        matches!(self.phase, Phase::Playing { .. }) && self.platform.owns_shoulders()
-    }
-
     /// What the buttons the systems disagree about do, for the game in the handheld or the last
     /// one there: a PlayStation game has L2 and R2 and nothing rewinds it. SELECT+Y steps every
     /// system's picture size, SELECT+B every system's ghosting; only a handheld has a colour
@@ -1077,21 +1073,6 @@ impl App {
             picture: true,
             repair: self.card_read_only,
             palette: self.platform == Platform::Gb,
-        }
-    }
-
-    pub fn taken_buttons(&self) -> &'static [Btn] {
-        if self.frontend_owns_the_shoulders() {
-            &[Btn::L1, Btn::R1]
-        } else {
-            &[]
-        }
-    }
-
-    pub fn takes_from_the_game(&self, action: Action) -> bool {
-        match action {
-            Action::GbaDown(btn) | Action::GbaUp(btn) => self.taken_buttons().contains(&btn),
-            _ => false,
         }
     }
 
@@ -1662,12 +1643,6 @@ impl App {
             },
             Phase::Inserting { .. } if action == Action::Eject => self.eject(),
             Phase::Playing { .. } => match action {
-                Action::GbaDown(Btn::L1) if self.frontend_owns_the_shoulders() => {
-                    self.set_picture(VideoMode::Stretch)
-                }
-                Action::GbaDown(Btn::R1) if self.frontend_owns_the_shoulders() => {
-                    self.set_picture(VideoMode::Actual)
-                }
                 Action::Eject => self.eject(),
                 Action::GameMenu => self.game_menu_shortcut(),
                 Action::QuickMenu => self.open_guide(),

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- L and R are the game's on every system. The Game Boys and the Game Gear no longer keep them for
+  the picture's size: SELECT+Y steps it there as everywhere.
+- The bezel's body is darker, `#0e0e0e` instead of `#191919`, wherever a picture leaves it bare.
 - The shelf is plainer: the two corner actions (SELECT CONTROLS, START SETTINGS) are gone from the
   bottom bar, leaving the system's pill; the top bar has no ground or rule, only its icons and
   figures on the background; and the cart the shelf rests on stands 12 % bigger than the ones

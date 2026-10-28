@@ -95,12 +95,6 @@ impl Platform {
         }
     }
 
-    /// Whether the frontend keeps L1/R1 while a game of this system plays, for its picture
-    /// size: only the Game Boys and the Game Gear, whose games have no shoulder buttons.
-    pub fn owns_shoulders(self) -> bool {
-        matches!(self, Platform::Gb | Platform::Gbc | Platform::Gg)
-    }
-
     /// Whether held X/Y are turbo A/B: on the handhelds, the NES and the Master System, whose
     /// games have no X or Y.
     pub fn turbo_xy(self) -> bool {

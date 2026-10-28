@@ -2,8 +2,7 @@
 //! on the shelf and in a game of the shelf's system, as `App::apply` and the gestures in
 //! cartridge-input do it. A PlayStation game has L2 and R2 of its own, so it fast-forwards on
 //! SELECT+R2, has nothing to rewind it and swaps discs on SELECT+MENU; only the GBA and the Game
-//! Boys link and have a colour correction; only the GBA and the SNES have a core to pick; only
-//! the Game Boys leave L1 and R1 to the picture's size.
+//! Boys link and have a colour correction; only the GBA and the SNES have a core to pick.
 //!
 //! It is a lone panel, as flow.html's `#screen=controls`: SHELF and IN GAME side by side, each a
 //! heading and then a line a button, the buttons in the frame's bright colour and what they do
@@ -89,8 +88,6 @@ impl ControlsView {
         if platform.lcd_ghosting() {
             game.push(("SELECT+B", "GHOSTING"));
         }
-        // L1 and R1 change the picture size as SELECT+Y does where the game has no shoulders,
-        // and are left off for the room
         game.extend([("SELECT+Y", "PICTURE SIZE"), ("SELECT+X", "SHADER")]);
         if platform == Platform::Gb {
             game.push(("SELECT+L2 R2", "PALETTE"));

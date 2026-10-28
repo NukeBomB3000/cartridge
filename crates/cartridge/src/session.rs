@@ -238,9 +238,6 @@ impl Session {
     }
 
     fn sync_pad(&mut self) {
-        for btn in self.app.taken_buttons() {
-            self.pad.apply(Action::GbaUp(*btn));
-        }
         if let Some(emu) = &self.emu {
             emu.set_input(self.pad.mask());
         }
@@ -280,10 +277,6 @@ impl Session {
         }
         if menu || self.overlaid() {
             self.pad.clear();
-        } else if self.app.takes_from_the_game(action) {
-            if let Action::GbaDown(btn) | Action::GbaUp(btn) = action {
-                self.pad.apply(Action::GbaUp(btn));
-            }
         } else {
             self.pad.apply(action);
         }

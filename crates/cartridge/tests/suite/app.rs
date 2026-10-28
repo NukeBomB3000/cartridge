@@ -2014,44 +2014,48 @@ fn pad(s: &Session) -> u16 {
 }
 
 #[test]
-fn l_and_r_change_the_mode_on_a_game_boy_cart_and_not_on_a_gba_one() {
-    let d = common::tmp_root_with_gb_carts(&["Tetris", "Zzz"]);
-    let mut s = session_playing(d.path());
-    assert_eq!(
-        s.app().source_rect(),
-        WHOLE_TEXTURE,
-        "it did not open actual size"
-    );
-
-    s.feed([RawEvent::Down(Btn::L1)], 100);
-    assert_eq!(
-        s.app().source_rect(),
-        GB_WINDOW,
-        "L did not stretch the picture"
-    );
-    assert_eq!(pad(&s) & ButtonMask::L, 0, "L reached the game as well");
-    s.feed([RawEvent::Up(Btn::L1)], 120);
-
-    s.feed([RawEvent::Down(Btn::R1)], 200);
-    assert_eq!(
-        s.app().source_rect(),
-        WHOLE_TEXTURE,
-        "R did not give it back"
-    );
-    assert_eq!(pad(&s) & ButtonMask::R, 0, "R reached the game as well");
-    s.feed([RawEvent::Up(Btn::R1)], 220);
-
-    let d = common::tmp_root_with_carts(&["Emerald", "Zzz"]);
-    let mut s = session_playing(d.path());
-    s.feed([RawEvent::Down(Btn::L1)], 100);
-    assert_ne!(pad(&s) & ButtonMask::L, 0, "the GBA lost its own L");
-    s.feed([RawEvent::Down(Btn::R1)], 120);
-    assert_ne!(pad(&s) & ButtonMask::R, 0, "the GBA lost its own R");
-    assert_eq!(
-        s.app().source_rect(),
-        WHOLE_TEXTURE,
-        "a GBA picture moved when its shoulders were pressed"
-    );
+fn l_and_r_are_the_games_on_every_cart_and_change_no_picture_mode() {
+    for (label, d) in [
+        (
+            "Game Boy",
+            common::tmp_root_with_gb_carts(&["Tetris", "Zzz"]),
+        ),
+        (
+            "Game Boy Advance",
+            common::tmp_root_with_carts(&["Emerald", "Zzz"]),
+        ),
+    ] {
+        let mut s = session_playing(d.path());
+        assert_eq!(
+            s.app().source_rect(),
+            WHOLE_TEXTURE,
+            "{label}: it did not open actual size"
+        );
+        s.feed([RawEvent::Down(Btn::L1)], 100);
+        assert_ne!(
+            pad(&s) & ButtonMask::L,
+            0,
+            "{label}: L did not reach the game"
+        );
+        assert_eq!(
+            s.app().source_rect(),
+            WHOLE_TEXTURE,
+            "{label}: L changed the picture"
+        );
+        s.feed([RawEvent::Up(Btn::L1)], 120);
+        s.feed([RawEvent::Down(Btn::R1)], 200);
+        assert_ne!(
+            pad(&s) & ButtonMask::R,
+            0,
+            "{label}: R did not reach the game"
+        );
+        assert_eq!(
+            s.app().source_rect(),
+            WHOLE_TEXTURE,
+            "{label}: R changed the picture"
+        );
+        s.feed([RawEvent::Up(Btn::R1)], 220);
+    }
 }
 
 #[test]
@@ -2077,12 +2081,12 @@ fn a_shoulder_held_across_the_insert_does_not_stick_on_the_pad() {
 }
 
 #[test]
-fn a_shoulder_still_held_when_the_cart_seats_never_reaches_a_game_boy_core() {
+fn a_shoulder_held_while_the_cart_seats_reaches_the_core_of_every_system() {
     for (label, root, want_held) in [
         (
             "Game Boy",
             common::tmp_root_with_gb_carts(&["Tetris", "Zzz"]),
-            false,
+            true,
         ),
         (
             "Game Boy Advance",
@@ -2121,8 +2125,9 @@ fn a_shoulder_still_held_when_the_cart_seats_never_reaches_a_game_boy_core() {
 fn the_picture_mode_is_remembered_per_system() {
     let d = common::tmp_root_with_gb_carts(&["Tetris", "Zzz"]);
     let mut s = session_playing(d.path());
-    s.feed([RawEvent::Down(Btn::L1)], 100);
-    s.feed([RawEvent::Up(Btn::L1)], 120);
+    // SELECT+Y steps actual, aspect, stretch
+    s.app_mut().apply(Action::PictureToggle);
+    s.app_mut().apply(Action::PictureToggle);
     assert_eq!(video_mode_for(d.path(), Platform::Gb), VideoMode::Stretch);
     assert_eq!(
         video_mode_for(d.path(), Platform::Gbc),
@@ -2144,7 +2149,7 @@ fn the_picture_mode_is_remembered_per_system() {
         GB_WINDOW,
         "the cart did not come back stretched"
     );
-    s.feed([RawEvent::Down(Btn::R1)], 100);
+    s.app_mut().apply(Action::PictureToggle);
     assert_eq!(video_mode_for(d.path(), Platform::Gb), VideoMode::Actual);
     assert_eq!(s.app().source_rect(), WHOLE_TEXTURE);
 }

@@ -5,12 +5,13 @@ use cartridge_store::Platform;
 
 use crate::plate::UndoFace;
 
-/// The console's body, where a picture that does not fill the canvas leaves it bare: the
-/// dark grey of a GBA's lens around its screen.
+/// The console's body, where a picture that does not fill the canvas leaves it bare: a dark
+/// grey, darker than a GBA's lens, so the marks printed over it (the wordmarks, the battery
+/// light) stand out. The marks keep their own colours.
 pub const BEZEL_FILL: [f32; 4] = [
-    0x19 as f32 / 255.0,
-    0x19 as f32 / 255.0,
-    0x19 as f32 / 255.0,
+    0x0e as f32 / 255.0,
+    0x0e as f32 / 255.0,
+    0x0e as f32 / 255.0,
     1.0,
 ];
 
