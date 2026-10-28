@@ -6,19 +6,21 @@
   open: only the face and the sides were drawn. The back is the plastic of the cart's own shell,
   moulded the way each one is: a shallow recess with small print and grip ridges, screw wells on
   the Game Boy, SNES and NES, ridges on the HuCard, Mega Drive and Master System. A PlayStation
-  disc turns over to its silver data side with the light across it.
+  disc turns over to its silver data side with the light across it. Screenshots:
+  `cart-back-gb.png`, `cart-back-snes.png`, `cart-back-nds.png`, `cart-back-nes.png`,
+  `cart-back-pce.png`, `disc-back-ps1.png`.
 - A cart with no label scan is labelled better: its title is set as big as the label has room for
   (three sizes on the pixel grid, from the old size to three times it), on as many lines as fit
   instead of being cut after three, and in a bolder stroke. The label has a lit-from-above
   gradient, a double frame and a shadow under the lettering. A disc's title is set bigger when it
-  is short and ends in two dots when it is too long.
+  is short and ends in two dots when it is too long. Screenshot: `label-without-artwork.png`.
 - The PlayStation discs on the shelf do all the tricks too: the cartwheel turns them in the
   screen as well as their own spin.
 - The carts on the shelf have more to do. The one in the middle, left alone for three seconds,
   starts a trick and does another every few seconds in a random order: a full twirl showing its
   back, two hops, a quick shake, a look aside, a cartwheel in the screen. A cart that comes to its
   place bounces as it lands, and the ones beside it float a little each out of step. A scroll
-  ends a trick at once. Discs (PS1) keep their spin and only hop and look aside.
+  ends a trick at once. Screenshot: `cart-twirl.png`.
 - The picture no longer stands still each time sound comes back after a few quiet seconds. The
   audio device is let go after three seconds of silence and opened again with the next sound,
   which takes longer than the sound ring holds; the emulator, pushing sound into a ring nothing

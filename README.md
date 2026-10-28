@@ -94,6 +94,44 @@ over on first boot.
 <br><sub>The game menu's Achievements and Settings tabs</sub>
 </p>
 
+<p align="center">
+<img src="screenshots/label-without-artwork.png" width="380" alt="A Game Boy cart with no label scan: its title set big on a lit label with a frame">
+<img src="screenshots/cart-twirl.png" width="380" alt="The cart in the middle halfway through a twirl">
+<br><sub>A label made for a game with no artwork, and a cart doing one of its tricks</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/cart-back-gb.png" width="250" alt="The back of a Game Boy pak: a recess with small print and a screw well">
+<img src="screenshots/cart-back-snes.png" width="250" alt="The back of a SNES cart">
+<img src="screenshots/cart-back-nds.png" width="250" alt="The back of a Nintendo DS card">
+<br><img src="screenshots/cart-back-nes.png" width="250" alt="The back of an NES Game Pak">
+<img src="screenshots/cart-back-pce.png" width="250" alt="The back of a HuCard">
+<img src="screenshots/disc-back-ps1.png" width="250" alt="A PlayStation disc turned over to its silver side">
+<br><sub>Every cart and disc has a back, moulded the way its shell is</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/shelf-gba.png" width="250" alt="The Game Boy Advance shelf">
+<img src="screenshots/shelf-gb.png" width="250" alt="The Game Boy shelf">
+<img src="screenshots/shelf-snes.png" width="250" alt="The Super Nintendo shelf">
+<br><img src="screenshots/shelf-ps1.png" width="250" alt="The PlayStation shelf: discs, a game of two discs as a stack">
+<img src="screenshots/shelf-pce.png" width="250" alt="The PC Engine shelf">
+<img src="screenshots/shelf-md.png" width="250" alt="The Mega Drive shelf">
+<br><sub>A shelf for each system</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/cheevos-settings.png" width="380" alt="Settings, Achievements: the signed-in account and its switches">
+<img src="screenshots/cheevos-notice.png" width="380" alt="An achievement notice over a running game">
+<br><sub>RetroAchievements: the account, and a notice when one is earned</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/nds-pause-menu.png" width="380" alt="The Nintendo DS pause menu over a running game">
+<img src="screenshots/shelf-remembered.png" width="380" alt="The shelf opened on the cart last browsed">
+<br><sub>The DS pause menu, and the shelf that opens where it was left</sub>
+</p>
+
 Every change is in the [changelog](CHANGELOG.md).
 
 <img src="site/media/readme/supported-devices.png" width="760" alt="">
