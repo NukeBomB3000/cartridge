@@ -30,6 +30,11 @@ pub const EQ_DB_MAX: i8 = 12;
 pub struct AppState {
     pub cart: Option<String>,
     pub cart_platform: Option<Platform>,
+    /// The cart the shelf last rested on, its platform and its place on that shelf: where the shelf
+    /// opens when no game is to resume. The place is only a fallback, for a card that changed.
+    pub browsed: Option<String>,
+    pub browsed_platform: Option<Platform>,
+    pub browsed_index: usize,
     pub brightness: u8,
     pub blue_light: u8,
     pub volume: u8,
@@ -83,6 +88,9 @@ impl Default for AppState {
         AppState {
             cart: None,
             cart_platform: None,
+            browsed: None,
+            browsed_platform: None,
+            browsed_index: 0,
             brightness: 14,
             blue_light: 0,
             volume: 60,
@@ -130,7 +138,7 @@ pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\ntv_ghosting={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\neq={}\neq_hp={}\ntv_ghosting={}\nbrowsed={}\nbrowsed_platform={}\nbrowsed_index={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -159,6 +167,9 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         eq_text(&s.eq),
         eq_text(&s.eq_hp),
         s.tv_ghosting as u8,
+        s.browsed.as_deref().unwrap_or(""),
+        s.browsed_platform.map_or(String::new(), platform_key),
+        s.browsed_index,
     );
     atomic_write(&state_path(root), text.as_bytes())
 }
@@ -193,6 +204,9 @@ fn parse(text: &str) -> Option<AppState> {
     let mut eq = None;
     let mut eq_hp = None;
     let mut tv_ghosting = None;
+    let mut browsed = None;
+    let mut browsed_platform = None;
+    let mut browsed_index = None;
     for line in text.lines().filter(|l| !l.is_empty()) {
         let Some((key, value)) = line.split_once('=') else {
             continue;
@@ -234,6 +248,9 @@ fn parse(text: &str) -> Option<AppState> {
             "eq" => eq = eq_value(value),
             "eq_hp" => eq_hp = eq_value(value),
             "tv_ghosting" => tv_ghosting = flag(value),
+            "browsed" => browsed = Some(value.to_string()),
+            "browsed_platform" => browsed_platform = platform_value(value),
+            "browsed_index" => browsed_index = value.parse().ok(),
             _ => {}
         }
     }
@@ -242,6 +259,9 @@ fn parse(text: &str) -> Option<AppState> {
     Some(AppState {
         cart: (!cart.is_empty()).then_some(cart),
         cart_platform,
+        browsed: browsed.filter(|b| !b.is_empty()),
+        browsed_platform,
+        browsed_index: browsed_index.unwrap_or(0),
         brightness: brightness.or(old_brightness)?,
         blue_light: blue_light?,
         volume: volume?,

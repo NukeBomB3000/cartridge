@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The shelf opens on the cart it was left on when no game is to resume. The cart, its system and its
+  place on the shelf are kept in the state file two seconds after the shelf comes to rest, and when
+  the handheld goes to sleep or off. If that game is gone from the card, the shelf opens at the same
+  place on that system's shelf, or on its last cart if the shelf got shorter, or as it always did if
+  the system has no games left.
+- The boot logo's cart has a label after Apotris's: CARTRIDGE in bevelled tetromino blocks on a dark
+  playfield, over a skyline of settled pieces (`screenshots/boot-logo.png`).
 - The autosave writes a game's save every minute but its resume state only every five, each only
   when it changed: a state runs to megabytes, and writing one every minute wore the card for
   little. Ejecting, sleeping, closing the lid and powering off still write both at once.

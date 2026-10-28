@@ -296,8 +296,8 @@ tasks:
 
   bootlogos:cart:
     desc: >-
-      Render the boot images in card/System as a Game Boy Advance cart with the Cartridge logo on
-      its label, from assets/logo/bootcart.html, one per panel (needs Google Chrome and
+      Render the boot images in card/System as a Game Boy Advance cart with a label in the style of Apotris's,
+      from assets/logo/bootcart.html, one per panel (needs Google Chrome and
       ImageMagick)
     cmds:
       - |

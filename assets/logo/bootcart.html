@@ -5,7 +5,7 @@
 <title>Cartridge boot cart</title>
 <!--
   The boot logo: a Game Boy Advance cart in the shelf's grey, the shelf's own silhouette, ridges
-  and GAME BOY ADVANCE lettering (cartridge-ui/assets), with the Cartridge logo on its label.
+  and GAME BOY ADVANCE lettering (cartridge-ui/assets), with a label in the style of Apotris's: CARTRIDGE spelt in tetromino blocks over a stack of settled pieces.
   ?w=720&h=480 frames it for a panel; bootcart.sh renders the boot images from it.
 -->
 <style>
@@ -58,14 +58,59 @@
   <g mask="url(#letters)" transform="translate(0 -0.5)">
     <rect x="0" y="0" width="240" height="141" fill="#6b707a"/>
   </g>
-  <!-- the label's well, then the label -->
+  <!-- the label's well, then the label, drawn by the script below -->
   <rect x="30.4" y="30.6" width="181.6" height="95.8" rx="3" fill="#25272c"/>
   <rect x="30.4" y="30.6" width="181.6" height="95.8" rx="3" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="1"/>
-  <rect x="32.4" y="32.6" width="177.6" height="91.8" rx="2" fill="url(#paper)"/>
-  <rect x="32.4" y="32.6" width="177.6" height="91.8" rx="2" fill="#0c037f" opacity="0.08"/>
-  <image href="cartridge-logo@2x.png" x="38" y="36" width="166.4" height="84" preserveAspectRatio="xMidYMid meet"/>
+  <g id="label"></g>
 </svg>
 <script>
+// The label, after Apotris's: a dark playfield, CARTRIDGE in bevelled tetromino blocks, a stack
+// of settled pieces under it.
+{
+  const FONT = {
+    C: ['111', '100', '100', '100', '111'],
+    A: ['111', '101', '111', '101', '101'],
+    R: ['110', '101', '110', '101', '101'],
+    T: ['111', '010', '010', '010', '010'],
+    I: ['111', '010', '010', '010', '111'],
+    D: ['110', '101', '101', '101', '110'],
+    G: ['111', '100', '101', '101', '111'],
+    E: ['111', '100', '110', '100', '111'],
+  };
+  // the guideline's colours: I, O, T, S, Z, J, L
+  const COLOURS = ['#2fd0e8', '#f2d024', '#a24bd6', '#4cc552', '#e8403c', '#3a5fe0', '#f08a24'];
+  const X0 = 32.4, Y0 = 32.6, W = 177.6, H = 91.8, CELL = 4.8, BEVEL = CELL * 0.22;
+  const shade = (hex, f) => '#' + [1, 3, 5].map(i => {
+    const c = parseInt(hex.slice(i, i + 2), 16);
+    return Math.round(f > 0 ? c + (255 - c) * f : c * (1 + f)).toString(16).padStart(2, '0');
+  }).join('');
+  const n = v => v.toFixed(2);
+  let svg = `<rect x="${X0}" y="${Y0}" width="${W}" height="${H}" rx="2" fill="#0a0a1c"/><g stroke="#fff" stroke-opacity="0.05" stroke-width="0.25">`;
+  for (let i = 1; i * CELL < W; i++) svg += `<path d="M${n(X0 + i * CELL)} ${Y0}v${H}"/>`;
+  for (let j = 1; j * CELL < H; j++) svg += `<path d="M${X0} ${n(Y0 + j * CELL)}h${W}"/>`;
+  svg += '</g>';
+  const block = (x, y, colour) => {
+    const s = CELL, b = BEVEL, hi = shade(colour, 0.55), lo = shade(colour, -0.4);
+    return `<rect x="${n(x)}" y="${n(y)}" width="${n(s)}" height="${n(s)}" fill="${colour}"/>` +
+      `<path d="M${n(x)} ${n(y)}h${n(s)}l${n(-b)} ${n(b)}h${n(-(s - 2 * b))}v${n(s - 2 * b)}l${n(-b)} ${n(b)}z" fill="${hi}"/>` +
+      `<path d="M${n(x + s)} ${n(y + s)}h${n(-s)}l${n(b)} ${n(-b)}h${n(s - 2 * b)}v${n(-(s - 2 * b))}l${n(b)} ${n(-b)}z" fill="${lo}"/>`;
+  };
+  const word = 'CARTRIDGE';
+  const left = X0 + (W - (word.length * 4 - 1) * CELL) / 2, top = Y0 + 4 * CELL;
+  [...word].forEach((ch, k) => FONT[ch].forEach((row, r) => [...row].forEach((bit, c) => {
+    if (bit === '1') svg += block(left + (k * 4 + c) * CELL, top + r * CELL, COLOURS[k % COLOURS.length]);
+  })));
+  // settled pieces along the bottom: a ragged skyline of columns, with a hole here and there
+  const cols = Math.floor(W / CELL), base = X0 + (W - cols * CELL) / 2;
+  for (let i = 0; i < cols; i++) {
+    const height = 1 + ((i * 7 + 3) % 5 === 0 ? 2 : (i * 5) % 3 === 0 ? 1 : 0);
+    for (let j = 0; j < height; j++) {
+      if ((i * 11 + j * 7) % 13 === 5) continue;
+      svg += block(base + i * CELL, Y0 + H - (j + 1) * CELL - 1.6, COLOURS[(i + j * 3 + Math.floor(i / 4)) % COLOURS.length]);
+    }
+  }
+  document.getElementById('label').innerHTML = svg;
+}
 // &scale=4 draws it that many times the panel's size, the grid with it, for a box filter.
 const scale = +new URLSearchParams(location.search).get('scale') || 1;
 document.documentElement.style.setProperty('--step', `${40 * scale}px`);

@@ -100,6 +100,7 @@ mod screen;
 mod sega8;
 mod settings;
 mod sfx;
+mod shelf_memory;
 mod shell_screen;
 mod single;
 mod ssh;

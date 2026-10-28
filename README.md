@@ -1,16 +1,87 @@
 <h1 align="center"><img src="assets/logo/cartridge-logo@2x.png" width="420" alt="Cartridge"></h1>
 
 <p align="center">A Game Boy-centric frontend for Anbernic H700 handhelds running
-<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>. It plays GBA, GBC, GB and Game Gear games, and NES,
-SNES, Master System, Mega Drive, PC Engine and PlayStation games too, on a shelf of cartridges and discs that go down into the handheld when
-you play them.</p>
+<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>, on a shelf of cartridges and discs that go down into the
+handheld when you play them. It plays GBA, GBC, GB, Game Gear, NES, SNES, Master System, Mega Drive,
+PC Engine, PlayStation and Nintendo DS games.</p>
 
 <p align="center">
-<a href="https://oauramos.github.io/omega-zero/"><b>Site</b></a> ·
-<a href="https://github.com/oauramos/omega-zero/releases/latest"><b>Download</b></a> ·
-<a href="https://github.com/oauramos/omega-zero/wiki"><b>Wiki</b></a> ·
-<a href="CHANGELOG.md"><b>Changelog</b></a>
+<a href="https://github.com/NukeBomB3000/omega-zero/releases"><b>Download</b></a> ·
+<a href="CHANGELOG.md"><b>Changelog</b></a> ·
+<a href="https://oauramos.github.io/omega-zero/"><b>Upstream site</b></a> ·
+<a href="https://github.com/oauramos/omega-zero/wiki"><b>Upstream wiki</b></a>
 </p>
+
+Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero), itself a fork of
+[slot](https://github.com/BrandonKowalski/slot). It keeps omega-zero's shelf, screens and cores and
+adds a Nintendo DS emulator, more cores to choose from, a lot of looks to change and a few things
+slot's other fork, [slot-fragile](https://github.com/fragilesilver/slot-fragile), did first. The
+crates, the binary and the settings file carry the new name; an old `omega-zero.state` is moved
+over on first boot.
+
+## What this fork adds
+
+<p align="center">
+<img src="screenshots/nds-shelf.png" width="380" alt="The Nintendo DS shelf: a DS card, the one in the middle floating">
+<img src="screenshots/nds-game.png" width="380" alt="Mario Kart DS running, both screens in one picture, the top one large">
+<br><sub>Nintendo DS: its own card model on the shelf, and both screens in one picture</sub>
+</p>
+
+- **Nintendo DS** from `Games/NDS`, on [DSperate](https://github.com/beebono/DSperate) built from
+  source with an automatic frameskip. Both screens share one picture with the top one large; R2
+  fast-forwards and L2 swaps the screens, and there is no stylus. SELECT+MENU opens a pause menu
+  after DSperate's own, with save and load state, the save states, a short list of options,
+  resume and quit.
+- **A choice of core, on a board of its own.** X on the shelf opens the core picker on a drawing
+  of the console's mainboard: a Game Boy board (DMG-BEAN-02's look) to pick between Gambatte and
+  mGBA, PlayStation's PU-18 to pick between PCSX ReARMed and SwanStation.
+
+<p align="center">
+<img src="screenshots/gb-core-board.png" width="380" alt="The core picker on a Game Boy board, Gambatte and mGBA as its chips">
+<img src="screenshots/ps1-core-board.png" width="380" alt="The core picker on the PlayStation's PU-18 board, PCSX and SwanStation as its chips">
+<br><sub>Core pickers: Game Boy and PlayStation</sub>
+</p>
+
+- **Gambatte** runs the Game Boy and Game Boy Color games, built from source: on the RG SP it takes
+  40 to 56 % less CPU than mGBA for the same game, which is battery. A Game Boy-only game runs as on
+  the original, where SELECT+L2/R2 changes its palette; mGBA stays one press away, and link play
+  asks for it.
+- **SwanStation** (the libretro DuckStation) for the PlayStation, drawing with the GPU: cores that
+  ask for OpenGL ES get a GLES 3 context of their own, and the GPU is held at its top clock while
+  one runs. PCSX ReARMed stays the default.
+
+<p align="center">
+<img src="screenshots/gambatte-palette.png" width="380" alt="A Game Boy game in Gambatte's palette GB Pocket">
+<img src="screenshots/gb-palettes.png" width="380" alt="Three Game Boy palettes side by side: the original green, GB Pocket and GB Light">
+<br><sub>Game Boy palettes on SELECT+L2/R2</sub>
+</p>
+
+- **Cart colours.** Y on the shelf paints the cart: twelve pigments, among them Ruby Red,
+  Sapphire Blue, Emerald Green and Atomic Purple, in solid, clear or glittered plastic, kept per
+  game.
+- **Looks to change:** seventeen theme colours, backgrounds after real handhelds (Game Boy, DS,
+  3DS, PSP and Switch), a text logo and a boot logo of a GBA cart, a CRT shader that follows each
+  console's lines, ghosting for the television's consoles, and finer brightness steps whose
+  lowest is the dimmest picture you can still see.
+- **A five-band equalizer** in Settings, with a test sound, for the handhelds' small speakers.
+- **The in-game guide follows the theme.** `GUIDES/<system>/<game>.txt` or `.html`, on a short
+  MENU press.
+- **Battery and card:** each system gets the CPU clock it needs, and the autosave writes a game's
+  save every minute but its resume state every five, so the card is spared.
+
+<p align="center">
+<img src="screenshots/cart-colour-glitter.png" width="380" alt="A Game Boy Advance cart in glittered Ruby Red, with the CART panel's COLOUR and FINISH rows under it">
+<img src="screenshots/equalizer.png" width="380" alt="The equalizer: five bands from 150 Hz to 6 kHz with a preset row">
+<br><sub>Cart colours, and the equalizer</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/shelf-nes.png" width="380" alt="The NES shelf in the blue theme">
+<img src="screenshots/game-guide.png" width="380" alt="A game guide open over a paused game, in the theme's colours">
+<br><sub>A shelf in the blue theme, and a game guide</sub>
+</p>
+
+Every change is in the [changelog](CHANGELOG.md).
 
 <img src="site/media/readme/supported-devices.png" width="760" alt="">
 
@@ -47,7 +118,7 @@ is the most useful thing you can send.
   the screen into the handheld, and the game comes on like a tube TV. At power-on, an opening in the
   style of Mega Man X5's boot terminal tells you the handheld's memory, chip and battery, then
   fades into the shelf.
-- Eight cores: mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
+- Cores: Gambatte (default) and mGBA for the Game Boys, DSperate for the DS, SwanStation as a second PlayStation core; mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
   mGBA for the Game Boys; FCEUmm for the NES; Genesis Plus GX for the Mega Drive, A, B and C on
   Y, B and A, and for the Game Gear and the Master System, 1 and 2 on B and A; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, with a BIOS of its own built in. GBA
   fills a 640x480 screen and the PlayStation fills it at 4:3; the NES, SNES, Mega Drive and PC Engine
@@ -65,8 +136,8 @@ is the most useful thing you can send.
 - Link play between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,
   Advance Wars, Mario Kart and Tetris.
 - Settings on START, in windows in the style of Mega Man Zero's menus that slide from screen to
-  screen, over a background that keeps moving: CONFIGS (Fast Forward, Fast Forward Sound, Colour
-  Correction, LCD Ghosting, Rumble, Labels) and GENERAL (Date & Time, Network, Bluetooth, Theme,
+  screen, over a background that keeps moving: CONFIGS (Fast Forward, Fast Forward Sound, Equalizer,
+  LCD Ghosting, Rumble, Labels) and GENERAL (Date & Time, Network, Bluetooth, Theme,
   About).
 - On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
 - A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game, on one panel.
@@ -112,10 +183,10 @@ is the most useful thing you can send.
 
 1. Write the [BaseOS image](https://github.com/pvaibhav/BaseOS/releases/latest) for your model to a
    microSD card, put it in **SD1** and boot once.
-2. Copy the contents of the [latest release](https://github.com/oauramos/omega-zero/releases/latest)
+2. Copy the contents of the [latest release](https://github.com/NukeBomB3000/omega-zero/releases/latest)
    to the root of that card.
 3. Put your games in `Games/GBA`, `Games/GB`, `Games/GBC`, `Games/NES`, `Games/SNES`, `Games/MD`,
-   `Games/GG`, `Games/SMS`, `Games/PCE` and `Games/PS1`. An NES game is a `.nes`, a Mega Drive
+   `Games/GG`, `Games/SMS`, `Games/PCE`, `Games/PS1` and `Games/NDS` (a `.nds`). An NES game is a `.nes`, a Mega Drive
    game a `.md`, `.gen` or `.bin`, a Game Gear game a `.gg`, a Master System game a `.sms`, a PC
    Engine game a `.pce`. A
    PlayStation game is a `.cue` with its `.bin`, a `.chd`, a `.pbp` or an `.m3u`; a real
@@ -136,6 +207,8 @@ Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero) by *
 - Based on [slot](https://github.com/BrandonKowalski/slot) by
   [Brandon T. Kowalski](https://github.com/BrandonKowalski) (GPL-3.0). The code that hosts the
   cores, with their saves, sound and input, is still largely his.
+- [slot-fragile](https://github.com/fragilesilver/slot-fragile) by fragilesilver: the Nintendo DS
+  card, the cart pigments and the idea of Gambatte and of kinder card writes.
 - [BaseOS](https://github.com/pvaibhav/BaseOS) by pvaibhav.
 - Emulation by [mGBA](https://mgba.io) (MPL-2.0) and [gpSP](https://github.com/libretro/gpsp)
   (GPL-2.0) for the Game Boys; [FCEUmm](https://github.com/libretro/libretro-fceumm) (GPL-2.0)
@@ -145,7 +218,10 @@ Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero) by *
   [Beetle PCE Fast](https://github.com/libretro/beetle-pce-fast-libretro), Mednafen's pce_fast
   (GPL-2.0), for the PC Engine; [Genesis Plus GX](https://github.com/libretro/Genesis-Plus-GX)
   (free for non-commercial use only) for the Mega Drive, Game Gear and Master System; and
-  [PCSX ReARMed](https://github.com/libretro/pcsx_rearmed) (GPL-2.0) for the PlayStation. Their
+  [PCSX ReARMed](https://github.com/libretro/pcsx_rearmed) (GPL-2.0) and
+  [SwanStation](https://github.com/libretro/swanstation) (GPL-3.0) for the PlayStation;
+  [Gambatte](https://github.com/libretro/gambatte-libretro) (GPL-2.0) for the Game Boys; and
+  [DSperate](https://github.com/beebono/DSperate) for the DS. Their
   licences and patches, and the source of all but mGBA, ship in `System/licenses/`.
 - The card repair checks exFAT cards with fsck.exfat from
   [exfatprogs](https://github.com/exfatprogs/exfatprogs) (GPL-2.0), its source shipped beside it.

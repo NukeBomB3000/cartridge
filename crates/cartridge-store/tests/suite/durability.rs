@@ -187,6 +187,9 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
         AppState {
             cart: Some("Emerald".into()),
             cart_platform: None,
+            browsed: None,
+            browsed_platform: None,
+            browsed_index: 0,
             brightness: 3,
             blue_light: 1,
             volume: 40,

@@ -73,6 +73,9 @@ const VOLUME_STEP: u8 = 5;
 
 const AUTOSAVE_MS: Millis = 60_000;
 
+/// How long the shelf rests on a cart before that is written down.
+const BROWSE_SAVE_MS: Millis = 2_000;
+
 /// How often the autosave takes the resume state too, not just the save RAM: a state runs to
 /// megabytes (a PlayStation game's five, a DS game's more) and changes every minute of play, so
 /// writing it at each autosave wears the card for little; ejecting, sleeping and powering off
@@ -412,6 +415,9 @@ pub struct App {
     pub(crate) power: Option<Power>,
     pub(crate) dozed_at: Millis,
     pub(crate) woke_on_press: bool,
+    /// When the shelf's resting place, changed, is written to the state file: a little after the
+    /// last move, so scrolling is not a write for every cart passed.
+    browse_save_at: Option<Millis>,
     pub(crate) autosave_at: Millis,
     /// When the autosave next takes the resume state as well as the save RAM.
     pub(crate) state_autosave_at: Millis,
@@ -598,6 +604,7 @@ impl App {
             power: None,
             dozed_at: 0,
             woke_on_press: false,
+            browse_save_at: None,
             autosave_at: AUTOSAVE_MS,
             state_autosave_at: STATE_AUTOSAVE_MS,
             pending_save: None,
@@ -682,7 +689,65 @@ impl App {
                 self.state.cart = None;
                 self.state.cart_platform = None;
                 self.name_pending = true;
+                self.rest_where_left();
             }
+        }
+    }
+
+    /// Puts the shelf where it was last browsed: on that cart if it is still on the card, else at
+    /// the same place on that platform's shelf, kept within it, else where it opened. Whatever
+    /// changed on the card while the handheld was off, it opens on something.
+    fn rest_where_left(&mut self) {
+        let platform = self.state.browsed_platform;
+        let exact = self
+            .state
+            .browsed
+            .clone()
+            .and_then(|stem| self.seat_of(&stem, platform));
+        let near = || {
+            let at = self
+                .shelves
+                .iter()
+                .position(|(p, s)| Some(*p) == platform && !s.carts.is_empty())?;
+            let last = self.shelves[at].1.carts.len() - 1;
+            Some((at, self.state.browsed_index.min(last)))
+        };
+        if let Some((at, i)) = exact.or_else(near) {
+            self.shelf_at = at;
+            self.shelf_mut().select(i);
+        }
+    }
+
+    /// Notes the cart the shelf rests on, and writes it once the shelf has been left alone.
+    fn note_browsed(&mut self) {
+        if !matches!(self.phase, Phase::Shelf) {
+            return;
+        }
+        let shelf = &self.shelves[self.shelf_at];
+        let Some(cart) = shelf.1.carts.get(shelf.1.index) else {
+            return;
+        };
+        let here = (Some(cart.stem.as_str()), Some(cart.platform), shelf.1.index);
+        let kept = (
+            self.state.browsed.as_deref(),
+            self.state.browsed_platform,
+            self.state.browsed_index,
+        );
+        if here != kept {
+            self.state.browsed = Some(cart.stem.clone());
+            self.state.browsed_platform = Some(cart.platform);
+            self.state.browsed_index = shelf.1.index;
+            self.browse_save_at = Some(self.now() + BROWSE_SAVE_MS);
+        }
+        if self.browse_save_at.is_some_and(|at| self.now() >= at) {
+            self.flush_browsed();
+        }
+    }
+
+    /// Writes the shelf's resting place now, if it changed since it was written.
+    pub(crate) fn flush_browsed(&mut self) {
+        if self.browse_save_at.take().is_some() {
+            self.persist();
         }
     }
 
@@ -2148,6 +2213,7 @@ impl App {
         self.labels.tick();
         self.take_labels();
         self.play_hold();
+        self.note_browsed();
         if self.doze_expired() {
             self.on_doze_timeout();
         }
@@ -2834,6 +2900,7 @@ impl App {
     }
 
     fn doze(&mut self) {
+        self.flush_browsed();
         if self.link_active() {
             self.end_link();
         }

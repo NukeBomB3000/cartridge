@@ -149,6 +149,7 @@ impl App {
 
     /// The screen saying the handheld is going down by `choice`, slid in over whatever is shown.
     pub(crate) fn show_going(&mut self, choice: PowerChoice) {
+        self.flush_browsed();
         self.finish_slide();
         self.show_power(PowerScreen::Going(choice));
     }
