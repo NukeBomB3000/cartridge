@@ -399,6 +399,8 @@ impl Session {
         let asked = match &self.emu {
             Some(emu) if self.playing() && self.app.rumble_enabled() => {
                 match emu.rumble().strength() {
+                    // the launcher's own buzz, an achievement earned, is felt in a game too
+                    0 if self.app.now() < self.ui_buzz => self.app.rumble_strength(),
                     0 => 0,
                     _ => self.app.rumble_strength(),
                 }

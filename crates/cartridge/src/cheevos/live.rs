@@ -59,6 +59,14 @@ static ENABLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::n
 /// Whether the handheld has a network, as the frontend last saw it.
 static ONLINE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
+/// An earned achievement came up on the screen and has not yet been felt: the motor buzzes.
+static UNLOCK_BUZZ: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Whether an achievement has come up since this was last asked, once.
+pub fn take_unlock_buzz() -> bool {
+    UNLOCK_BUZZ.swap(false, Ordering::AcqRel)
+}
+
 pub fn set_online(on: bool) {
     ONLINE.store(on, Ordering::Release);
 }
@@ -464,6 +472,9 @@ pub fn overlay(compositor: &mut Compositor, draws: &mut Vec<Draw>, canvas_w: f32
                 return;
             };
             show(compositor, shown, &overlay::compose(&face, pal));
+            if face.unlock {
+                UNLOCK_BUZZ.store(true, Ordering::Release);
+            }
             shown.since = Some(now);
             alpha = overlay::alpha(Duration::ZERO);
         }

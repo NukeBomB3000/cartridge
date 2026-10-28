@@ -64,6 +64,8 @@ pub const EJECT_S: f32 = SEATED_AT;
 /// comes out, or the handheld powers off.
 pub const SHELF_BUZZ_MS: Millis = 40;
 pub const THUMP_MS: Millis = 250;
+/// The short buzz as an achievement is earned.
+pub const UNLOCK_BUZZ_MS: Millis = 120;
 
 const EJECT_HOLD_S: f32 = 0.2;
 
@@ -1191,6 +1193,11 @@ impl App {
 
     pub fn take_sfx(&mut self) -> Option<Sfx> {
         self.sfx.take()
+    }
+
+    /// Asks the motor for a buzz of `ms`, as the launcher does for a tick or a thump.
+    pub fn buzz_for(&mut self, ms: Millis) {
+        self.buzz = Some(ms);
     }
 
     pub fn take_buzz(&mut self) -> Option<Millis> {

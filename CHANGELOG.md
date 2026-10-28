@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- An earned achievement buzzes the motor for 120 ms as its panel comes up, in a game too, and
+  not with Rumble off in Settings.
 - A game with no guide says what its file is to be called, as the card has the game's name:
   `GUIDES/GB/Adventure Island.txt` or `.html`, or a folder of that name for several
   (`screenshots/game-menu-no-guide.png`). RetroAchievements' own warning about an unknown

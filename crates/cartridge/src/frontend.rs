@@ -433,6 +433,9 @@ impl Frontend {
             out_w() as f32,
             self.session.app().palette(),
         );
+        if crate::cheevos::take_unlock_buzz() {
+            self.session.app_mut().buzz_for(crate::app::UNLOCK_BUZZ_MS);
+        }
         compositor.draw_list(&self.draws);
     }
 

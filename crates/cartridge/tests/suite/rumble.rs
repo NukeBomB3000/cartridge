@@ -299,3 +299,45 @@ fn with_rumble_off_the_launcher_stays_still() {
         assert_eq!(motor.last(), 0, "the shelf ticked with rumble off");
     }
 }
+
+#[test]
+fn an_earned_achievement_buzzes_the_motor_in_a_game_that_asks_for_nothing() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    play(&mut s, &mut now);
+    step(&mut s, &mut now);
+    assert_eq!(motor.last(), 0, "the motor ran before anything was earned");
+    s.app_mut().buzz_for(cartridge::app::UNLOCK_BUZZ_MS);
+    let mut felt = false;
+    for _ in 0..4 {
+        step(&mut s, &mut now);
+        felt |= motor.last() != 0;
+    }
+    assert!(felt, "an earned achievement was not felt in the game");
+    for _ in 0..40 {
+        step(&mut s, &mut now);
+    }
+    assert_eq!(motor.last(), 0, "the buzz went on");
+}
+
+#[test]
+fn with_rumble_off_an_earned_achievement_does_not_buzz() {
+    let d = tmp_root_with_real_carts(&["Advance Wars", "Emerald"]);
+    write_app_state(
+        d.path(),
+        &AppState {
+            rumble: false,
+            ..AppState::default()
+        },
+    )
+    .unwrap();
+    let (mut s, motor) = session_with_platform(d.path());
+    let mut now = 0;
+    play(&mut s, &mut now);
+    s.app_mut().buzz_for(cartridge::app::UNLOCK_BUZZ_MS);
+    for _ in 0..6 {
+        step(&mut s, &mut now);
+        assert_eq!(motor.last(), 0, "the motor ran with rumble off");
+    }
+}
