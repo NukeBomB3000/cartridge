@@ -1,9 +1,9 @@
-<h1 align="center"><img src="assets/logo/cartridge-logo@2x.png" width="420" alt="Cartridge"></h1>
+<h1 align="center"><img src="assets/logo/cartridge-boot-logo@2x.png" width="520" alt="Cartridge"></h1>
 
-<p align="center">A Game Boy-centric frontend for Anbernic H700 handhelds running
-<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>, on a shelf of cartridges and discs that go down into the
-handheld when you play them. It plays GBA, GBC, GB, Game Gear, NES, SNES, Master System, Mega Drive,
-PC Engine, PlayStation and Nintendo DS games.</p>
+<p align="center"><b>A shelf of real-looking cartridges and discs for Anbernic H700 handhelds.</b><br>
+Pick a game off the shelf, pull it down into the handheld and play: GBA, GBC, GB, Game Gear, NES,
+SNES, Master System, Mega Drive, PC Engine, PlayStation and Nintendo DS, on
+<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>.</p>
 
 <p align="center">
 <a href="https://github.com/NukeBomB3000/cartridge/releases"><b>Download</b></a> ·
@@ -12,6 +12,38 @@ PC Engine, PlayStation and Nintendo DS games.</p>
 <a href="https://github.com/oauramos/omega-zero/wiki"><b>Upstream wiki</b></a>
 </p>
 
+<p align="center">
+<img src="screenshots/shelf-gba.png" width="250" alt="The Game Boy Advance shelf: carts with their label scans, the one in the middle floating">
+<img src="screenshots/shelf-snes.png" width="250" alt="The Super Nintendo shelf: SNES carts with their labels">
+<img src="screenshots/nds-shelf.png" width="250" alt="The Nintendo DS shelf: DS cards with their labels">
+</p>
+
+## Why Cartridge
+
+Most custom firmware gives you a list of file names. Cartridge gives you a shelf of the games
+themselves, each modelled after the real thing, with its own label scan, and then gets out of the
+way: one button to play, one to resume, nothing to set up first.
+
+- **It looks and feels like a collection.** Every system has its own carts or discs in their real
+  shapes and plastics, drawn the way a PlayStation drew 3D, with the label scanned for each game.
+  The one you are on floats, sways and does tricks; the back is modelled too. Seventeen colour
+  themes, backgrounds after real handhelds, and a CRT shader that follows each console's lines.
+- **The right emulator for every system, one tap away.** Gambatte for the Game Boys (it takes
+  40 to 56 % less CPU than mGBA, which is battery), DSperate for the Nintendo DS, PCSX ReARMed or
+  SwanStation for the PlayStation, mGBA or gpSP for the GBA, and more. The core is chosen per game
+  on a drawing of the console's mainboard.
+- **Everything is in the box.** RetroAchievements (softcore), a game menu with the game's guide,
+  its achievements and the settings, a five-band equalizer, save states with a switcher, rewind,
+  fast-forward, link play between two handhelds, Wi-Fi, Bluetooth and SSH, all without leaving
+  the shelf.
+- **Easy on the battery and the card.** Each system gets the CPU clock it needs, the handheld
+  sleeps by itself and powers off a few minutes later, and the autosave spares the card.
+- **Picks up where you left it.** It resumes the last game at boot, or opens the shelf on the cart
+  you last looked at.
+- **One build for the H700 family.** It reads the model from BaseOS at boot and lays itself out
+  for its panel, from 640x480 to the square RG CubeXX, with the panel at 120 Hz where it can.
+- **Open source** under the GPL, installed by copying a folder to a card.
+
 Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero), itself a fork of
 [slot](https://github.com/BrandonKowalski/slot). It keeps omega-zero's shelf, screens and cores and
 adds a Nintendo DS emulator, more cores to choose from, a lot of looks to change and a few things
@@ -19,7 +51,7 @@ slot's other fork, [slot-fragile](https://github.com/fragilesilver/slot-fragile)
 crates, the binary and the settings file carry the new name; an old `omega-zero.state` is moved
 over on first boot.
 
-## What this fork adds
+## What it adds to omega-zero
 
 <p align="center">
 <img src="screenshots/nds-shelf.png" width="380" alt="The Nintendo DS shelf: a DS card, the one in the middle floating">
@@ -48,7 +80,7 @@ over on first boot.
   asks for it.
 - **SwanStation** (the libretro DuckStation) for the PlayStation, drawing in software at the
   PlayStation's own size on a thread of its own: on the RG SP that is more than twice as fast as
-  its OpenGL renderer was, so this has none. PCSX ReARMed stays the default.
+  the GPU renderer was, so it has none: it always draws in software. PCSX ReARMed stays the default.
 
 <p align="center">
 <img src="screenshots/gambatte-palette.png" width="380" alt="A Game Boy game in Gambatte's palette GB Pocket">
@@ -134,73 +166,60 @@ over on first boot.
 
 Every change is in the [changelog](CHANGELOG.md).
 
-<img src="site/media/readme/supported-devices.png" width="760" alt="">
+## Features
 
-## Supported devices
+**The shelf**
+- A shelf for each system, modelled low-poly with real label scans: Game Boy carts in their own
+  plastics, NES carts as the grey Game Pak or a Famicom cart in its game's own colour, SNES carts
+  in the American shape for a game from the USA and the Super Famicom's for the rest, Mega Drive
+  carts or the American Genesis's, black Game Gear and Master System carts, PC Engine HuCards,
+  pale grey or an American black TurboChip, Nintendo DS cards, and PlayStation discs, a game on
+  several discs standing as a stack of them.
+- The cart you are on floats and sways, and every few seconds does a trick: a twirl, two hops, a
+  shake, a look aside, a cartwheel. A cart with no label scan gets a label made for it, with its
+  title set as big as it will go. A pulls it down out of the screen into the handheld, and the
+  game comes on like a tube TV.
+- Y paints the cart in one of twelve pigments, solid, clear or glittered, kept per game.
 
-One build runs on all of them: Cartridge reads the model from BaseOS at boot and lays itself out
-for its panel.
-
-| Device | Panel | Status |
-|---|---|---|
-| RG35XX SP | 640x480 | Main target, in daily use |
-| RG SP | 720x480 | Supported, not yet retested on hardware |
-| RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
-| RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
-| RG40XX H, RG40XX V | 640x480 | Untested |
-| RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
-| RG28XX | 480x640, turned | Experimental |
-
-Own an untested one? A [device report](https://github.com/oauramos/omega-zero/wiki/Device-Reports)
-is the most useful thing you can send.
-
-<img src="site/media/readme/highlights.png" width="760" alt="">
-
-## Highlights
-
-- A shelf for each system, modelled low-poly and drawn the way a PlayStation drew 3D, with real
-  label scans: Game Boy carts in their own plastics, NES carts as the grey Game Pak or a Famicom
-  cart in its game's own colour, SNES carts in the American shape for a game
-  from the USA and the Super Famicom's for the rest, Mega Drive carts or the American Genesis's,
-  black Game Gear and Master System carts,
-  PC Engine HuCards, pale grey or an American
-  black TurboChip, and PlayStation discs, a game on several
-  discs standing as a stack of them. The one you are on floats and sways; A pulls it down out of
-  the screen into the handheld, and the game comes on like a tube TV.
-- Cores: Gambatte (default) and mGBA for the Game Boys, DSperate for the DS, SwanStation as a second PlayStation core; mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
-  mGBA for the Game Boys; FCEUmm for the NES; Genesis Plus GX for the Mega Drive, A, B and C on
-  Y, B and A, and for the Game Gear and the Master System, 1 and 2 on B and A; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, with a BIOS of its own built in. GBA
-  fills a 640x480 screen and the PlayStation fills it at 4:3; the NES, SNES, Mega Drive and PC Engine
-  are drawn at twice their size, and Game Boy and Game Gear stay at 3x. On every television's console SELECT+Y
-  goes round integer, 4:3 and stretched.
-- Screen looks on SELECT+X, kept per system: LCD, grid and dot for the Game Boys and the GBA,
-  ported from slot's, and scanlines and CRT for the television's consoles. The picture size is
-  kept per system too.
-- A PlayStation game on several discs is one game: DISC, on SELECT+MENU in a game, puts another
-  disc in, and the game resumes with the disc that was in the drive.
-- A short MENU press in a game opens the game menu over it, in three tabs that L1 and R1 turn
-  between: the game's guide (`GUIDES/<system>/<game>.txt` or `.html`, with paging, scrolling and
-  eight text sizes, reopened where it was left), its RetroAchievements, and the settings: what
-  the hotkeys change and the options of the core that runs the game.
+**Playing**
+- Cores: Gambatte (default) and mGBA for the Game Boys; mGBA and gpSP for the GBA, and Snes9x and
+  Supafaust for the SNES, chosen per cart; DSperate for the DS; FCEUmm for the NES; Genesis Plus
+  GX for the Mega Drive, with A, B and C on Y, B and A, and for the Game Gear and the Master
+  System; Beetle PCE Fast for the PC Engine; PCSX ReARMed (default) or SwanStation for the
+  PlayStation, with a BIOS of its own built in.
+- GBA fills a 640x480 screen and the PlayStation fills it at 4:3; the NES, SNES, Mega Drive and PC
+  Engine are drawn at twice their size, and Game Boy and Game Gear stay at 3x. On every
+  television's console SELECT+Y goes round integer, 4:3 and stretched.
+- Screen looks on SELECT+X, kept per system: LCD, grid and dot for the Game Boys and the GBA, and
+  scanlines and CRT for the television's consoles, the CRT following each console's own lines.
 - Resume on boot, save states with a switcher, rewind (not on the PlayStation), fast-forward,
   and turbo buttons on the Game Boys and the NES.
+- A PlayStation game on several discs is one game: DISC, on SELECT+MENU in a game, puts another
+  disc in, and the game resumes with the disc that was in the drive.
 - Link play between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,
   Advance Wars, Mario Kart and Tetris.
+
+**In the game**
+- A short MENU press opens the game menu over the game, in three tabs that L1 and R1 turn between:
+  the game's guide (`GUIDES/<system>/<game>.txt` or `.html`, with paging, scrolling and eight
+  text sizes, reopened where it was left), its RetroAchievements, and the settings: what the
+  hotkeys change and the options of the core that runs the game.
+- A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game, on one
+  panel.
+
+**The handheld**
 - Settings on START, in windows in the style of Mega Man Zero's menus that slide from screen to
-  screen, over a background that keeps moving: CONFIGS (Equalizer, 5 Games, Rumble, Labels) and GENERAL (Date & Time, Network, Bluetooth, Theme,
-  Sleep, About).
-- On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
-- A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game, on one panel.
-- Network: home Wi-Fi, network time, and SSH and SFTP, each ON or OFF. Y on one opens its panel:
-  SSH's shows the login and root's own random password. Labels are fetched from ScreenScraper,
-  one for each disc of a PlayStation game.
+  screen, over a background that keeps moving: Equalizer, 5 Games, Rumble, Labels, Achievements,
+  Date & Time, Network, Bluetooth, Theme, Sleep and About on one panel.
+- Network: home Wi-Fi, network time, and SSH and SFTP, each ON or OFF. Labels are fetched from
+  ScreenScraper, one for each disc of a PlayStation game.
 - Bluetooth, on handhelds that have it: pair a device and connect it, or forget it. Game sound and
   gamepads over Bluetooth are still to come.
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take
   (Night is grey, Amber is Mega Man Zero's own), and the bottom bar's font, Bold or Thin.
-- A pixel font, a top bar with the radios, clock and battery, and a bottom bar with the buttons.
-
-<img src="site/media/readme/screens.png" width="760" alt="">
+- On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
+- A pixel font, a top bar with the radios, the trophy, the clock and the battery, and a bottom bar
+  with the buttons.
 
 ## Screens
 
@@ -210,9 +229,9 @@ is the most useful thing you can send.
 </p>
 
 <p align="center">
-<img src="site/media/settings.png" width="380" alt="Settings in Night: CONFIGS (Fast Forward 6X, Fast Forward Sound, Colour Correction, Rumble, Labels) and GENERAL (Date and Time, Network, Bluetooth, Theme, About)">
-<img src="site/media/amber.png" width="380" alt="The same Settings in Amber, Mega Man Zero's own orange and brown">
-<br><sub>Settings, in Night and in Amber</sub>
+<img src="screenshots/settings.png" width="380" alt="Settings: Equalizer, 5 Games, Rumble, Labels, Achievements, Date and Time, Network, Bluetooth, Theme, Sleep and About on one panel">
+<img src="screenshots/sleep-settings.png" width="380" alt="Settings, Sleep: the idle time before the handheld sleeps and the time before it powers off">
+<br><sub>Settings on one panel, and Sleep</sub>
 </p>
 
 <p align="center">
@@ -227,7 +246,23 @@ is the most useful thing you can send.
 <br><sub>Theme, and CONTROLS on a tap of SELECT</sub>
 </p>
 
-<img src="site/media/readme/quick-start.png" width="760" alt="">
+## Supported devices
+
+One build runs on all of them: Cartridge reads the model from BaseOS at boot and lays itself out
+for its panel.
+
+| Device | Panel | Status |
+|---|---|---|
+| RG35XX SP | 640x480 | Main target, in daily use |
+| RG SP | 720x480 | Tested on hardware |
+| RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
+| RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
+| RG40XX H, RG40XX V | 640x480 | Untested |
+| RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
+| RG28XX | 480x640, turned | Experimental |
+
+Own an untested one? A [device report](https://github.com/oauramos/omega-zero/wiki/Device-Reports)
+is the most useful thing you can send.
 
 ## Quick start
 
@@ -246,8 +281,6 @@ is the most useful thing you can send.
 Two cards and updating are in the site's
 [install guide](https://oauramos.github.io/omega-zero/#install); controls and everything else are
 in the [wiki](https://github.com/oauramos/omega-zero/wiki).
-
-<img src="site/media/readme/credits.png" width="760" alt="">
 
 ## Credits and licence
 

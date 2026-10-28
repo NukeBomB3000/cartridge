@@ -34,8 +34,7 @@
 - SwanStation draws in software now, on a thread of its own, at the PlayStation's own size. On the
   RG SP that runs a 3D scene of 007 at 138 frames a second where the OpenGL renderer runs it at 61
   (headless), and in the game the OpenGL path costs 7.4 ms of every 16.7 ms frame in reading the
-  picture back from the GPU and let the sound run dry. OpenGL stays a choice in the core's options;
-  the GPU is only held at its top clock when it is chosen.
+  picture back from the GPU and let the sound run dry.
 - A PlayStation game on a CHD no longer takes the frontend down when RetroAchievements is signed
   in: the track handle's first word, which tells it from the default reader's, was not first in
   its struct (`repr(C)`). The hash is now made for such a game as for any other.
@@ -135,10 +134,8 @@
   PlayStation, no longer opens on the other one's board.
 - PlayStation games can run on SwanStation (the libretro DuckStation) as well as PCSX-ReARMed:
   X on the shelf picks it, given `System/swanstation_libretro.so` and a real BIOS in BIOS/.
-  It draws with the GPU: cores that ask for OpenGL ES get a GLES 3 context of their own on the
-  emulator's thread and a framebuffer whose frames are read back, so rewind, states and the
-  looks take them as any; while one runs the GPU is held at its top clock (648 MHz), which
-  took SwanStation from 47 to a full 60 frames a second on the RG SP. PCSX stays the default.
+  It draws in software, on a thread of its own, at the PlayStation's own size: on the RG SP that
+  runs full speed. PCSX stays the default.
 - A game holds the CPU to what its system needs, so the handheld runs cooler and longer: 720 MHz
   for the Game Boy, Game Boy Color, Game Gear, Master System, NES and PC Engine, 1008 MHz for
   the Mega Drive, 1200 MHz for the GBA, the whole 1512 MHz for the SNES and the PlayStation.
