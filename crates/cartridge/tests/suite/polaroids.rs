@@ -162,7 +162,6 @@ fn the_save_states_stand_under_the_shelfs_top_bar() {
     a.tick_ms(10_000);
     let mut out = Vec::new();
     a.draw(&mut out);
-    let housing = a.chrome_colours().housing;
     let photo = out
         .iter()
         .position(|d| matches!(*d, Draw::Rect { y: 0.0, h, .. } if h == out_h() as f32))
@@ -171,13 +170,14 @@ fn the_save_states_stand_under_the_shelfs_top_bar() {
         .iter()
         .position(|d| {
             matches!(*d, Draw::Rect { x: 0.0, y: 0.0, w, h, colour }
-                if w == out_w() as f32 && h == TOP_BAR_H - 2.0 && colour == housing)
+                if w == out_w() as f32 && h == TOP_BAR_H - 2.0 && colour == [0.0; 4])
         })
         .expect("no top bar");
     assert!(photo < bar, "the top bar is under the screenshot");
     assert!(
         out.iter().all(|d| match *d {
-            Draw::Rect { colour, .. } => colour[3] == 1.0,
+            // the top bar's empty plate aside
+            Draw::Rect { colour, .. } => colour[3] == 1.0 || colour == [0.0; 4],
             Draw::Tex { alpha, .. } => alpha == 1.0,
             _ => true,
         }),

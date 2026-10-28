@@ -7,7 +7,7 @@ use cartridge_ui::kit::palette::palette;
 use cartridge_ui::{
     alert_face, foot_y, label_colour, label_text, model_box, model_of, model_scale,
     model_shelf_box, out_h, out_w, shelf_box, shelf_scale, stage_y, CartDive, CartModel, Draw,
-    MeshId, Pose, Shelf, SnesShell, TexId, ALERT_H, ALERT_W, SPRITE_PX, TOP_BAR_H,
+    MeshId, Pose, Shelf, SnesShell, TexId, ACTIVE_SCALE, ALERT_H, ALERT_W, SPRITE_PX, TOP_BAR_H,
 };
 
 /// What the app hands the dive to draw with: the cart's face, its model, and the alert.
@@ -373,6 +373,8 @@ fn a_cart_keeps_its_shelf_size_all_the_way_in() {
         for step in 0..=400 {
             let seat = (step as f32 / 400.0).min(LAST);
             let q = cart_at(&c, seat);
+            // the cart the shelf rests on stands a little bigger than the shelf's size
+            let (sw, sh) = (sw * ACTIVE_SCALE, sh * ACTIVE_SCALE);
             assert!(
                 (q.w - sw).abs() < 0.01 && (q.h - sh).abs() < 0.01,
                 "{name} is {}x{} at seat {seat} rather than the {sw}x{sh} it stands on the \

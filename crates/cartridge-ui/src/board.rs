@@ -716,7 +716,10 @@ pub struct Placed {
 }
 
 pub fn shelf_cart() -> Placed {
-    shelf_cart_at((out_w() - CART_W) as f32 / 2.0, 1.0)
+    shelf_cart_at(
+        (out_w() as f32 - CART_W as f32 * crate::shelf::ACTIVE_SCALE) / 2.0,
+        crate::shelf::ACTIVE_SCALE,
+    )
 }
 
 pub fn shelf_cart_at(x: f32, scale: f32) -> Placed {

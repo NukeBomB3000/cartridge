@@ -1,7 +1,7 @@
 use cartridge_store::{Cart, Platform};
 use cartridge_ui::{
-    foot_y, label_colour, model_shelf_box, out_h, out_w, rest_y, shelf_box, CartMeshes, CartModel,
-    Draw, GbShell, MeshId, Shelf, SnesShell, TexId, BAR_H, CART_W, GB_CART_H, GB_CART_W,
+    foot_y, label_colour, model_shelf_box, out_h, out_w, shelf_box, CartMeshes, CartModel, Draw,
+    GbShell, MeshId, Shelf, SnesShell, TexId, ACTIVE_SCALE, BAR_H, CART_W, GB_CART_H, GB_CART_W,
     GB_SHELF_SCALE,
 };
 
@@ -145,7 +145,10 @@ fn one_cart_stands_alone_in_the_middle() {
     let row = placed(&s);
     assert_eq!(row.len(), 1, "a lone cart is not alone on the row");
     let (x, w) = row[0];
-    assert!((w - CART_W as f32).abs() < 0.5, "the lone cart is {w} wide");
+    assert!(
+        (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.5,
+        "the lone cart is {w} wide"
+    );
     let centre = x + w / 2.0;
     assert!(
         (centre - out_w() as f32 / 2.0).abs() < 0.5,
@@ -395,7 +398,10 @@ fn the_selected_cart_is_centred_and_full_size() {
     let (x, w) = placed(&s)
         .into_iter()
         .fold((0.0, 0.0), |a, b| if b.1 > a.1 { b } else { a });
-    assert!((w - CART_W as f32).abs() < 0.5, "selected cart is {w} wide");
+    assert!(
+        (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.5,
+        "selected cart is {w} wide"
+    );
     let centre = x + w / 2.0;
     assert!(
         (centre - out_w() as f32 / 2.0).abs() < 0.5,
@@ -657,13 +663,16 @@ fn the_row_draws_a_game_boy_pak_at_its_own_height() {
                 h,
                 depth: 0.0,
                 ..
-            } if (w - sw).abs() < 0.01 => Some((h, y)),
+            } if (w - sw * ACTIVE_SCALE).abs() < 0.01 => Some((h, y)),
             _ => None,
         })
         .expect("no cart is drawn at the pak's shelf size");
-    assert_eq!(h, sh, "the pak was drawn at the GBA height");
+    assert!(
+        (h - sh * ACTIVE_SCALE).abs() < 0.01,
+        "the pak was drawn at the GBA height"
+    );
     let middle = y + h / 2.0 + s.pose().lift;
-    let want = rest_y(GB_CART_H as f32) + GB_CART_H as f32 / 2.0;
+    let want = foot_y(sh) - h / 2.0;
     assert!(
         (middle - want).abs() < 0.01,
         "the pak is centred on {middle}, not on {want} where it would stand at its own size, \
@@ -694,7 +703,7 @@ fn the_neighbours_of_a_pak_are_spaced_by_its_shelf_size() {
     let (rest, scale) = s.selected_at();
     assert!(
         (rest + GB_CART_W as f32 * scale / 2.0 - out_w() as f32 / 2.0).abs() < 0.01
-            && (scale - GB_SHELF_SCALE).abs() < 1e-6,
+            && (scale - GB_SHELF_SCALE * ACTIVE_SCALE).abs() < 1e-6,
         "the selected pak is said to stand at {rest} at {scale} of its size"
     );
 }

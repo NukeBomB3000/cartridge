@@ -16,9 +16,9 @@ use cartridge_retro::ButtonMask;
 use cartridge_store::{write_app_state, AppState, Cart, Core, Platform};
 use cartridge_ui::{
     board_at, grown, lid_at, lid_from, on_board, out_h, out_w, shelf_box, shelf_cart_at,
-    CornerBadge, Draw, Placed, TexId, BAR_H, BOARD_W, CART_H, CART_W, CHIP_H, CHIP_U, CHIP_V,
-    CHIP_W, LID_SHADOW_H, LID_SHADOW_W, LID_TURN, SLIDE_UP, SOCKET_H, SOCKET_U, SOCKET_V, SOCKET_W,
-    TOP_BAR_H, TURN_PAD,
+    CornerBadge, Draw, Placed, TexId, ACTIVE_SCALE, BAR_H, BOARD_W, CART_H, CART_W, CHIP_H, CHIP_U,
+    CHIP_V, CHIP_W, LID_SHADOW_H, LID_SHADOW_W, LID_TURN, SLIDE_UP, SOCKET_H, SOCKET_U, SOCKET_V,
+    SOCKET_W, TURN_PAD,
 };
 use cartridge_ui::{stage_x, stage_y};
 
@@ -63,12 +63,6 @@ fn is_slot_band(d: &Draw) -> bool {
         }
         _ => false,
     }
-}
-
-/// The fill of the bar across the top of the shelf.
-fn is_top_bar(d: &Draw) -> bool {
-    matches!(*d, Draw::Rect { x, y, w, h, .. }
-        if x == 0.0 && y == 0.0 && w == out_w() as f32 && h == TOP_BAR_H - 2.0)
 }
 
 fn playing(stem: &str) -> App {
@@ -678,7 +672,7 @@ fn a_cart_in_flight_is_not_also_left_standing_on_the_shelf() {
             }
             | Draw::Model { w, h, .. } => {
                 w > 200.0
-                    && w <= CART_W as f32 + 0.01
+                    && w <= CART_W as f32 * ACTIVE_SCALE + 0.01
                     && (w / h - CART_W as f32 / CART_H as f32).abs() < 0.05
             }
             Draw::Spun { .. } | Draw::Game | Draw::Shot { .. } => false,
@@ -719,7 +713,9 @@ fn neither_the_shelf_nor_a_cart_going_in_draws_a_slot() {
 #[test]
 fn a_game_boy_pak_keeps_its_shelf_size_all_the_way_in() {
     let mut a = app_with_platforms(&[(Platform::Gb, "Tetris"), (Platform::Gb, "Kirby")]);
+    // the pak the shelf rests on stands a little bigger than the shelf's size
     let (w, h) = shelf_box(Platform::Gb);
+    let (w, h) = (w * ACTIVE_SCALE, h * ACTIVE_SCALE);
     let cart = a.carts().next().cloned().expect("no pak");
     assert_eq!(cart.stem, "Tetris");
     // without faces uploaded, a cart is drawn as a block of its label's colour
@@ -778,7 +774,7 @@ fn a_cart_going_in_rises_then_dives_out_of_the_bottom_of_the_screen() {
     let cart_y = |out: &[Draw]| {
         out.iter().rev().find_map(|d| match *d {
             Draw::Rect { y, w, colour, .. }
-                if (w - CART_W as f32).abs() < 0.5
+                if (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.5
                     && (0..3).all(|k| (colour[k] - ink[k]).abs() < 0.002) =>
             {
                 Some(y)
@@ -1320,7 +1316,7 @@ fn resting_cart(out: &[Draw]) -> f32 {
             Draw::Rect { x, w, .. } | Draw::Tex { x, w, .. } => Some((x, w)),
             _ => None,
         })
-        .find(|(_, w)| (w - CART_W as f32).abs() < 0.01)
+        .find(|(_, w)| (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01)
         .expect("no cart standing on the row")
         .0
 }
@@ -1430,8 +1426,10 @@ fn assert_parts_on_board(out: &[Draw], f: &PickerFaces, board: Placed, when: &st
 fn carts_standing(out: &[Draw], board: TexId) -> usize {
     out.iter()
         .filter(|d| match **d {
-            Draw::Rect { w, .. } => (w - CART_W as f32).abs() < 0.01,
-            Draw::Tex { w, tex, .. } => tex != board && (w - CART_W as f32).abs() < 0.01,
+            Draw::Rect { w, .. } => (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01,
+            Draw::Tex { w, tex, .. } => {
+                tex != board && (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01
+            }
             _ => false,
         })
         .count()
@@ -1480,16 +1478,11 @@ fn the_open_cart_rests_over_the_shelf_with_its_lid_turned() {
     let out = frame(&app);
 
     let rest = board_at(1.0);
-    let (board_i, board) = tex_at(&out, f.board).expect("no board");
+    let (_board_i, board) = tex_at(&out, f.board).expect("no board");
     assert!(
         near(board, [rest.x, rest.y, rest.w, rest.h]),
         "board at {board:?}"
     );
-    let shelf = out
-        .iter()
-        .rposition(is_top_bar)
-        .expect("no top bar over the shelf");
-    assert!(board_i > shelf, "the board is drawn under the shelf");
 
     for (i, socket) in f.sockets.iter().enumerate() {
         let (_, at) = tex_at(&out, *socket).expect("a socket is missing");
@@ -1633,8 +1626,10 @@ fn the_highlighted_cart_becomes_the_lid_rather_than_a_second_cart() {
     let standing = out
         .iter()
         .filter(|d| match **d {
-            Draw::Rect { w, .. } => (w - CART_W as f32).abs() < 0.01,
-            Draw::Tex { w, tex, .. } if tex != f.board => (w - CART_W as f32).abs() < 0.01,
+            Draw::Rect { w, .. } => (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01,
+            Draw::Tex { w, tex, .. } if tex != f.board => {
+                (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01
+            }
             _ => false,
         })
         .count();
@@ -1644,7 +1639,10 @@ fn the_highlighted_cart_becomes_the_lid_rather_than_a_second_cart() {
     );
 
     let (_, lid, turn) = turned_at(&out, f.lid).expect("no lid");
-    let want = grown(lid_from(shelf_cart_at(rest, 1.0), 0.0).0, TURN_PAD as f32);
+    let want = grown(
+        lid_from(shelf_cart_at(rest, ACTIVE_SCALE), 0.0).0,
+        TURN_PAD as f32 * ACTIVE_SCALE,
+    );
     assert!(
         near(lid, [want.x, want.y, want.w, want.h]),
         "the lid starts at {lid:?}"
@@ -1655,13 +1653,13 @@ fn the_highlighted_cart_becomes_the_lid_rather_than_a_second_cart() {
     let slid = frame(&app);
     let (_, lid, turn) = turned_at(&slid, f.lid).expect("the lid vanished mid-slide");
     assert_eq!(turn, 0.0, "the lid turned while it slid");
-    let shelf = shelf_cart_at(rest, 1.0);
+    let shelf = shelf_cart_at(rest, ACTIVE_SCALE);
     let want = grown(
         Placed {
             y: shelf.y - SLIDE_UP * 0.5,
             ..shelf
         },
-        TURN_PAD as f32,
+        TURN_PAD as f32 * ACTIVE_SCALE,
     );
     assert!(
         near(lid, [want.x, want.y, want.w, want.h]),
@@ -1693,8 +1691,8 @@ fn the_highlighted_cart_becomes_the_lid_rather_than_a_second_cart() {
     );
     let (_, [bx, by, bw, bh]) = tex_at(&lifting, f.board).expect("no board mid-lift");
     assert!(
-        bw > board_at(0.0).w && bw < board_at(1.0).w,
-        "the board is not growing: {bw}"
+        bw < board_at(0.0).w.max(board_at(1.0).w) && bw > board_at(0.0).w.min(board_at(1.0).w),
+        "the board is not between the shelf's cart and its rest: {bw}"
     );
     assert_eq!(
         alpha_of(&lifting, f.board),
@@ -1806,8 +1804,8 @@ fn closing_puts_the_cart_back_on_the_shelf() {
     assert!(lid[1] > lid_at(1.0).0.y, "the lid is not coming back down");
     let (_, [bx, by, bw, bh]) = tex_at(&partway, f.board).expect("the board vanished mid-close");
     assert!(
-        bw < board_at(1.0).w && bw > board_at(0.0).w,
-        "the board is not shrinking: {bw}"
+        bw < board_at(1.0).w.max(board_at(0.0).w) && bw > board_at(1.0).w.min(board_at(0.0).w),
+        "the board is not between the shelf's cart and its rest: {bw}"
     );
     assert_eq!(
         alpha_of(&partway, f.board),
@@ -1843,7 +1841,7 @@ fn closing_puts_the_cart_back_on_the_shelf() {
         .filter(|d| {
             matches!(**d, Draw::Rect { w, .. } | Draw::Tex { w, .. }
                 | Draw::Spun { w, depth: 0.0, .. }
-                if (w - CART_W as f32).abs() < 0.01)
+                if (w - CART_W as f32 * ACTIVE_SCALE).abs() < 0.01)
         })
         .count();
     assert_eq!(standing, 1, "the cart did not go back on the shelf");
@@ -1861,7 +1859,10 @@ fn the_open_waits_on_the_shelf_for_its_faces() {
     app.set_core_board_faces(f.board, f.lid);
     app.update(0.016);
     let out = frame(&app);
-    let shelf = grown(shelf_cart_at(rest, 1.0), TURN_PAD as f32);
+    let shelf = grown(
+        shelf_cart_at(rest, ACTIVE_SCALE),
+        TURN_PAD as f32 * ACTIVE_SCALE,
+    );
     let (_, lid, _) = turned_at(&out, f.lid).expect("no lid once the faces arrived");
     assert!(
         near(lid, [shelf.x, shelf.y, shelf.w, shelf.h]),

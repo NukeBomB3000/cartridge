@@ -62,7 +62,7 @@ pub const SCAN: Hint<'static> = Hint {
 /// Which pair of actions the bar shows at its ends.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Actions {
-    /// The shelf's: SELECT CONTROLS on the left, START SETTINGS on the right.
+    /// The shelf's: nothing in either corner, the system's pill between them.
     Shelf,
     /// A menu's: B RETURN and A CONFIRM.
     Menu,
@@ -88,8 +88,8 @@ impl Actions {
     /// The big word and the button in its pill of the action at `side`.
     pub fn action(self, side: Side) -> (&'static str, &'static str) {
         match (self, side) {
-            (Actions::Shelf, Side::Left) => ("CONTROLS", "SELECT"),
-            (Actions::Shelf, Side::Right) => ("SETTINGS", "START"),
+            // the shelf's corners are bare: SELECT and START still open Controls and Settings
+            (Actions::Shelf, _) => ("", ""),
             (Actions::Menu | Actions::Switcher, Side::Left) => ("RETURN", "B"),
             (Actions::Menu | Actions::Confirm, Side::Right) => ("CONFIRM", "A"),
             (Actions::Confirm, Side::Left) => ("", ""),

@@ -6,7 +6,9 @@ use cartridge_ui::{
     LID_SHADOW_H, LID_SHADOW_W, LID_TURN, ROM_H, ROM_W, ROM_X, ROM_Y, SHADOW_H, SHADOW_W,
     SLIDE_SHARE, SLIDE_UP, SOCKET_H, SOCKET_U, SOCKET_V, SOCKET_W,
 };
-use cartridge_ui::{out_h, stage_x, stage_y, BAR_H, SFC_SHELL, SNES_SHELL, TOP_BAR_H};
+use cartridge_ui::{
+    out_h, stage_x, stage_y, ACTIVE_SCALE, BAR_H, SFC_SHELL, SNES_SHELL, TOP_BAR_H,
+};
 
 fn cart(stem: &str, code: &str) -> Cart {
     Cart {
@@ -183,12 +185,18 @@ fn the_open_cart_starts_as_the_shelf_cart_and_lands_where_the_mockup_has_it() {
     let shelf = shelf_cart();
     assert_eq!(
         (shelf.x, shelf.w, shelf.h),
-        (mock(180.0, 0.0).0, 360.0, 212.0)
+        (
+            mock(180.0, 0.0).0 - 360.0 * (ACTIVE_SCALE - 1.0) / 2.0,
+            360.0 * ACTIVE_SCALE,
+            212.0 * ACTIVE_SCALE
+        )
     );
+    // the cart the shelf rests on stands on the floor of the cart at its own size, which is
+    // centred between the bar across the top and the bar across the bottom
     assert_eq!(
-        shelf.y + shelf.h / 2.0,
+        shelf.y + shelf.h - 212.0 / 2.0,
         (TOP_BAR_H + out_h() as f32 - BAR_H) / 2.0,
-        "not centred between the bar across the top and the bar across the bottom"
+        "not standing where a cart of its own size is centred between the bars"
     );
     assert_eq!(board_at(0.0), shelf_cart());
     let (x, y) = mock(174.0, 140.0);

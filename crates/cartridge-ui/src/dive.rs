@@ -188,13 +188,19 @@ impl CartDive<'_> {
         let model = model_of(self.cart);
         let (cw, ch) = model_box(model);
         let (cw, ch) = (cw as f32, ch as f32);
-        let scale = self.scale.clamp(0.0, 1.0);
+        // the cart the shelf rests on stands bigger than its size, and settles to it going in
+        let scale = self.scale.max(0.0);
         let shelf = model_scale(model);
-        let row = (scale / shelf).min(1.0);
+        let row = scale / shelf;
         let w0 = cw * scale;
         let (sw, sh) = (cw * shelf, ch * shelf);
         let k = ease((seat / SETTLE).min(1.0));
-        let grown = row + (1.0 - row) * k;
+        // a cart bigger than its place keeps its size going in, one smaller grows to it
+        let grown = if row >= 1.0 {
+            row
+        } else {
+            row + (1.0 - row) * k
+        };
         let (cw, ch) = (sw * grown, sh * grown);
         let centre = self.rest + w0 / 2.0;
         let x = centre + (cx() - centre) * k - cw / 2.0;

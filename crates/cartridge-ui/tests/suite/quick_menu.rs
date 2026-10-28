@@ -63,7 +63,7 @@ fn over(under: &mut UndoFace, top: &UndoFace, x: u32, y: u32) {
 /// draws it.
 fn composed(shown: &[RowShown], pal: &Palette) -> UndoFace {
     let rows: Vec<SettingsRow> = shown.iter().map(|s| s.row).collect();
-    let frame = settings_frame(cartridge_ui::configs_in(&rows), pal);
+    let frame = settings_frame(pal);
     let [mx, my, ..] = modal_rect();
     let mut modal = UndoFace {
         rgba: frame.face.rgba.clone(),
@@ -116,52 +116,31 @@ fn write(path: &str, face: &UndoFace) {
 }
 
 #[test]
-fn configs_is_as_tall_as_its_rows_and_general_takes_the_rest() {
+fn the_one_panel_takes_the_whole_modal() {
     // flow.html's modal at 640x480: 288 by 200
-    let [configs, general] = settings_panels(288, 200, 5);
-    assert_eq!(configs, [4, 2, 280, 88], "five rows and a panel's chrome");
+    let [panel] = settings_panels(288, 200);
+    assert_eq!(panel[..3], [4, 2, 280]);
     assert_eq!(
-        general,
-        [4, 89, 280, 107],
-        "it shares CONFIGS' last row, its stripe"
-    );
-    assert_eq!(
-        general[1] + general[3],
+        panel[1] + panel[3],
         200 - CUT,
-        "GENERAL stops at the frame"
+        "SETTINGS stops at the frame"
     );
     for size in [(328, 200), (328, 320)] {
-        let [c, g] = settings_panels(size.0, size.1, 5);
-        assert_eq!(c[3], 88, "{size:?}: CONFIGS grew with the modal");
-        assert_eq!(g[1] + g[3], size.1 - CUT, "{size:?}");
+        let [p] = settings_panels(size.0, size.1);
+        assert_eq!(p[1] + p[3], size.1 - CUT, "{size:?}");
     }
 }
 
 #[test]
-fn every_row_stands_in_its_own_panels_well() {
-    let frame = settings_frame(5, palette(NIGHT));
+fn every_row_stands_in_the_panels_well_one_under_the_other() {
+    let frame = settings_frame(palette(NIGHT));
     let rects = settings_row_rects(&SettingsRow::ALL, frame.wells);
-    for (row, [x, y, w, h]) in &rects {
-        let [wx, wy, ww, wh] = frame.wells[row.group().index()];
+    let [wx, wy, ww, wh] = frame.wells[0];
+    for (i, (row, [x, y, w, h])) in rects.iter().enumerate() {
         assert_eq!((*x, *w, *h), (wx - 1, ww + 2, ROW_H), "{row:?}");
-        assert!(*y >= wy && y + h <= wy + wh, "{row:?} is out of its well");
+        assert_eq!(*y, wy + i as u32 * ROW_H, "{row:?} is not row {i}");
+        assert!(y + h <= wy + wh, "{row:?} is out of the well");
     }
-    let at = |row: SettingsRow| rects.iter().find(|(r, _)| *r == row).unwrap().1;
-    assert_eq!(
-        at(SettingsRow::Equalizer)[1],
-        frame.wells[0][1],
-        "CONFIGS' first row is not at its well's top"
-    );
-    assert_eq!(
-        at(SettingsRow::DateTime)[1],
-        frame.wells[1][1],
-        "GENERAL's first row is not at its well's top"
-    );
-    assert_eq!(
-        at(SettingsRow::Cheevos)[1] + ROW_H,
-        frame.wells[0][1] + frame.wells[0][3],
-        "CONFIGS does not hug its rows"
-    );
 }
 
 #[test]
@@ -170,9 +149,9 @@ fn without_a_radio_the_rows_after_network_close_up_and_the_panels_stay() {
         .into_iter()
         .filter(|r| *r != SettingsRow::Network)
         .collect();
-    let frame = settings_frame(cartridge_ui::configs_in(&rows), palette(NIGHT));
-    let all = settings_frame(5, palette(NIGHT));
-    assert_eq!(frame.wells, all.wells, "hiding Network moved a panel");
+    let frame = settings_frame(palette(NIGHT));
+    let all = settings_frame(palette(NIGHT));
+    assert_eq!(frame.wells, all.wells, "hiding Network moved the panel");
     let rects = settings_row_rects(&rows, frame.wells);
     let y = |row: SettingsRow| rects.iter().find(|(r, _)| *r == row).unwrap().1[1];
     assert_eq!(y(SettingsRow::Bluetooth), y(SettingsRow::DateTime) + ROW_H);
@@ -188,7 +167,7 @@ fn without_a_radio_the_rows_after_network_close_up_and_the_panels_stay() {
 #[test]
 fn the_frame_is_the_modal_with_both_titles_dim() {
     let pal = palette(NIGHT);
-    let frame = settings_frame(5, pal);
+    let frame = settings_frame(pal);
     let [_, _, mw, mh] = modal_rect();
     assert_eq!((frame.face.w, frame.face.h), (mw, mh));
     // the frame's corners and edges are the modal's own
@@ -412,7 +391,7 @@ fn the_palette_tints_every_face() {
     let rows = flow_rows(SettingsRow::Equalizer);
     for colour in [NIGHT, AMBER] {
         let pal = palette(colour);
-        let frame = settings_frame(5, pal);
+        let frame = settings_frame(pal);
         assert_eq!(px(&frame.face, 3, 0), Some(pal.dark), "colour {colour}");
         assert_eq!(px(&frame.face, 3, 40), Some(pal.frame), "colour {colour}");
         let lit = settings_row_face(settings_row_width(268), &rows[0], pal);
@@ -482,28 +461,12 @@ fn the_rows_run_in_the_order_the_user_chose() {
 }
 
 #[test]
-fn the_configs_come_first_and_the_handheld_itself_after() {
-    let groups = SettingsRow::ALL.map(SettingsRow::group);
-    let configs = groups
-        .iter()
-        .take_while(|g| **g == SettingsGroup::Configs)
-        .count();
-    assert_eq!(configs, 5, "{groups:?}");
-    assert!(
-        groups[configs..]
-            .iter()
-            .all(|g| *g == SettingsGroup::General),
-        "{groups:?}"
-    );
-    assert_eq!(SettingsRow::Labels.group(), SettingsGroup::Configs);
-    assert_eq!(
-        SettingsGroup::ALL.map(SettingsGroup::label),
-        ["Configs", "General"]
-    );
-    assert_eq!(
-        SettingsGroup::ALL.map(SettingsGroup::title),
-        ["CONFIGS", "GENERAL"]
-    );
+fn every_setting_is_in_the_one_group() {
+    assert!(SettingsRow::ALL
+        .into_iter()
+        .all(|r| r.group() == SettingsGroup::Settings));
+    assert_eq!(SettingsGroup::ALL.map(SettingsGroup::label), ["Settings"]);
+    assert_eq!(SettingsGroup::ALL.map(SettingsGroup::title), ["SETTINGS"]);
 }
 
 #[test]

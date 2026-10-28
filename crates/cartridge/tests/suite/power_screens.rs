@@ -132,11 +132,11 @@ fn at(out: &[Draw], tex: TexId) -> Option<(f32, f32)> {
 }
 
 /// Whether the top bar is drawn `dy` down from its place, across the whole screen.
-fn top_bar_at(a: &App, out: &[Draw], dy: f32) -> bool {
+fn top_bar_at(_a: &App, out: &[Draw], dy: f32) -> bool {
     let w = out_w() as f32;
     out.iter().any(|d| {
         matches!(*d, Draw::Rect { x, y, w: bw, colour, .. }
-            if x == 0.0 && y == dy && bw == w && colour == a.chrome_colours().housing)
+            if x == 0.0 && y == dy && bw == w && colour == [0.0; 4])
     })
 }
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The shelf is plainer: the two corner actions (SELECT CONTROLS, START SETTINGS) are gone from the
+  bottom bar, leaving the system's pill; the top bar has no ground or rule, only its icons and
+  figures on the background; and the cart the shelf rests on stands 12 % bigger than the ones
+  beside it, keeping that size as it goes in.
+- Settings is one list, SETTINGS, with no CONFIGS and GENERAL panels: Equalizer, 5 Games, Rumble,
+  Labels, Achievements, Date & Time, Network, Bluetooth, Theme, Sleep, About.
+- About names @NUKEBOMB3000 as the author of Cartridge.
 - The game menu on a short MENU press has three tabs that L1 and R1 turn between: GUIDE (as
   before, now opening for a game with no guide too, where it says where to put one),
   ACHIEVEMENTS (the game's list, unlocked first, with points) and SETTINGS (brightness, blue

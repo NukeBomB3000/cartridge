@@ -13,6 +13,8 @@ use crate::stage::{stage_y, MOCKUP_H};
 use crate::status_bar::TOP_BAR_H;
 
 const SIDE_SCALE: f32 = 0.78;
+/// How much bigger than its own size the cart the shelf rests on stands.
+pub const ACTIVE_SCALE: f32 = 1.12;
 const SIDE_ALPHA: f32 = 0.55;
 /// How big a Game Boy pak stands on the shelf, as a share of its own size: at its own size it
 /// would stand too tall beside a GBA cart. It keeps this size on its way into the handheld.
@@ -589,7 +591,7 @@ impl Shelf {
 }
 
 fn shrink(offset: f32) -> f32 {
-    1.0 + (SIDE_SCALE - 1.0) * offset.abs().min(1.0)
+    ACTIVE_SCALE + (SIDE_SCALE - ACTIVE_SCALE) * offset.abs().min(1.0)
 }
 
 fn recede_alpha(face_alpha: f32) -> f32 {

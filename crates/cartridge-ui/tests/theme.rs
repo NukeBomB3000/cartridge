@@ -35,19 +35,20 @@ fn the_card_s_palette_is_what_reaches_the_screen() {
         bolt: None,
     }
     .draw(&mut out);
-    let has = |c: [f32; 4]| {
-        out.iter().any(|d| match *d {
-            Draw::Rect { colour, .. } => (0..3).all(|i| (colour[i] - c[i]).abs() < 0.001),
-            _ => false,
-        })
-    };
+    // the theme still names the housing and the edge, the bar draws neither of them now
     for (c, set, name) in [
         (themed.housing, housing(), "housing"),
         (themed.edge, edge(), "edge"),
     ] {
         assert_eq!(c, set, "the top bar's {name} is not the theme's");
-        assert!(has(c), "the top bar is not drawn in the theme's {name}");
     }
+    assert!(
+        out.iter().all(|d| match d {
+            Draw::Rect { colour, .. } => colour[3] == 0.0,
+            _ => true,
+        }),
+        "the top bar draws a ground behind its icons"
+    );
 }
 
 /// A theme.txt names the chrome's greys and no ink, so the top bar keeps the white and grey it

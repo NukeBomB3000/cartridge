@@ -516,8 +516,8 @@ fn a_volume_press_during_a_slide_leaves_it_sliding() {
 /// Settings' faces as fake textures: its modal is 100.
 fn fake_settings_faces(a: &mut App) {
     let id = TexId::from_raw;
-    let frame = settings_frame(5, palette(0));
-    let titles = [(id(110), [42, 11]), (id(111), [42, 11])];
+    let frame = settings_frame(palette(0));
+    let titles = [(id(110), [42, 11])];
     a.set_settings_faces(SettingsFaces::new(&frame, id(100), titles));
 }
 
@@ -537,11 +537,11 @@ fn x_of(out: &[Draw], tex: TexId) -> Option<f32> {
 }
 
 /// Whether the top bar is drawn `dy` down from its place, across the whole screen.
-fn top_bar_at(a: &App, out: &[Draw], dy: f32) -> bool {
+fn top_bar_at(_a: &App, out: &[Draw], dy: f32) -> bool {
     let w = out_w() as f32;
     out.iter().any(|d| {
         matches!(*d, Draw::Rect { x, y, w: bw, colour, .. }
-            if x == 0.0 && y == dy && bw == w && colour == a.chrome_colours().housing)
+            if x == 0.0 && y == dy && bw == w && colour == [0.0; 4])
     })
 }
 

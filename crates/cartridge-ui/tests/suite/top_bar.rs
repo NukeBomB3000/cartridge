@@ -384,9 +384,10 @@ fn the_bar_is_drawn_in_the_colours_it_is_handed() {
     };
     let (night, night_colours) = bar_in("night");
     let (amber, amber_colours) = bar_in("amber");
-    assert_eq!(night, [night_colours.housing, night_colours.edge]);
-    assert_eq!(amber, [amber_colours.housing, amber_colours.edge]);
-    assert_ne!(night, amber, "the bar looks the same in Night and Amber");
+    // no housing and no rule: only the icons and the figures show, on an empty plate
+    assert_eq!(night, [[0.0; 4]]);
+    assert_eq!(amber, [[0.0; 4]]);
+    assert_ne!(night_colours.ink, amber_colours.ink);
 }
 
 /// ssh is drawn bold the kit's way, not in Pixel Code's own bold: each letter of the plain face

@@ -1,7 +1,7 @@
 use cartridge_store::{Cart, Platform};
 use cartridge_ui::{
-    cart_mesh, gb_silhouette, outline, posed_face, push_cart_side, rest_y, silhouette,
-    snes_silhouette, CartMeshes, CartModel, Draw, GbShell, MeshId, Pose, Shelf, SnesShell, TexId,
+    cart_mesh, gb_silhouette, outline, posed_face, push_cart_side, silhouette, snes_silhouette,
+    CartMeshes, CartModel, Draw, GbShell, MeshId, Pose, Shelf, SnesShell, TexId, ACTIVE_SCALE,
     CART_H, OUTLINE_INSET, THICK,
 };
 
@@ -117,11 +117,15 @@ fn a_cart_still_waiting_for_its_face_stands_still() {
     let middle = out
         .iter()
         .find_map(|d| match *d {
-            Draw::Rect { y, h, .. } if h == CART_H as f32 => Some(y),
+            Draw::Rect { y, h, .. } if (h - CART_H as f32 * ACTIVE_SCALE).abs() < 0.5 => Some(y),
             _ => None,
         })
         .expect("no cart at full size");
-    assert_eq!(middle, rest_y(CART_H as f32), "a cart with no face floated");
+    assert_eq!(
+        middle,
+        cartridge_ui::shelf_cart().y,
+        "a cart with no face floated"
+    );
 }
 
 #[test]

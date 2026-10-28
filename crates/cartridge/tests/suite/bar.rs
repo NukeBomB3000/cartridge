@@ -859,7 +859,7 @@ fn a_new_colour_in_background_retints_the_top_bar() {
         night,
         "the shelf is not in Night's chrome"
     );
-    assert_eq!(top_bar_fill(&a), Some(night.housing));
+    assert_eq!(top_bar_fill(&a), Some([0.0; 4]), "the bar has no ground");
 
     press(&mut a, Btn::Start);
     a.finish_slide();
@@ -892,8 +892,8 @@ fn a_new_colour_in_background_retints_the_top_bar() {
     assert!(matches!(a.phase(), Phase::Shelf));
     assert_eq!(
         top_bar_fill(&a),
-        Some(picked.housing),
-        "the top bar kept Night"
+        Some([0.0; 4]),
+        "the top bar has no ground"
     );
     let out = frame(&a);
     let night_left = out
@@ -917,7 +917,8 @@ fn a_cards_theme_is_the_chrome_whatever_the_colour() {
     assert_eq!(a.chrome_colours(), ChromeColours::themed(&theme));
     assert_eq!(
         top_bar_fill(&a),
-        Some(ChromeColours::themed(&theme).housing)
+        Some([0.0; 4]),
+        "the top bar has no ground"
     );
 }
 

@@ -178,7 +178,7 @@ fn rumble_steps_through_its_strengths_and_saves() {
 
 #[test]
 fn the_equalizer_took_colour_corrections_place_and_opens() {
-    assert_eq!(SettingsRow::Equalizer.group(), SettingsGroup::Configs);
+    assert_eq!(SettingsRow::Equalizer.group(), SettingsGroup::Settings);
     assert!(SettingsRow::Equalizer.opens() && !SettingsRow::Equalizer.carets());
     let (_d, mut a, _) = on_carousel();
     open_at(&mut a, SettingsRow::Equalizer);
@@ -191,7 +191,7 @@ fn five_games_took_lcd_ghostings_place_and_opens_rather_than_flips() {
     let at = |r| SettingsRow::ALL.iter().position(|x| *x == r).unwrap();
     assert_eq!(at(SettingsRow::FiveGames), at(SettingsRow::Equalizer) + 1);
     assert_eq!(SettingsRow::FiveGames.label(), "5 Games");
-    assert_eq!(SettingsRow::FiveGames.group(), SettingsGroup::Configs);
+    assert_eq!(SettingsRow::FiveGames.group(), SettingsGroup::Settings);
     assert!(SettingsRow::FiveGames.opens() && !SettingsRow::FiveGames.carets());
     let (_d, a, _) = on_carousel();
     assert_eq!(
@@ -352,8 +352,8 @@ fn brightness_and_volume_still_answer_over_settings() {
 /// and 111, and each row 200 and its index.
 fn fake_faces(a: &mut App) -> SettingsFaces {
     let id = TexId::from_raw;
-    let frame = settings_frame(5, palette(0));
-    let mut faces = SettingsFaces::new(&frame, id(100), [(id(110), [42, 11]), (id(111), [42, 11])]);
+    let frame = settings_frame(palette(0));
+    let mut faces = SettingsFaces::new(&frame, id(100), [(id(110), [42, 11])]);
     for row in a.settings_rows() {
         faces.rows[row.index()] = Some((id(200 + row.index()), [270, ROW_H]));
     }
@@ -399,11 +399,7 @@ fn the_modal_fills_the_page_and_the_lit_title_follows_the_cursor() {
             Some(at_2x(modal_rect())),
             "{row:?}: the frame"
         );
-        let (configs, general) = (drawn(&out, 110), drawn(&out, 111));
-        match row.group() {
-            SettingsGroup::Configs => assert!(configs && !general, "{row:?} lit GENERAL"),
-            SettingsGroup::General => assert!(general && !configs, "{row:?} lit CONFIGS"),
-        }
+        assert!(drawn(&out, 110), "{row:?}: the title is not lit");
         let g = row.group().index();
         assert_eq!(placed(&out, 110 + g), Some(at_2x(faces.titles[g].at)));
         press(&mut a, Btn::Down);
@@ -583,7 +579,7 @@ fn without_a_radio_network_is_not_listed_drawn_or_stepped_onto() {
     let bluetooth = placed(&out, 200 + SettingsRow::Bluetooth.index()).unwrap();
     assert_eq!(bluetooth[1], date[1] + (2 * ROW_H) as f32);
     assert_eq!(placed(&out, 100), Some(at_2x(modal_rect())));
-    assert_eq!(placed(&out, 111), Some(at_2x(faces.titles[1].at)));
+    assert_eq!(placed(&out, 110), Some(at_2x(faces.titles[0].at)));
 }
 
 #[test]

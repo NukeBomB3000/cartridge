@@ -94,13 +94,13 @@ pub use polaroids::{photo_face, PhotoFace, Polaroids, PHOTO_H, PHOTO_W};
 pub use power_menu::PowerChoice;
 pub use refusal::Refusal;
 pub use settings_menu::{
-    configs_in, settings_frame, settings_panels, settings_row_face, settings_row_rects,
-    settings_row_width, settings_title_face, FaceAt, QuickValue, Rebake, RowShown, SettingsBaked,
-    SettingsFaces, SettingsFrame, SettingsGroup, SettingsMenu, SettingsRow,
+    settings_frame, settings_panels, settings_row_face, settings_row_rects, settings_row_width,
+    settings_title_face, FaceAt, QuickValue, Rebake, RowShown, SettingsBaked, SettingsFaces,
+    SettingsFrame, SettingsGroup, SettingsMenu, SettingsRow,
 };
 pub use shelf::{
     foot_y, model_scale, model_shelf_box, rest_y, shelf_box, shelf_scale, sway_reach, Shelf,
-    GB_SHELF_SCALE,
+    ACTIVE_SCALE, GB_SHELF_SCALE,
 };
 pub use shell::{
     famicom_shell_for, gb_table_shells, gba_shell_for,

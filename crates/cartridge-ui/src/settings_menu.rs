@@ -10,44 +10,35 @@
 //! sync asks it what to bake and bakes nothing more.
 
 use crate::draw::{out_h, out_w, Draw, TexId};
-use crate::kit::layout::{modal_rect, panel_height, screen_px};
+use crate::kit::layout::{modal_rect, screen_px};
 use crate::kit::modal::{modal_face, modal_layout};
 use crate::kit::palette::Palette;
 use crate::kit::panel::{panel_face, title_face};
 use crate::kit::pixel::quad;
-use crate::kit::row::{row_face, row_rect, row_width, Row, ROW_H};
+use crate::kit::row::{row_face, row_rect, row_width, Row};
 use crate::plate::UndoFace;
 
-/// The two groups the settings are listed in, one panel each.
+/// The groups the settings are listed in, one panel each: one, all of them together.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum SettingsGroup {
-    /// How the games play: the settings left and right change in place, and the cart labels.
-    Configs,
-    /// The handheld itself: its clock, its network, its Bluetooth, its background and what it
-    /// is.
-    General,
+    /// Every setting of the handheld, one under the other.
+    Settings,
 }
 
 impl SettingsGroup {
-    pub const ALL: [SettingsGroup; 2] = [SettingsGroup::Configs, SettingsGroup::General];
+    pub const ALL: [SettingsGroup; 1] = [SettingsGroup::Settings];
 
     pub fn index(self) -> usize {
         self as usize
     }
 
     pub fn label(self) -> &'static str {
-        match self {
-            SettingsGroup::Configs => "Configs",
-            SettingsGroup::General => "General",
-        }
+        "Settings"
     }
 
     /// The group's panel title, in the capitals the tab prints.
     pub fn title(self) -> &'static str {
-        match self {
-            SettingsGroup::Configs => "CONFIGS",
-            SettingsGroup::General => "GENERAL",
-        }
+        "SETTINGS"
     }
 }
 
@@ -110,19 +101,7 @@ impl SettingsRow {
     }
 
     pub fn group(self) -> SettingsGroup {
-        match self {
-            SettingsRow::Equalizer
-            | SettingsRow::FiveGames
-            | SettingsRow::Rumble
-            | SettingsRow::Labels
-            | SettingsRow::Cheevos => SettingsGroup::Configs,
-            SettingsRow::DateTime
-            | SettingsRow::Network
-            | SettingsRow::Bluetooth
-            | SettingsRow::Background
-            | SettingsRow::Sleep
-            | SettingsRow::About => SettingsGroup::General,
-        }
+        SettingsGroup::Settings
     }
 
     /// A opens a screen of its own for this row, rather than left and right changing it: the
@@ -255,41 +234,29 @@ pub struct RowShown {
     pub lit: bool,
 }
 
-/// The modal and its two panels as one face, both titles dim, and where its parts land on the
+/// The modal and its panel as one face, both titles dim, and where its parts land on the
 /// screen, all in art pixels from the screen's top left.
 pub struct SettingsFrame {
     /// The modal with its panels in it, at `modal_rect()`.
     pub face: UndoFace,
     /// Where each group's title is, by `SettingsGroup::index`: a `title_face` goes there.
-    pub titles: [[u32; 4]; 2],
+    pub titles: [[u32; 4]; 1],
     /// Each group's well, by `SettingsGroup::index`: where its rows go.
-    pub wells: [[u32; 4]; 2],
+    pub wells: [[u32; 4]; 1],
 }
 
-/// Where CONFIGS and GENERAL go in a modal `w` by `h` art pixels, as `[x, y, w, h]` in it:
-/// CONFIGS as tall as its `configs` rows, as flow.css's `cartridge-panel.hug`, and GENERAL taking
-/// the rest. GENERAL starts on CONFIGS' last row, so the two share one stripe.
-pub fn settings_panels(w: u32, h: u32, configs: u32) -> [[u32; 4]; 2] {
-    let [x, y, pw, ph] = modal_layout(w, h, &[1])[0];
-    let hug = panel_height(configs * ROW_H).min(ph);
-    [[x, y, pw, hug], [x, y + hug - 1, pw, ph + 1 - hug]]
+/// Where SETTINGS goes in a modal `w` by `h` art pixels, as `[x, y, w, h]` in it: all of it.
+pub fn settings_panels(w: u32, h: u32) -> [[u32; 4]; 1] {
+    [modal_layout(w, h, &[1])[0]]
 }
 
-/// How many of `rows` are in CONFIGS.
-pub fn configs_in(rows: &[SettingsRow]) -> u32 {
-    rows.iter()
-        .filter(|r| r.group() == SettingsGroup::Configs)
-        .count() as u32
-}
-
-/// The modal at `modal_rect()` with CONFIGS (holding `configs` rows) and GENERAL in it, drawn
-/// in `pal`, both titles dim.
-pub fn settings_frame(configs: u32, pal: &Palette) -> SettingsFrame {
+/// The modal at `modal_rect()` with SETTINGS in it, drawn in `pal`, its title dim.
+pub fn settings_frame(pal: &Palette) -> SettingsFrame {
     let [mx, my, mw, mh] = modal_rect();
     let mut face = modal_face(mw, mh, pal);
-    let mut titles = [[0; 4]; 2];
-    let mut wells = [[0; 4]; 2];
-    let panels = settings_panels(mw, mh, configs);
+    let mut titles = [[0; 4]; 1];
+    let mut wells = [[0; 4]; 1];
+    let panels = settings_panels(mw, mh);
     for (group, [px, py, pw, ph]) in SettingsGroup::ALL.into_iter().zip(panels) {
         let panel = panel_face(pw, ph, group.title(), false, pal);
         over(&mut face, &panel.face, px, py);
@@ -333,9 +300,9 @@ pub fn settings_row_face(w: u32, shown: &RowShown, pal: &Palette) -> UndoFace {
 /// pixel into the well's sides.
 pub fn settings_row_rects(
     rows: &[SettingsRow],
-    wells: [[u32; 4]; 2],
+    wells: [[u32; 4]; 1],
 ) -> Vec<(SettingsRow, [u32; 4])> {
-    let mut down = [0; 2];
+    let mut down = [0; 1];
     rows.iter()
         .map(|&row| {
             let g = row.group().index();
@@ -382,9 +349,9 @@ pub struct SettingsFaces {
     /// The modal with both panels in it, their titles dim.
     pub frame: FaceAt,
     /// Each group's title lit, by `SettingsGroup::index`, over its dim one.
-    pub titles: [FaceAt; 2],
+    pub titles: [FaceAt; 1],
     /// Each group's well, by `SettingsGroup::index`, in art pixels from the screen's top left.
-    pub wells: [[u32; 4]; 2],
+    pub wells: [[u32; 4]; 1],
     /// Each row's face as it is now, by `SettingsRow::index`, `[w, h]` in art pixels; none for
     /// a row this handheld does not show.
     pub rows: [Option<(TexId, [u32; 2])>; SettingsRow::ALL.len()],
@@ -392,7 +359,7 @@ pub struct SettingsFaces {
 
 impl SettingsFaces {
     /// `frame` uploaded as `frame_tex` and the lit titles as `titles`, with no rows yet.
-    pub fn new(frame: &SettingsFrame, frame_tex: TexId, titles: [(TexId, [u32; 2]); 2]) -> Self {
+    pub fn new(frame: &SettingsFrame, frame_tex: TexId, titles: [(TexId, [u32; 2]); 1]) -> Self {
         let [x, y, ..] = modal_rect();
         let lit = |g: usize| {
             let (tex, [w, h]) = titles[g];
@@ -407,7 +374,7 @@ impl SettingsFaces {
                 tex: frame_tex,
                 at: [x, y, frame.face.w, frame.face.h],
             },
-            titles: [lit(0), lit(1)],
+            titles: [lit(0)],
             wells: frame.wells,
             rows: [None; SettingsRow::ALL.len()],
         }
@@ -439,11 +406,11 @@ impl SettingsMenu<'_> {
 }
 
 /// What Settings' faces were last baked from, so a sync bakes again only what has changed: the
-/// frame and the titles when the canvas, the palette or how many rows CONFIGS holds changes, and
+/// frame and the title when the canvas or the palette changes, and
 /// a row when what it shows (`RowShown`) changes, or the frame was baked again.
 #[derive(Default)]
 pub struct SettingsBaked {
-    frame: Option<(u8, [u32; 2], u32)>,
+    frame: Option<(u8, [u32; 2])>,
     rows: [Option<RowShown>; SettingsRow::ALL.len()],
 }
 
@@ -462,7 +429,7 @@ impl SettingsBaked {
     /// What to bake again to show `shown` in palette `colour`, which is then taken as baked.
     pub fn rebake(&mut self, colour: u8, shown: &[RowShown]) -> Rebake {
         let rows: Vec<SettingsRow> = shown.iter().map(|s| s.row).collect();
-        let key = (colour, [out_w(), out_h()], configs_in(&rows));
+        let key = (colour, [out_w(), out_h()]);
         let frame = self.frame != Some(key);
         if frame {
             self.frame = Some(key);

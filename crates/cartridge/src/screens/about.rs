@@ -30,7 +30,7 @@ pub const TITLE: &str = "CARTRIDGE";
 pub const CREDITS_TITLE: &str = "CREDITS";
 
 /// Who made it.
-pub const AUTHOR: &str = "@OAURAMOS";
+pub const AUTHOR: &str = "@NUKEBOMB3000";
 
 /// What cartridge is made with and on, a line each, each name in its own case: the cores first,
 /// with their licences, Snes9x's and Genesis Plus GX's allowing no commercial use. The longest is as long as a line

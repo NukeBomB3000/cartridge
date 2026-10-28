@@ -301,13 +301,13 @@ impl Rig {
 #[test]
 fn bluetooth_is_listed_under_network_and_opens_its_screen() {
     let mut r = Rig::new();
-    let general: Vec<SettingsRow> =
-        r.a.settings_rows()
-            .into_iter()
-            .filter(|row| row.group() == cartridge_ui::SettingsGroup::General)
-            .collect();
+    let rows = r.a.settings_rows();
+    let from = rows
+        .iter()
+        .position(|row| *row == SettingsRow::DateTime)
+        .expect("Date & Time is listed");
     assert_eq!(
-        general,
+        rows[from..],
         [
             SettingsRow::DateTime,
             SettingsRow::Network,

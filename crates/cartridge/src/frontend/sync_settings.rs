@@ -1,12 +1,12 @@
-//! Settings' faces, baked as little and as seldom as they can be: the modal with its panels and
-//! the two lit titles once per canvas and palette, and a row only when what it says, whether it
+//! Settings' faces, baked as little and as seldom as they can be: the modal with its panel and
+//! its lit title once per canvas and palette, and a row only when what it says, whether it
 //! is lit or the palette changes. Moving the cursor bakes the two rows it leaves and lands on;
 //! the clock's minute bakes the Date & Time row alone.
 
 use cartridge_gfx::{Compositor, TexId};
 use cartridge_ui::{
-    configs_in, settings_frame, settings_row_face, settings_row_width, settings_title_face,
-    SettingsBaked, SettingsFaces, SettingsGroup, SettingsRow,
+    settings_frame, settings_row_face, settings_row_width, settings_title_face, SettingsBaked,
+    SettingsFaces, SettingsGroup, SettingsRow,
 };
 
 use crate::app::App;
@@ -18,7 +18,7 @@ use crate::frontend::faces::upload_nearest;
 pub(crate) struct SettingsTexes {
     baked: SettingsBaked,
     frame: Option<TexId>,
-    titles: [Option<TexId>; 2],
+    titles: [Option<TexId>; 1],
     rows: [Option<TexId>; SettingsRow::ALL.len()],
     faces: Option<SettingsFaces>,
 }
@@ -34,8 +34,7 @@ pub(crate) fn sync_settings(app: &mut App, compositor: &mut Compositor, state: &
     }
     let pal = app.palette();
     if plan.frame || state.faces.is_none() {
-        let rows: Vec<SettingsRow> = shown.iter().map(|s| s.row).collect();
-        let frame = settings_frame(configs_in(&rows), pal);
+        let frame = settings_frame(pal);
         let frame_tex = upload_nearest(compositor, &mut state.frame, &frame.face);
         let titles = SettingsGroup::ALL.map(|g| {
             let face = settings_title_face(g, pal);

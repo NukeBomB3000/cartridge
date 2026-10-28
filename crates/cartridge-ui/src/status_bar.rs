@@ -168,19 +168,15 @@ fn ink_w(word: Printed) -> f32 {
 impl TopBar<'_> {
     pub fn draw(&self, out: &mut Vec<Draw>) {
         let w = out_w() as f32;
+        // no housing and no rule: the icons and figures stand straight on the background. An
+        // empty plate keeps the bar's place in the draw list, where a slide moves it and the
+        // layers over and under it keep their order.
         out.push(Draw::Rect {
             x: 0.0,
             y: 0.0,
             w,
             h: TOP_BAR_H - RULE_H,
-            colour: self.colours.housing,
-        });
-        out.push(Draw::Rect {
-            x: 0.0,
-            y: TOP_BAR_H - RULE_H,
-            w,
-            h: RULE_H,
-            colour: self.colours.edge,
+            colour: [0.0; 4],
         });
         if let Some(faces) = self.faces {
             let mut x = MARGIN;
