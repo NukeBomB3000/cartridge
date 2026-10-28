@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Nintendo DS runs on a core of its own: DSperate's thread layout, which its own frontend has and
+  its libretro one lacked, is on. The emulation thread has one core to itself, the 2D engines and
+  3D bands two more, and the frontend's threads (audio, video, drivers) the first, so the one
+  thread that is always busy is no longer moved about by the others. On CTGP - Nitro in a race,
+  where the core had no room to spare (59 to 63 frames a second against 59.8), it comes to 71.
+  Switch it off with the core option Thread Layout, which takes effect at the next start.
 - The game menu's three tabs show the battery in the top right corner, a small cell filled to the
   charge with its figure (a + while it charges, red at 15 % and under); how far down the page is
   moved to the right of the keys' band. Its ground is a little see-through, so the game under it

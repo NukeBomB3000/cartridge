@@ -7,6 +7,7 @@
 #include "core/nds.h"
 #include "core/cart/cart.h"
 #include "core/state/state.h"
+#include "core/host_cores.h"
 #if DSPERATE_JIT
 #include "core/cpu/jit/jit.h"
 #endif
@@ -35,6 +36,14 @@ std::unique_ptr<ds::NDS> g_nds;
 bool g_jit_attached = false;
 #endif
 bool g_use_jit = true;
+// Thread layout, as DSperate's own frontend has it (core/host_cores.h): the emulation thread alone
+// on one core, each 2D engine paired with a 3D band on another, and the frontend's own threads
+// (audio, video, drivers) on the first. On a four-core handheld this keeps the thread that is
+// always busy from being moved off its core by the others, worth a few frames a second where
+// there is none to spare. Set before the 3D workers start, so each places itself.
+bool g_thread_layout = true;
+bool g_placed_emu = false;
+unsigned g_runs = 0;
 
 // Frameskip: -1 Auto, 0 off, n to skip n frames of every n+1. Auto skips while the frontend
 // says its sound runs short or turns the picture off, at most AUTO_SKIP_MAX frames running.
@@ -239,6 +248,11 @@ void check_variables(bool first_time = false) {
     g_use_jit = (std::strcmp(var.value, "JIT (AArch64)") == 0);
   }
 
+  var.key = "dsperate_thread_layout";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+    g_thread_layout = (std::strcmp(var.value, "Off") != 0);
+  }
+
   var.key = "dsperate_frameskip";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
     if (std::strcmp(var.value, "Auto") == 0) g_frameskip = -1;
@@ -262,6 +276,7 @@ void set_core_options() {
     { "dsperate_show_cursor", "Show Stylus Cursor; On|Off" },
     { "dsperate_cpu_engine", "CPU Engine; JIT (AArch64)|Interpreter" },
     { "dsperate_frameskip", "Frameskip; Auto|Off|1|2|3" },
+    { "dsperate_thread_layout", "Thread Layout (next start); On|Off" },
     { nullptr, nullptr }
   };
 
@@ -414,6 +429,7 @@ RETRO_API bool retro_load_game(const struct retro_game_info *game) {
 
   check_variables(true);
 
+  ds::set_thread_layout(g_thread_layout);
   g_nds = std::make_unique<ds::NDS>();
 
   // Check system directory for BIOS dumps
@@ -543,6 +559,18 @@ RETRO_API void retro_cheat_set(unsigned index, bool enabled, const char *code) {
 
 RETRO_API void retro_run(void) {
   if (!g_nds) return;
+
+  // The emulation thread takes its core on its first frame, with the threads started so far
+  // moving to the first; once more after a couple of seconds for those started lazily.
+  if (g_thread_layout) {
+    if (!g_placed_emu) {
+      g_placed_emu = true;
+      ds::place_current_thread(ds::ThreadRole::Emu);
+      ds::place_foreign_threads();
+    } else if (++g_runs == 120) {
+      ds::place_foreign_threads();
+    }
+  }
 
   check_variables(false);
 

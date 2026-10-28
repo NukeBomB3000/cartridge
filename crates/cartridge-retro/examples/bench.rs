@@ -4,7 +4,8 @@
 //!
 //!   bench CORE ROM [FRAMES] [OUT.ppm]
 //!
-//! BENCH_OPTIONS="key=value,key=value" sets core options before the game loads.
+//! BENCH_OPTIONS="key=value,key=value" sets core options before the game loads, and BENCH_STATE
+//! names a save state to put in once it has, to time a scene rather than a title screen.
 
 use std::path::Path;
 use std::time::Instant;
@@ -37,6 +38,11 @@ fn main() {
     }
     core.load(Path::new(&args[2]))
         .unwrap_or_else(|e| panic!("load: {e}"));
+    if let Ok(path) = std::env::var("BENCH_STATE") {
+        let state = std::fs::read(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
+        core.unserialize(&state)
+            .unwrap_or_else(|e| panic!("state: {e}"));
+    }
     let fps = core.av_info().fps;
     let mut window = Instant::now();
     let started = Instant::now();
