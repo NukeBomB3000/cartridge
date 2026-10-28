@@ -9,6 +9,8 @@
 - Settings is one list, SETTINGS, with no CONFIGS and GENERAL panels: Equalizer, 5 Games, Rumble,
   Labels, Achievements, Date & Time, Network, Bluetooth, Theme, Sleep, About.
 - About names @NUKEBOMB3000 as the author of Cartridge.
+- The boot opener, the terminal that told the handheld's memory, chip and battery over the first
+  frames of the shelf, no longer plays: the boot logo goes straight to the shelf.
 - The game menu on a short MENU press has three tabs that L1 and R1 turn between: GUIDE (as
   before, now opening for a game with no guide too, where it says where to put one),
   ACHIEVEMENTS (the game's list, unlocked first, with points) and SETTINGS (brightness, blue

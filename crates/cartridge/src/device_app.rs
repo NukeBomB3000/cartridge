@@ -150,7 +150,6 @@ pub fn run() {
     if let Some(logo) = logo.and_then(|reading| reading.join().ok()).flatten() {
         frontend.show_boot_logo(&mut compositor, &logo);
     }
-    frontend.start_opening(&cartridge::opening::Facts::read());
     let mut input = DeviceInput::open(&root);
     let card = root.clone();
     let _ = std::thread::Builder::new()

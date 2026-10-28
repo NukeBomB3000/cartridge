@@ -51,8 +51,6 @@ impl ApplicationHandler for HostApp {
         if let Some(logo) = boot_logo(self.frontend.app().root()) {
             self.frontend.show_boot_logo(&mut compositor, &logo);
         }
-        self.frontend
-            .start_opening(&cartridge::opening::Facts::read());
         self.gfx = Some((surface, compositor));
     }
 

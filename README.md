@@ -128,9 +128,7 @@ is the most useful thing you can send.
   PC Engine HuCards, pale grey or an American
   black TurboChip, and PlayStation discs, a game on several
   discs standing as a stack of them. The one you are on floats and sways; A pulls it down out of
-  the screen into the handheld, and the game comes on like a tube TV. At power-on, an opening in the
-  style of Mega Man X5's boot terminal tells you the handheld's memory, chip and battery, then
-  fades into the shelf.
+  the screen into the handheld, and the game comes on like a tube TV.
 - Cores: Gambatte (default) and mGBA for the Game Boys, DSperate for the DS, SwanStation as a second PlayStation core; mGBA and gpSP for the GBA and Snes9x and Supafaust for the SNES, chosen per cart;
   mGBA for the Game Boys; FCEUmm for the NES; Genesis Plus GX for the Mega Drive, A, B and C on
   Y, B and A, and for the Game Gear and the Master System, 1 and 2 on B and A; Beetle PCE Fast for the PC Engine; PCSX ReARMed for the PlayStation, with a BIOS of its own built in. GBA

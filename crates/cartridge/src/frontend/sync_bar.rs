@@ -37,7 +37,21 @@ pub(crate) fn sync_bar(app: &mut App, compositor: &mut Compositor, texes: &mut B
                 pal,
             );
             let held = &mut texes.actions[actions.index()];
+            let bare = actions == Actions::Shelf;
             let mut up = |i: usize, face: &cartridge_ui::UndoFace| {
+                // the shelf's corners are bare: clear faces of the size the actions would be,
+                // so the bar's layout and the slides between bars stay as they were
+                let clear;
+                let face = if bare {
+                    clear = cartridge_ui::UndoFace {
+                        rgba: vec![0; face.rgba.len()],
+                        w: face.w,
+                        h: face.h,
+                    };
+                    &clear
+                } else {
+                    face
+                };
                 let tex = upload_nearest(compositor, &mut held[i], face);
                 (tex, face.w, face.h)
             };
