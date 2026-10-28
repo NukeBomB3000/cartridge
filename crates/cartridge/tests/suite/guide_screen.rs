@@ -97,26 +97,28 @@ fn a_game_with_no_guide_still_opens_the_menu_and_says_so() {
 }
 
 #[test]
-fn left_and_right_turn_the_tabs_round_and_l1_r1_page() {
+fn l1_and_r1_turn_the_tabs_round_and_left_and_right_page() {
     let d = card(true);
     let mut a = playing(&d);
     a.apply(Action::QuickMenu);
     let tab = |a: &App| a.guide().unwrap().tab;
     assert_eq!(tab(&a), Tab::Guide);
-    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::R1));
     assert_eq!(tab(&a), Tab::Achievements);
-    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::R1));
     assert_eq!(tab(&a), Tab::Settings);
-    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::R1));
     assert_eq!(tab(&a), Tab::Guide, "round from the last tab");
-    a.apply(Action::GbaDown(Btn::Left));
+    a.apply(Action::GbaDown(Btn::L1));
     assert_eq!(tab(&a), Tab::Settings);
-    a.apply(Action::GbaDown(Btn::Left));
-    a.apply(Action::GbaDown(Btn::Left));
+    a.apply(Action::GbaDown(Btn::L1));
+    a.apply(Action::GbaDown(Btn::L1));
     assert_eq!(tab(&a), Tab::Guide);
     let top = a.guide().unwrap().top;
-    a.apply(Action::GbaDown(Btn::R1));
-    assert!(a.guide().unwrap().top > top, "R1 still pages the guide");
+    a.apply(Action::GbaDown(Btn::Right));
+    assert!(a.guide().unwrap().top > top, "Right pages the guide");
+    a.apply(Action::GbaDown(Btn::Left));
+    assert_eq!(a.guide().unwrap().top, top, "Left pages back");
 }
 
 #[test]
@@ -124,39 +126,39 @@ fn the_guide_keeps_its_place_while_another_tab_shows() {
     let d = card(true);
     let mut a = playing(&d);
     a.apply(Action::QuickMenu);
-    a.apply(Action::GbaDown(Btn::R1));
-    a.apply(Action::GbaDown(Btn::R1));
+    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::Right));
     let top = a.guide().unwrap().top;
     assert!(top > 0.0);
-    a.apply(Action::GbaDown(Btn::Right));
-    a.apply(Action::GbaDown(Btn::Left));
+    a.apply(Action::GbaDown(Btn::R1));
+    a.apply(Action::GbaDown(Btn::L1));
     assert_eq!(a.guide().unwrap().top, top);
 }
 
 #[test]
-fn the_settings_tab_steps_a_row_with_a_and_x_and_keeps_it() {
+fn the_settings_tab_steps_a_row_with_left_and_right_and_keeps_it() {
     let d = card(false);
     let mut a = playing(&d);
     a.apply(Action::QuickMenu);
-    a.apply(Action::GbaDown(Btn::Left));
+    a.apply(Action::GbaDown(Btn::L1));
     assert_eq!(a.guide().unwrap().tab, Tab::Settings);
     let before = read_app_state(d.path()).brightness;
-    a.apply(Action::GbaDown(Btn::X));
+    a.apply(Action::GbaDown(Btn::Left));
     assert_eq!(
         read_app_state(d.path()).brightness,
         before - 1,
-        "X steps back"
+        "Left steps back"
     );
-    a.apply(Action::GbaDown(Btn::A));
-    a.apply(Action::GbaDown(Btn::A));
+    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::Right));
     assert_eq!(
         read_app_state(d.path()).brightness,
         before + 1,
-        "A steps on"
+        "Right steps on"
     );
     // Down moves the cursor to blue light
     a.apply(Action::GbaDown(Btn::Down));
-    a.apply(Action::GbaDown(Btn::A));
+    a.apply(Action::GbaDown(Btn::Right));
     assert_eq!(read_app_state(d.path()).blue_light, 1);
     // and the core's options are asked for
     assert!(a.wants_guide_options());
@@ -168,17 +170,17 @@ fn pages_lines_and_sizes_move_the_guide_and_it_opens_again_where_it_was_left() {
     let mut a = playing(&d);
     a.apply(Action::QuickMenu);
     let top = |a: &App| a.guide().unwrap().top;
-    a.apply(Action::GbaDown(Btn::R1));
+    a.apply(Action::GbaDown(Btn::Right));
     let paged = top(&a);
     assert!(paged > 0.0);
     a.apply(Action::GbaDown(Btn::Down));
     assert!(top(&a) > paged);
     a.apply(Action::GbaDown(Btn::Up));
     assert_eq!(top(&a), paged);
-    a.apply(Action::GbaDown(Btn::L1));
+    a.apply(Action::GbaDown(Btn::Left));
     assert_eq!(top(&a), 0.0);
     for _ in 0..5 {
-        a.apply(Action::GbaDown(Btn::R1));
+        a.apply(Action::GbaDown(Btn::Right));
     }
     let at = a.guide().unwrap().at();
     a.apply(Action::GbaDown(Btn::R2));

@@ -142,7 +142,7 @@ is the most useful thing you can send.
   kept per system too.
 - A PlayStation game on several discs is one game: DISC, on SELECT+MENU in a game, puts another
   disc in, and the game resumes with the disc that was in the drive.
-- A short MENU press in a game opens the game menu over it, in three tabs that Left and Right turn
+- A short MENU press in a game opens the game menu over it, in three tabs that L1 and R1 turn
   between: the game's guide (`GUIDES/<system>/<game>.txt` or `.html`, with paging, scrolling and
   eight text sizes, reopened where it was left), its RetroAchievements, and the settings: what
   the hotkeys change and the options of the core that runs the game.

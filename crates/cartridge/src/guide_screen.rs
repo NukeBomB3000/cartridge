@@ -1,10 +1,10 @@
-//! The game menu a short MENU press opens over a game, in three tabs that Left and Right turn
+//! The game menu a short MENU press opens over a game, in three tabs that L1 and R1 turn
 //! between: the game's guide, the game's achievements and the settings. The guide is a
 //! walkthrough the player keeps in GUIDES/<system>/ named as the game is, TXT or HTML, read over
-//! the paused game. L1 and R1 turn a page, Up and Down move a line and keep moving while held,
+//! the paused game. Left and Right turn a page, Up and Down move a line and keep moving while held,
 //! L2 and R2 make the text smaller or larger, X goes on to the game's next guide when it has
 //! several (kept in a folder named as the game), and B or MENU close it. The settings tab is a
-//! list: Up and Down choose a row, A steps it on and X back; it holds what the hotkeys change
+//! list: Up and Down choose a row, Right steps it on and Left back; it holds what the hotkeys change
 //! (brightness, volume, screen look and more) and the options of the core running the game. A
 //! second MENU press straight after the first is still a double press and opens the save
 //! states.
@@ -38,10 +38,10 @@ const REPEAT_EVERY_MS: f64 = 55.0;
 /// How long after the place in a guide last moved it is written to the card.
 const MARK_AFTER_MS: f64 = 2000.0;
 
-pub const KEYS: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
-pub const KEYS_MORE: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   X NEXT GUIDE   B BACK";
-pub const KEYS_ACHIEVEMENTS: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
-pub const KEYS_SETTINGS: &str = "◀▶ TAB   ▲▼ CHOOSE   A NEXT   X PREVIOUS   B BACK";
+pub const KEYS: &str = "L1/R1 TAB   ◀▶ PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
+pub const KEYS_MORE: &str = "L1/R1 TAB   ◀▶ PAGE   ▲▼ SCROLL   L2/R2 SIZE   X NEXT GUIDE   B BACK";
+pub const KEYS_ACHIEVEMENTS: &str = "L1/R1 TAB   ◀▶ PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
+pub const KEYS_SETTINGS: &str = "L1/R1 TAB   ▲▼ CHOOSE   ◀▶ CHANGE   B BACK";
 
 /// The tabs the menu turns between.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -501,12 +501,13 @@ impl App {
         let Some(tab) = self.guide.as_ref().map(|g| g.tab) else {
             return;
         };
-        // Left and Right turn the tabs; the settings tab is a list that Up, Down, A and X work
+        // L1 and R1 turn the tabs; the settings tab is a list that Up and Down choose in and
+        // Left and Right change, as in the other menus
         match action {
-            Action::GbaDown(Btn::Right) => return self.guide_switch(true),
-            Action::GbaDown(Btn::Left) => return self.guide_switch(false),
-            Action::GbaDown(Btn::A) if tab == Tab::Settings => return self.guide_change(true),
-            Action::GbaDown(Btn::X) if tab == Tab::Settings => return self.guide_change(false),
+            Action::GbaDown(Btn::R1) | Action::ShelfRight => return self.guide_switch(true),
+            Action::GbaDown(Btn::L1) | Action::ShelfLeft => return self.guide_switch(false),
+            Action::GbaDown(Btn::Right) if tab == Tab::Settings => return self.guide_change(true),
+            Action::GbaDown(Btn::Left) if tab == Tab::Settings => return self.guide_change(false),
             Action::GbaDown(Btn::Down) if tab == Tab::Settings => return self.guide_choose(true),
             Action::GbaDown(Btn::Up) if tab == Tab::Settings => return self.guide_choose(false),
             _ => {}
@@ -529,8 +530,8 @@ impl App {
                     screen.held = None;
                 }
             }
-            Action::GbaDown(Btn::R1) | Action::ShelfRight => screen.page_down(),
-            Action::GbaDown(Btn::L1) | Action::ShelfLeft => screen.page_up(),
+            Action::GbaDown(Btn::R1 | Btn::Right) | Action::ShelfRight => screen.page_down(),
+            Action::GbaDown(Btn::L1 | Btn::Left) | Action::ShelfLeft => screen.page_up(),
             // L2 and R2 rewind and fast-forward in a handheld's game, and are the game's own
             // in a PlayStation's: either way here they size the text
             Action::GbaDown(Btn::R2) | Action::FfStart => screen.resize(1),
