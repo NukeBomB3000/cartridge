@@ -146,6 +146,10 @@ int slot_achievements(rc_client_t* client, slot_achievement_cb cb, void* data) {
     const rc_client_achievement_bucket_t* bucket = &list->buckets[b];
     for (a = 0; a < bucket->num_achievements; ++a) {
       const rc_client_achievement_t* ach = bucket->achievements[a];
+      /* the client's own warnings (an unknown emulator) are listed with the game's achievements
+       * under ids from 100000000 up: they are not the game's */
+      if (ach->id >= 100000000)
+        continue;
       char url[256];
       /* the badge as it stands: coloured once earned, grey before */
       int state = ach->unlocked ? RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED

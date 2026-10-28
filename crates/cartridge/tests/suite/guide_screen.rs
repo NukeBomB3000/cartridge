@@ -94,6 +94,12 @@ fn a_game_with_no_guide_still_opens_the_menu_and_says_so() {
     assert_eq!(a.guide().unwrap().tab, Tab::Guide);
     assert!(a.take_guide_page().is_some());
     assert_eq!(a.toast(), None);
+    // and says what the file is to be called: the game's name as the card has it
+    let hint = a.guide().unwrap().text_of_tab();
+    assert!(
+        hint.contains(&format!("GUIDES/GBA/{GAME}.txt")),
+        "the hint does not name the file: {hint}"
+    );
 }
 
 #[test]

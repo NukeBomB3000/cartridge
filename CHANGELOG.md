@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- A game with no guide says what its file is to be called, as the card has the game's name:
+  `GUIDES/GB/Adventure Island.txt` or `.html`, or a folder of that name for several
+  (`screenshots/game-menu-no-guide.png`). RetroAchievements' own warning about an unknown
+  emulator is no longer listed among a game's achievements.
+- A game held under the game menu right after it started no longer leaves the note that it took
+  cartridge down: a restart then showed "last start failed" for a game that had run.
 - The game menu's ACHIEVEMENTS tab shows each achievement's badge beside its title, points and
   description, grey while it is locked and in colour once earned, and lists the earned ones first,
   the newest of them first. The badges come in as the handheld fetches them and the list is

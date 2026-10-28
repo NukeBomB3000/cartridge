@@ -616,13 +616,23 @@ impl Session {
         self.running = Some((platform, stem.to_string()));
     }
 
+    /// How many frames the core has to have shown to be settled: a game held under a menu is
+    /// not showing any, and a core that is up to its first frame has opened.
+    fn frames_to_settle(&self) -> u64 {
+        if self.held() {
+            1
+        } else {
+            SETTLED_FRAMES
+        }
+    }
+
     /// Takes the note of the core opening off the card once it has run a moment, or once there
     /// is no core: it opened, or failed to, without taking cartridge down.
     fn settle_start(&mut self) {
         let settled = self
             .emu
             .as_ref()
-            .is_none_or(|emu| emu.published_count() >= SETTLED_FRAMES);
+            .is_none_or(|emu| emu.published_count() >= self.frames_to_settle());
         if self.starting && settled {
             persist::clear_starting(&self.root);
             self.starting = false;

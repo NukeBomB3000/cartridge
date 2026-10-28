@@ -352,6 +352,22 @@ impl GuideScreen {
         self.set_top(self.laid.y_of(at));
     }
 
+    /// All the words the open tab shows, in one string.
+    pub fn text_of_tab(&self) -> String {
+        self.blocks
+            .iter()
+            .flat_map(|b| match b {
+                Block::Para { words, .. }
+                | Block::Heading { words, .. }
+                | Block::Item { words, .. } => words.clone(),
+                Block::Entry { title, detail, .. } => [title.clone(), detail.clone()].concat(),
+                _ => Vec::new(),
+            })
+            .map(|w| w.text)
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
     /// Where in the guide's text the page starts.
     pub fn at(&self) -> usize {
         self.laid.src_at(self.top)
@@ -448,16 +464,29 @@ impl App {
         self.guide = Some(screen);
     }
 
-    /// What the guide tab says of a game that has none.
+    /// What the guide tab says of a game that has none: where to put one, and exactly what the
+    /// file is to be called.
     fn no_guide_blocks(&self, game: &str) -> Vec<Block> {
+        let stem = self.seated().unwrap_or(game).to_string();
+        let dir = self.platform.dir_name();
         vec![
             heading(&format!("No guide for {game}"), 0),
+            para("Put a walkthrough on the card as a TXT or HTML file named just like the game:", 1),
+            Block::Item {
+                words: words(&format!("GUIDES/{dir}/{stem}.txt"), true, 2),
+                indent: 0,
+                mark: "-".to_string(),
+            },
+            Block::Item {
+                words: words(&format!("GUIDES/{dir}/{stem}.html"), true, 3),
+                indent: 0,
+                mark: "-".to_string(),
+            },
             para(
                 &format!(
-                    "Put a walkthrough as a TXT or HTML file named as the game in GUIDES/{}/ on the card, and it opens here.",
-                    self.platform.dir_name()
+                    "Several guides for one game go in a folder with that name, GUIDES/{dir}/{stem}/. Capitals, brackets and punctuation in the name do not matter."
                 ),
-                1,
+                4,
             ),
         ]
     }
