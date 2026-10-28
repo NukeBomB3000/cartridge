@@ -238,8 +238,10 @@ pub struct GuideScreen {
     /// The guide's own text, kept while another tab shows, and where it was left.
     guide_blocks: Vec<Block>,
     guide_top: f32,
-    /// How many badges had come in when the achievements were last laid out.
+    /// How many badges had come in when the achievements were last laid out, and the battery
+    /// as the page last showed it.
     badges_seen: u64,
+    battery_seen: Option<(u8, bool)>,
     /// The settings row the cursor is on, and what the rows are.
     sel: usize,
     rows: Vec<Row>,
@@ -441,6 +443,7 @@ impl App {
             guide_blocks: blocks.clone(),
             guide_top: 0.0,
             badges_seen: 0,
+            battery_seen: None,
             sel: 0,
             rows: Vec::new(),
             options: None,
@@ -601,6 +604,19 @@ impl App {
     pub(crate) fn step_guide(&mut self) {
         if self.guide.is_some() && !matches!(self.phase, crate::app::Phase::Playing { .. }) {
             return self.close_guide();
+        }
+        // the battery's figure changed: draw the page again with it
+        let battery = self.battery.map(|b| {
+            (
+                b.percent,
+                matches!(b.charge, cartridge_power::Charge::Charging),
+            )
+        });
+        if let Some(screen) = &mut self.guide {
+            if screen.battery_seen != battery {
+                screen.battery_seen = battery;
+                screen.stale = true;
+            }
         }
         // a badge that came in since the list was laid out: lay it out again with it
         if self.guide.as_ref().is_some_and(|g| {
@@ -958,6 +974,12 @@ impl App {
     /// screen's size.
     pub fn take_guide_page(&mut self) -> Option<Vec<u8>> {
         let palette = self.palette();
+        let battery = self.battery.map(|b| {
+            (
+                b.percent,
+                matches!(b.charge, cartridge_power::Charge::Charging),
+            )
+        });
         let screen = self.guide.as_mut()?;
         if !screen.stale {
             return None;
@@ -982,6 +1004,7 @@ impl App {
             ink,
             tabs: &tabs,
             tab: screen.tab.index(),
+            battery,
         };
         Some(render_page(
             &mut screen.glyphs,

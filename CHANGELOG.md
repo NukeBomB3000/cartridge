@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The game menu's three tabs show the battery in the top right corner, a small cell filled to the
+  charge with its figure (a + while it charges, red at 15 % and under); how far down the page is
+  moved to the right of the keys' band. Its ground is a little see-through, so the game under it
+  can still be made out.
 - An earned achievement buzzes the motor for 120 ms as its panel comes up, in a game too, and
   not with Rumble off in Settings.
 - A game with no guide says what its file is to be called, as the card has the game's name:

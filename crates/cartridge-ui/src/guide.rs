@@ -1214,11 +1214,24 @@ impl Glyphs {
     }
 }
 
+/// `colour` laid over the pixel `px` at coverage `a` (of 255), as straight alpha does: the page's
+/// ground may be a little see-through, and what is drawn on it is whole.
 fn blend(px: &mut [u8], a: u32, colour: [u8; 3]) {
-    for c in 0..3 {
-        px[c] = ((colour[c] as u32 * a + px[c] as u32 * (255 - a)) / 255) as u8;
+    let under = px[3] as u32 * (255 - a) / 255;
+    let out = a + under;
+    if out == 0 {
+        return;
     }
+    for c in 0..3 {
+        px[c] = ((colour[c] as u32 * a + px[c] as u32 * under) / out) as u8;
+    }
+    px[3] = out.min(255) as u8;
 }
+
+/// How much of the game under the guide is seen through its ground, and through its bands: the
+/// ground is a little see-through so the game can be told, the bands hardly at all.
+pub const GROUND_ALPHA: u8 = 226;
+pub const BAND_ALPHA: u8 = 244;
 
 struct Canvas<'a> {
     rgba: &'a mut [u8],
@@ -1229,11 +1242,15 @@ struct Canvas<'a> {
 
 impl Canvas<'_> {
     fn fill(&mut self, x: i32, y: i32, w: i32, h: i32, colour: [u8; 3]) {
+        self.fill_alpha(x, y, w, h, colour, 255);
+    }
+
+    fn fill_alpha(&mut self, x: i32, y: i32, w: i32, h: i32, colour: [u8; 3], alpha: u8) {
         for row in y.max(self.clip.0)..(y + h).min(self.clip.1) {
             for col in x.max(0)..(x + w).min(self.w as i32) {
                 let i = (row as usize * self.w as usize + col as usize) * 4;
                 self.rgba[i..i + 3].copy_from_slice(&colour);
-                self.rgba[i + 3] = 255;
+                self.rgba[i + 3] = alpha;
             }
         }
     }
@@ -1317,6 +1334,8 @@ pub struct Page<'a> {
     /// The tabs across the top, left, and which one is open: none for a bare page.
     pub tabs: &'a [&'a str],
     pub tab: usize,
+    /// The battery's charge in percent, and whether it is charging, for the corner of the band.
+    pub battery: Option<(u8, bool)>,
 }
 
 /// The guide's text area on a `w` by `h` screen, `[x, y, w, h]` in screen pixels.
@@ -1353,14 +1372,15 @@ pub fn render_page(
         w,
         clip: (0, h as i32),
     };
-    c.fill(0, 0, w as i32, h as i32, ink.bg);
-    c.fill(0, 0, w as i32, GUIDE_HEAD_H as i32, ink.band);
-    c.fill(
+    c.fill_alpha(0, 0, w as i32, h as i32, ink.bg, GROUND_ALPHA);
+    c.fill_alpha(0, 0, w as i32, GUIDE_HEAD_H as i32, ink.band, BAND_ALPHA);
+    c.fill_alpha(
         0,
         (h - GUIDE_FOOT_H) as i32,
         w as i32,
         GUIDE_FOOT_H as i32,
         ink.band,
+        BAND_ALPHA,
     );
 
     let band_px = 14.0;
@@ -1371,16 +1391,49 @@ pub fn render_page(
     } else {
         ((top / max) * 100.0).round() as u32
     };
-    let right = format!("{percent}%");
     let mut adv = Advances::default();
-    let rw = adv.width(Face::Sans, &right, band_px);
+    // the battery in the band's right corner: a small cell, filled to the charge, and its figure,
+    // a + before it while it charges
+    let mut rw = 0.0;
+    if let Some((charge, charging)) = page.battery {
+        let figure = format!("{}{charge}%", if charging { "+" } else { "" });
+        let fw = adv.width(Face::Sans, &figure, band_px);
+        let (cw, ch) = (22, 10);
+        let right = w as i32 - ax as i32;
+        let x = right - fw.round() as i32 - cw - 8;
+        let y = (GUIDE_HEAD_H as i32 - ch) / 2;
+        let tone = if charge <= 15 && !charging {
+            [0xd8, 0x48, 0x40]
+        } else {
+            ink.body
+        };
+        c.fill(x, y, cw, ch, ink.dim);
+        c.fill(x + 1, y + 1, cw - 2, ch - 2, ink.band);
+        let fill = ((cw - 4) as f32 * f32::from(charge.min(100)) / 100.0).round() as i32;
+        c.fill(x + 2, y + 2, fill, ch - 4, tone);
+        c.fill(x + cw, y + 3, 2, ch - 6, ink.dim);
+        c.text(
+            glyphs,
+            Face::Sans,
+            band_px,
+            &figure,
+            (right as f32) - fw,
+            band_base(0, GUIDE_HEAD_H),
+            ink.body,
+            false,
+        );
+        rw = (right - x) as f32 + 12.0 - ax as f32;
+    }
+    // how far down the page is, at the right of the keys' band
+    let scrolled = format!("{percent}%");
+    let sw = adv.width(Face::Sans, &scrolled, 12.0);
     c.text(
         glyphs,
         Face::Sans,
-        band_px,
-        &right,
-        w as f32 - ax as f32 - rw,
-        band_base(0, GUIDE_HEAD_H),
+        12.0,
+        &scrolled,
+        w as f32 - ax as f32 - sw,
+        (h - GUIDE_FOOT_H / 2) as i32 + 4,
         ink.dim,
         false,
     );
