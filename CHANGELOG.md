@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- The sticks of a handheld that has them (RG40XX V and H, RG CubeXX) are real analog sticks to a
+  game that reads them: PlayStation games on PCSX ReARMed and on SwanStation get a DualShock whose
+  left and right sticks are the handheld's, as they move, not a d-pad pushed all the way. While
+  such a game is running and nothing is open over it the sticks no longer also press the d-pad; on
+  the shelf, in the menus and in the game menu they steer as the d-pad still. A handheld with no
+  stick keeps pushing the DualShock's left stick with its d-pad.
+- L3 and R3, the sticks pressed in, reach the game: a DualShock's two thumb buttons, and the
+  touch button of the DS.
 - Tested on an RG40XX V: it reports its one stick on the axes Z and RX, which steer as the d-pad
   in the menus and in games as the CubeXX's do, and it takes the same build as the other 640x480
   handhelds. BaseOS names both RG40XX models `rg40xxh`.

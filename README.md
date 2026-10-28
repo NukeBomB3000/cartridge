@@ -264,7 +264,7 @@ for its panel.
 | RG SP | 720x480 | Tested on hardware |
 | RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
 | RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
-| RG40XX V | 640x480 | Tested on hardware: its one stick steers as the d-pad, the screen looks and Wi-Fi work |
+| RG40XX V | 640x480 | Tested on hardware: its one stick steers the menus and is an analog stick for a PlayStation game, the screen looks and Wi-Fi work |
 | RG40XX H | 640x480 | Untested (two sticks, same as the V's) |
 | RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
 | RG28XX | 480x640, turned | Experimental |

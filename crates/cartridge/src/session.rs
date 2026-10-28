@@ -240,6 +240,17 @@ impl Session {
         if let Some(emu) = &self.emu {
             emu.set_input(self.pad.mask());
         }
+        self.sync_sticks();
+    }
+
+    /// A game whose core reads the sticks has them to itself; anywhere else they are a d-pad.
+    fn sync_sticks(&self) {
+        cartridge_retro::analog::set_game_owns_sticks(
+            self.emu.is_some()
+                && self.playing()
+                && !self.overlaid()
+                && cartridge_retro::analog::analog_core(),
+        );
     }
 
     fn bridge_link(&mut self, f: impl FnOnce(&mut App)) {
@@ -287,6 +298,7 @@ impl Session {
 
     pub fn update(&mut self, dt: f32) {
         self.bridge_link(|app| app.update(dt));
+        self.sync_sticks();
         if let Some(emu) = &self.emu {
             emu.set_volume(self.app.output_volume());
             emu.set_blend(self.app.frame_blend());

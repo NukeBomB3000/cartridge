@@ -197,9 +197,11 @@ fn open_named(
                 for (key, value) in &kept {
                     opened.set_option(key, value);
                 }
-                // the DualShock, as only it rumbles; its sticks stay centred
+                // the DualShock, as only it rumbles and has sticks, which the handheld's feed
                 if core == Core::PcsxRearmed {
                     opened.set_port_device(cartridge_retro::DEVICE_DUALSHOCK);
+                } else if core == Core::Swanstation {
+                    opened.set_port_device(cartridge_retro::DEVICE_ANALOG);
                 }
                 if let Some(player) = link {
                     apply_link_options(&mut opened, core, player);

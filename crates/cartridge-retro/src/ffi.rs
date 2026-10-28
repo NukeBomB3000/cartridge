@@ -35,6 +35,7 @@ pub const DEVICE_JOYPAD: c_uint = 1;
 /// PCSX ReARMed's DualShock, an analog pad's second subclass: the pad it rumbles.
 pub const DEVICE_ANALOG: c_uint = 5;
 pub const ANALOG_LEFT: c_uint = 0;
+pub const ANALOG_RIGHT: c_uint = 1;
 pub const DEVICE_DUALSHOCK: c_uint = (2 << 8) | 5;
 pub const MEMORY_SAVE_RAM: c_uint = 0;
 pub const MEMORY_RTC: c_uint = 1;

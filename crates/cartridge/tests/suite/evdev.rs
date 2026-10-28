@@ -251,6 +251,8 @@ fn the_pad_maps_by_the_codes_the_device_sends() {
         (0x138, Btn::Menu),
         (0x13a, Btn::L2),
         (0x13b, Btn::R2),
+        (0x139, Btn::L3),
+        (0x13c, Btn::R3),
         (115, Btn::VolUp),
         (114, Btn::VolDown),
         (116, Btn::Power),
@@ -325,6 +327,16 @@ fn a_stick_pushed_far_enough_presses_the_d_pad_and_lets_go_further_back() {
     assert_eq!(hat.feed(ev(0x03, 0)), vec![RawEvent::Up(Btn::Up)]);
     assert_eq!(hat.feed(ev(0x05, 4096)), vec![RawEvent::Down(Btn::Down)]);
     assert_eq!(hat.feed(ev(0x04, -4096)), vec![RawEvent::Down(Btn::Left)]);
+    assert_eq!(hat.feed(ev(0x04, 0)), vec![RawEvent::Up(Btn::Left)]);
+
+    // a game that reads the sticks has them to itself: the d-pad is not pressed as well, but
+    // the cores are given the axis as it is
+    cartridge_retro::analog::set_game_owns_sticks(true);
+    assert!(hat.feed(ev(0x02, 4096)).is_empty());
+    assert_eq!(cartridge_retro::analog::axis(0), i16::MAX);
+    assert!(hat.feed(ev(0x02, 0)).is_empty());
+    cartridge_retro::analog::set_game_owns_sticks(false);
+    assert_eq!(cartridge_retro::analog::axis(0), 0);
 }
 
 #[test]

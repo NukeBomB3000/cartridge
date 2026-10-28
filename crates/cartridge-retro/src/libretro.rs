@@ -535,6 +535,15 @@ unsafe extern "C" fn input_poll() {}
 
 unsafe extern "C" fn input_state(port: c_uint, device: c_uint, index: c_uint, id: c_uint) -> i16 {
     if device == DEVICE_ANALOG {
+        // the first port's pad has the handheld's sticks, if it has any; one with none steers
+        // the left stick with its d-pad
+        if port == 0 && crate::analog::present() {
+            return match (index, id) {
+                (ANALOG_LEFT, 0 | 1) => crate::analog::axis(id as usize),
+                (ANALOG_RIGHT, 0 | 1) => crate::analog::axis(2 + id as usize),
+                _ => 0,
+            };
+        }
         return with_host(|h| {
             let input = *h.inputs.get(port as usize)?;
             (h.stick_from_d_pad && index == ANALOG_LEFT).then(|| d_pad_stick(input, id))
@@ -838,6 +847,7 @@ impl Drop for LibretroCore {
             (self.api.deinit)();
         }
         LIVE.store(false, Ordering::SeqCst);
+        crate::analog::set_analog_core(false);
     }
 }
 
@@ -1038,7 +1048,8 @@ impl RetroCore for LibretroCore {
 
     fn set_port_device(&mut self, device: c_uint) {
         self.port_device = device;
-        self.host.stick_from_d_pad = device == DEVICE_DUALSHOCK;
+        self.host.stick_from_d_pad = device == DEVICE_DUALSHOCK || device == DEVICE_ANALOG;
+        crate::analog::set_analog_core(device == DEVICE_DUALSHOCK || device == DEVICE_ANALOG);
     }
 
     fn set_initial_disc(&mut self, index: usize, path: &str) {

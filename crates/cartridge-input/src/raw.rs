@@ -12,6 +12,9 @@ pub enum Btn {
     R1,
     L2,
     R2,
+    /// The sticks pressed in, on handhelds that have them.
+    L3,
+    R3,
     Start,
     Select,
     Menu,

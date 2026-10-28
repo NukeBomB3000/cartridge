@@ -36,11 +36,13 @@ impl Hat {
     pub fn feed(&mut self, ev: Ev) -> Vec<RawEvent> {
         let across = [Btn::Left, Btn::Right];
         let down = [Btn::Up, Btn::Down];
-        let (held, ends, now) = match ev.code {
-            ABS_HAT0X => (&mut self.x, across, ev.value.signum()),
-            ABS_HAT0Y => (&mut self.y, down, ev.value.signum()),
+        let (held, ends, now, stick) = match ev.code {
+            ABS_HAT0X => (&mut self.x, across, ev.value.signum(), false),
+            ABS_HAT0Y => (&mut self.y, down, ev.value.signum(), false),
             ABS_Z | ABS_RX | ABS_RY | ABS_RZ => {
                 let i = usize::from(ev.code - ABS_Z);
+                // the cores that read an analog pad get the axis as it is
+                cartridge_retro::analog::set_axis(i, ev.value);
                 let held = &mut self.sticks[i];
                 let reach = if *held == 0 {
                     STICK_PRESS
@@ -52,7 +54,7 @@ impl Hat {
                 } else {
                     0
                 };
-                (held, if i % 2 == 0 { across } else { down }, now)
+                (held, if i % 2 == 0 { across } else { down }, now, true)
             }
             _ => return Vec::new(),
         };
@@ -61,6 +63,10 @@ impl Hat {
             return Vec::new();
         }
         *held = now;
+        // a game that reads the sticks has them to itself: they do not also press the d-pad
+        if stick && cartridge_retro::analog::game_owns_sticks() {
+            return Vec::new();
+        }
         let btn = |v: i32| ends[usize::from(v > 0)];
         let mut out = Vec::new();
         if was != 0 {
@@ -115,6 +121,8 @@ pub fn code_to_btn(code: u16) -> Option<Btn> {
         0x138 => Btn::Menu,
         0x13a => Btn::L2,
         0x13b => Btn::R2,
+        0x139 => Btn::L3,
+        0x13c => Btn::R3,
         115 => Btn::VolUp,
         114 => Btn::VolDown,
         116 => Btn::Power,
