@@ -1,9 +1,13 @@
-//! The game guide a short MENU press opens over a game: a walkthrough the player keeps in
-//! GUIDES/<system>/ named as the game is, TXT or HTML, read over the paused game. L1 and R1
-//! (or Left and Right) turn a page, Up and Down move a line and keep moving while held, L2 and
-//! R2 make the text smaller or larger, X goes on to the game's next guide when it has several
-//! (kept in a folder named as the game), and B or MENU close it. A second MENU press straight
-//! after the first is still a double press and opens the save states.
+//! The game menu a short MENU press opens over a game, in three tabs that Left and Right turn
+//! between: the game's guide, the game's achievements and the settings. The guide is a
+//! walkthrough the player keeps in GUIDES/<system>/ named as the game is, TXT or HTML, read over
+//! the paused game. L1 and R1 turn a page, Up and Down move a line and keep moving while held,
+//! L2 and R2 make the text smaller or larger, X goes on to the game's next guide when it has
+//! several (kept in a folder named as the game), and B or MENU close it. The settings tab is a
+//! list: Up and Down choose a row, A steps it on and X back; it holds what the hotkeys change
+//! (brightness, volume, screen look and more) and the options of the core running the game. A
+//! second MENU press straight after the first is still a double press and opens the save
+//! states.
 //!
 //! Where the player was in each guide, and the size they read at, are kept in
 //! Config/guides.txt, so the guide opens where it was left, at any size.
@@ -13,11 +17,13 @@ use std::path::{Path, PathBuf};
 
 use cartridge_gfx::{out_h, out_w, Draw, TexId};
 use cartridge_input::{Action, Btn};
+use cartridge_retro::CoreOption;
+use cartridge_store::{Platform, BLUE_LIGHT_MAX, BRIGHTNESS_MAX};
 use cartridge_ui::guide::{
     decode, is_guide_file, lay_out, max_top, parse, render_page, text_area, Advances, Block,
-    Glyphs, GuideInk, Laid, Page, GUIDE_SIZES, GUIDE_SIZE_DEFAULT,
+    Glyphs, GuideInk, Laid, Page, Word, GUIDE_SIZES, GUIDE_SIZE_DEFAULT,
 };
-use cartridge_ui::{clean_label, Toast};
+use cartridge_ui::{clean_label, SettingsRow};
 
 use crate::app::App;
 
@@ -32,8 +38,85 @@ const REPEAT_EVERY_MS: f64 = 55.0;
 /// How long after the place in a guide last moved it is written to the card.
 const MARK_AFTER_MS: f64 = 2000.0;
 
-pub const KEYS: &str = "L/R PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
-pub const KEYS_MORE: &str = "L/R PAGE   ▲▼ SCROLL   L2/R2 SIZE   X NEXT GUIDE   B BACK";
+pub const KEYS: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
+pub const KEYS_MORE: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   X NEXT GUIDE   B BACK";
+pub const KEYS_ACHIEVEMENTS: &str = "◀▶ TAB   L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   B BACK";
+pub const KEYS_SETTINGS: &str = "◀▶ TAB   ▲▼ CHOOSE   A NEXT   X PREVIOUS   B BACK";
+
+/// The tabs the menu turns between.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Tab {
+    Guide,
+    Achievements,
+    Settings,
+}
+
+impl Tab {
+    pub const ALL: [Tab; 3] = [Tab::Guide, Tab::Achievements, Tab::Settings];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Tab::Guide => "GUIDE",
+            Tab::Achievements => "ACHIEVEMENTS",
+            Tab::Settings => "SETTINGS",
+        }
+    }
+
+    fn index(self) -> usize {
+        Tab::ALL.iter().position(|t| *t == self).unwrap_or(0)
+    }
+
+    /// The tab after or before this one, round from either end.
+    fn step(self, forward: bool) -> Tab {
+        let n = Tab::ALL.len();
+        Tab::ALL[(self.index() + if forward { 1 } else { n - 1 }) % n]
+    }
+}
+
+/// The settings the hotkeys change, as rows of the settings tab.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Quick {
+    Brightness,
+    BlueLight,
+    Volume,
+    Look,
+    Picture,
+    Palette,
+    Ghosting,
+    Colour,
+    Rumble,
+}
+
+/// A row of the settings tab: a setting of the handheld, or an option of the core.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Row {
+    Quick(Quick),
+    Core(usize),
+}
+
+fn words(text: &str, bold: bool, src: usize) -> Vec<Word> {
+    text.split_whitespace()
+        .map(|w| Word {
+            text: w.to_string(),
+            bold,
+            src,
+        })
+        .collect()
+}
+
+fn para(text: &str, src: usize) -> Block {
+    Block::Para {
+        words: words(text, false, src),
+        indent: 0,
+    }
+}
+
+fn heading(text: &str, src: usize) -> Block {
+    Block::Heading {
+        words: words(text, true, src),
+        level: 2,
+    }
+}
 
 /// Where the player was in each guide, by its path under GUIDES, and the size they read at.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -148,7 +231,18 @@ pub struct GuideScreen {
     pub guides: Vec<PathBuf>,
     pub index: usize,
     pub title: String,
+    /// The tab open.
+    pub tab: Tab,
+    /// What the tab open shows, laid out in `laid`.
     blocks: Vec<Block>,
+    /// The guide's own text, kept while another tab shows, and where it was left.
+    guide_blocks: Vec<Block>,
+    guide_top: f32,
+    /// The settings row the cursor is on, and what the rows are.
+    sel: usize,
+    rows: Vec<Row>,
+    /// The core's options, once it has told them; none before.
+    options: Option<Vec<CoreOption>>,
     adv: Advances,
     glyphs: Glyphs,
     pub laid: Laid,
@@ -292,10 +386,6 @@ impl App {
             .guide_dir()
             .map(|d| find_guides(&d, &stem))
             .unwrap_or_default();
-        if guides.is_empty() {
-            self.hud.toast(Toast::NoGuide, self.now());
-            return;
-        }
         // the guide read last for this game, when it has several
         let index = {
             let keys: Vec<String> = guides.iter().map(|g| self.mark_key(g)).collect();
@@ -307,11 +397,14 @@ impl App {
     }
 
     fn show_guide(&mut self, guides: Vec<PathBuf>, index: usize, game: &str) {
-        let Some((title, blocks)) = GuideScreen::load(&guides[index]) else {
-            self.hud.toast(Toast::NoGuide, self.now());
-            return;
+        let (title, blocks) = match guides.get(index).and_then(|g| GuideScreen::load(g)) {
+            Some(loaded) => loaded,
+            None => (String::new(), self.no_guide_blocks(game)),
         };
-        let key = self.mark_key(&guides[index]);
+        let key = guides
+            .get(index)
+            .map(|g| self.mark_key(g))
+            .unwrap_or_default();
         let marks = self.guide_marks();
         let size = marks.size.unwrap_or(GUIDE_SIZE_DEFAULT);
         let at = marks.at.get(&key).copied().unwrap_or(0);
@@ -326,6 +419,12 @@ impl App {
             guides,
             index,
             title,
+            tab: Tab::Guide,
+            guide_blocks: blocks.clone(),
+            guide_top: 0.0,
+            sel: 0,
+            rows: Vec::new(),
+            options: None,
             blocks,
             adv: Advances::default(),
             glyphs: Glyphs::default(),
@@ -339,9 +438,25 @@ impl App {
         screen.lay();
         screen.set_top(screen.laid.y_of(at));
         if let Some(stem) = self.seated().map(str::to_string) {
-            self.guide_last.insert(stem, key);
+            if !key.is_empty() {
+                self.guide_last.insert(stem, key);
+            }
         }
         self.guide = Some(screen);
+    }
+
+    /// What the guide tab says of a game that has none.
+    fn no_guide_blocks(&self, game: &str) -> Vec<Block> {
+        vec![
+            heading(&format!("No guide for {game}"), 0),
+            para(
+                &format!(
+                    "Put a walkthrough as a TXT or HTML file named as the game in GUIDES/{}/ on the card, and it opens here.",
+                    self.platform.dir_name()
+                ),
+                1,
+            ),
+        ]
     }
 
     pub fn guide_open(&self) -> bool {
@@ -358,6 +473,9 @@ impl App {
             return;
         };
         screen.moved = None;
+        if screen.tab != Tab::Guide || screen.guides.is_empty() {
+            return;
+        }
         let (path, at, size) = (
             screen.guides[screen.index].clone(),
             screen.at(),
@@ -380,6 +498,19 @@ impl App {
 
     pub(crate) fn guide_input(&mut self, action: Action) {
         let now = self.now() as f64;
+        let Some(tab) = self.guide.as_ref().map(|g| g.tab) else {
+            return;
+        };
+        // Left and Right turn the tabs; the settings tab is a list that Up, Down, A and X work
+        match action {
+            Action::GbaDown(Btn::Right) => return self.guide_switch(true),
+            Action::GbaDown(Btn::Left) => return self.guide_switch(false),
+            Action::GbaDown(Btn::A) if tab == Tab::Settings => return self.guide_change(true),
+            Action::GbaDown(Btn::X) if tab == Tab::Settings => return self.guide_change(false),
+            Action::GbaDown(Btn::Down) if tab == Tab::Settings => return self.guide_choose(true),
+            Action::GbaDown(Btn::Up) if tab == Tab::Settings => return self.guide_choose(false),
+            _ => {}
+        }
         let Some(screen) = &mut self.guide else {
             return;
         };
@@ -398,13 +529,13 @@ impl App {
                     screen.held = None;
                 }
             }
-            Action::GbaDown(Btn::R1 | Btn::Right) | Action::ShelfRight => screen.page_down(),
-            Action::GbaDown(Btn::L1 | Btn::Left) | Action::ShelfLeft => screen.page_up(),
+            Action::GbaDown(Btn::R1) | Action::ShelfRight => screen.page_down(),
+            Action::GbaDown(Btn::L1) | Action::ShelfLeft => screen.page_up(),
             // L2 and R2 rewind and fast-forward in a handheld's game, and are the game's own
             // in a PlayStation's: either way here they size the text
             Action::GbaDown(Btn::R2) | Action::FfStart => screen.resize(1),
             Action::GbaDown(Btn::L2) | Action::RewindStart => screen.resize(-1),
-            Action::GbaDown(Btn::X) if screen.guides.len() > 1 => {
+            Action::GbaDown(Btn::X) if tab == Tab::Guide && screen.guides.len() > 1 => {
                 let (guides, next) = (
                     screen.guides.clone(),
                     (screen.index + 1) % screen.guides.len(),
@@ -457,6 +588,336 @@ impl App {
         }
     }
 
+    /// Turns to the next tab or the last, keeping the place in the guide.
+    fn guide_switch(&mut self, forward: bool) {
+        self.keep_guide_place();
+        let Some(screen) = &mut self.guide else {
+            return;
+        };
+        if screen.tab == Tab::Guide {
+            screen.guide_top = screen.top;
+        }
+        screen.tab = screen.tab.step(forward);
+        screen.held = None;
+        screen.sel = 0;
+        self.fill_tab();
+    }
+
+    /// Lays out what the open tab shows: the guide's own text, the game's achievements or the
+    /// settings, the guide at the place it was left and the others from the top.
+    fn fill_tab(&mut self) {
+        let Some(tab) = self.guide.as_ref().map(|g| g.tab) else {
+            return;
+        };
+        let blocks = match tab {
+            Tab::Guide => None,
+            Tab::Achievements => Some(self.achievement_blocks()),
+            Tab::Settings => Some(self.settings_blocks()),
+        };
+        let Some(screen) = &mut self.guide else {
+            return;
+        };
+        screen.blocks = blocks.unwrap_or_else(|| screen.guide_blocks.clone());
+        let keep = if tab == Tab::Guide {
+            screen.guide_top
+        } else {
+            screen.top.max(0.0)
+        };
+        screen.lay();
+        screen.top = -1.0;
+        screen.set_top(keep);
+        if tab == Tab::Settings {
+            self.show_settings_row();
+        }
+    }
+
+    /// The achievements of the game running, unlocked first.
+    fn achievement_blocks(&self) -> Vec<Block> {
+        let status = crate::cheevos::status();
+        if !self.state.cheevos {
+            return vec![para(
+                "Achievements are off. Switch them on in Settings > Achievements.",
+                0,
+            )];
+        }
+        if matches!(status, crate::cheevos::Status::SignedOut) {
+            return vec![para(
+                "Sign in to RetroAchievements in Settings > Achievements and your games are followed.",
+                0,
+            )];
+        }
+        let list = crate::cheevos::achievements();
+        if list.is_empty() {
+            return vec![para(
+                "No achievements for this game: it may not be known to RetroAchievements, or they are still coming in.",
+                0,
+            )];
+        }
+        let done = list.iter().filter(|a| a.unlocked).count();
+        let (points, total) = (
+            list.iter()
+                .filter(|a| a.unlocked)
+                .map(|a| a.points)
+                .sum::<u32>(),
+            list.iter().map(|a| a.points).sum::<u32>(),
+        );
+        let mut blocks = vec![heading(
+            &format!(
+                "{done} of {} unlocked, {points} of {total} points",
+                list.len()
+            ),
+            0,
+        )];
+        for (i, a) in list.iter().enumerate() {
+            let src = (i + 1) * 10;
+            blocks.push(Block::Item {
+                words: words(&format!("{} ({})", a.title, a.points), a.unlocked, src),
+                indent: 0,
+                mark: if a.unlocked { "*" } else { "-" }.to_string(),
+            });
+            if !a.description.is_empty() {
+                blocks.push(Block::Para {
+                    words: words(&a.description, false, src + 1),
+                    indent: 2,
+                });
+            }
+        }
+        blocks
+    }
+
+    /// The handheld's settings that suit a game on its way, in the order the tab lists them.
+    fn quick_rows(&self) -> Vec<Quick> {
+        let mut rows = vec![
+            Quick::Brightness,
+            Quick::BlueLight,
+            Quick::Volume,
+            Quick::Look,
+            Quick::Picture,
+        ];
+        if self.platform == Platform::Gb {
+            rows.push(Quick::Palette);
+        }
+        rows.push(Quick::Ghosting);
+        if self.platform.colour_correction() {
+            rows.push(Quick::Colour);
+        }
+        rows.push(Quick::Rumble);
+        rows
+    }
+
+    fn quick_text(&self, quick: Quick) -> (&'static str, String) {
+        let on = |b: bool| if b { "On" } else { "Off" }.to_string();
+        match quick {
+            Quick::Brightness => (
+                "Brightness",
+                format!("{} / {}", self.state.brightness, BRIGHTNESS_MAX),
+            ),
+            Quick::BlueLight => (
+                "Blue light",
+                format!("{} / {}", self.state.blue_light, BLUE_LIGHT_MAX),
+            ),
+            Quick::Volume => (
+                "Volume",
+                if self.muted() {
+                    "Muted".to_string()
+                } else {
+                    format!("{}", self.level())
+                },
+            ),
+            Quick::Look => ("Screen look", format!("{:?}", self.look())),
+            Quick::Picture => ("Picture size", self.video_mode.as_str().to_string()),
+            Quick::Palette => ("Palette", self.state.gb_palette.label().to_string()),
+            Quick::Ghosting => ("Ghosting", on(self.ghosting_on())),
+            Quick::Colour => ("Colour correction", on(self.state.colour_correction)),
+            Quick::Rumble => (
+                "Rumble",
+                self.settings_value(SettingsRow::Rumble)
+                    .map(|v| v.text().to_string())
+                    .unwrap_or_default(),
+            ),
+        }
+    }
+
+    /// The options of the core that the tab shows.
+    fn core_rows(&self) -> Vec<CoreOption> {
+        let core = self.core();
+        self.guide
+            .as_ref()
+            .and_then(|g| g.options.clone())
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|o| crate::core_options::shown(core, o))
+            .collect()
+    }
+
+    /// The settings tab's text, and what its rows are, with the cursor row in bold.
+    fn settings_blocks(&mut self) -> Vec<Block> {
+        let quick = self.quick_rows();
+        let core = self.core_rows();
+        let sel = self.guide.as_ref().map_or(0, |g| g.sel);
+        let mut rows: Vec<Row> = quick.iter().map(|q| Row::Quick(*q)).collect();
+        rows.extend((0..core.len()).map(Row::Core));
+        let mut blocks = vec![heading("Handheld", 0)];
+        let mut core_heading = false;
+        for (i, row) in rows.iter().enumerate() {
+            let (label, value) = match row {
+                Row::Quick(q) => {
+                    let (l, v) = self.quick_text(*q);
+                    (l.to_string(), v)
+                }
+                Row::Core(c) => (core[*c].label.clone(), core[*c].value.clone()),
+            };
+            if matches!(row, Row::Core(_)) && !core_heading {
+                core_heading = true;
+                blocks.push(heading(
+                    &format!("{} options", self.core().name()),
+                    (i + 1) * 10 - 5,
+                ));
+            }
+            blocks.push(Block::Item {
+                words: words(&format!("{label}: {value}"), i == sel, (i + 1) * 10),
+                indent: 0,
+                mark: if i == sel { ">" } else { " " }.to_string(),
+            });
+        }
+        if self.guide.as_ref().is_some_and(|g| g.options.is_none()) {
+            blocks.push(para("Loading the core's options...", 100_000));
+        }
+        if let Some(screen) = &mut self.guide {
+            screen.rows = rows;
+        }
+        blocks
+    }
+
+    /// Scrolls the settings tab so the row the cursor is on shows.
+    fn show_settings_row(&mut self) {
+        let Some(screen) = &mut self.guide else {
+            return;
+        };
+        let src = (screen.sel + 1) * 10;
+        let y = screen.laid.y_of(src);
+        let area = text_area(out_w(), out_h())[3] as f32;
+        let line = screen.laid.px * 1.4;
+        if y < screen.top {
+            screen.set_top(y - line);
+        } else if y + line * 2.0 > screen.top + area {
+            screen.set_top(y + line * 2.0 - area);
+        }
+    }
+
+    /// Moves the settings cursor a row, round from either end.
+    fn guide_choose(&mut self, down: bool) {
+        let Some(screen) = &mut self.guide else {
+            return;
+        };
+        let n = screen.rows.len();
+        if n == 0 {
+            return;
+        }
+        screen.sel = if down {
+            (screen.sel + 1) % n
+        } else {
+            (screen.sel + n - 1) % n
+        };
+        self.fill_tab();
+    }
+
+    /// Steps the setting the cursor is on to its next value, or its last.
+    fn guide_change(&mut self, forward: bool) {
+        let Some((row, sel)) = self
+            .guide
+            .as_ref()
+            .and_then(|g| g.rows.get(g.sel).map(|r| (*r, g.sel)))
+        else {
+            return;
+        };
+        match row {
+            Row::Quick(q) => self.quick_step(q, forward),
+            Row::Core(i) => {
+                let Some(option) = self.core_rows().get(i).cloned() else {
+                    return;
+                };
+                let count = option.values.len();
+                if count < 2 {
+                    return;
+                }
+                let at = option
+                    .values
+                    .iter()
+                    .position(|v| *v == option.value)
+                    .unwrap_or(0);
+                let to = (at + if forward { 1 } else { count - 1 }) % count;
+                let value = option.values[to].clone();
+                if let Some(opts) = self.guide.as_mut().and_then(|g| g.options.as_mut()) {
+                    if let Some(o) = opts.iter_mut().find(|o| o.key == option.key) {
+                        o.value = value.clone();
+                    }
+                }
+                if let Some(root) = self.root.as_deref() {
+                    if let Err(e) = cartridge_store::ini::write(
+                        root,
+                        crate::core_options::CORE_OPTIONS_FILE,
+                        &option.key,
+                        &value,
+                    ) {
+                        eprintln!("cartridge: {}: {e}", crate::core_options::CORE_OPTIONS_FILE);
+                    }
+                }
+                self.core_option_pending = Some((option.key, value));
+            }
+        }
+        if let Some(screen) = &mut self.guide {
+            screen.sel = sel;
+        }
+        self.fill_tab();
+    }
+
+    fn quick_step(&mut self, quick: Quick, forward: bool) {
+        let up_or_down = |up, down| if forward { up } else { down };
+        match quick {
+            Quick::Brightness => {
+                self.adjust(up_or_down(Action::BrightnessUp, Action::BrightnessDown));
+            }
+            Quick::BlueLight => {
+                self.adjust(up_or_down(Action::BlueLightUp, Action::BlueLightDown));
+            }
+            Quick::Volume => {
+                self.adjust(up_or_down(Action::VolumeUp, Action::VolumeDown));
+            }
+            Quick::Look => {
+                self.adjust(Action::ShaderNext);
+            }
+            Quick::Picture => {
+                self.adjust(Action::PictureToggle);
+            }
+            Quick::Palette => {
+                self.adjust(up_or_down(Action::PaletteNext, Action::PalettePrev));
+            }
+            Quick::Ghosting => {
+                self.adjust(Action::LcdGhostingToggle);
+            }
+            Quick::Colour => {
+                self.adjust(Action::ColourCorrectionToggle);
+            }
+            Quick::Rumble => self.change_setting(SettingsRow::Rumble, forward),
+        }
+    }
+
+    /// Whether the settings tab waits for the core's options.
+    pub fn wants_guide_options(&self) -> bool {
+        self.guide
+            .as_ref()
+            .is_some_and(|g| g.tab == Tab::Settings && g.options.is_none())
+    }
+
+    /// The core's options as it reports them, for the settings tab.
+    pub fn set_guide_options(&mut self, options: Vec<CoreOption>) {
+        if let Some(screen) = &mut self.guide {
+            screen.options = Some(options);
+        }
+        self.fill_tab();
+    }
+
     /// The open guide's page, when it has changed since it was last drawn: its pixels, the
     /// screen's size.
     pub fn take_guide_page(&mut self) -> Option<Vec<u8>> {
@@ -467,15 +928,24 @@ impl App {
         }
         screen.stale = false;
         let ink = GuideInk::of(palette);
-        let keys = if screen.guides.len() > 1 {
-            KEYS_MORE
+        let keys = match screen.tab {
+            Tab::Guide if screen.guides.len() > 1 => KEYS_MORE,
+            Tab::Guide => KEYS,
+            Tab::Achievements => KEYS_ACHIEVEMENTS,
+            Tab::Settings => KEYS_SETTINGS,
+        };
+        let tabs = Tab::ALL.map(Tab::label);
+        let title = if screen.tab == Tab::Guide {
+            screen.title.as_str()
         } else {
-            KEYS
+            ""
         };
         let page = Page {
-            title: &screen.title,
+            title,
             keys,
             ink,
+            tabs: &tabs,
+            tab: screen.tab.index(),
         };
         Some(render_page(
             &mut screen.glyphs,

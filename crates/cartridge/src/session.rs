@@ -298,6 +298,9 @@ impl Session {
             if self.app.wants_core_options() {
                 self.app.set_core_option_list(emu.options());
             }
+            if self.app.wants_guide_options() {
+                self.app.set_guide_options(emu.options());
+            }
             if let Some((key, value)) = self.app.take_core_option() {
                 emu.set_option(&key, &value);
             }

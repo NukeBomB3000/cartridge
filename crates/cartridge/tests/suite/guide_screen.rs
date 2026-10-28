@@ -6,11 +6,10 @@ use crate::common;
 use crate::keys::root_with_games;
 
 use cartridge::app::{App, Phase};
-use cartridge::guide_screen::{find_guides, match_name, GuideMarks};
+use cartridge::guide_screen::{find_guides, match_name, GuideMarks, Tab};
 use cartridge_input::{Action, Btn};
-use cartridge_store::Platform;
+use cartridge_store::{read_app_state, Platform};
 use cartridge_ui::guide::GUIDE_SIZE_DEFAULT;
-use cartridge_ui::Toast;
 use tempfile::TempDir;
 
 const GAME: &str = "Golden Sun - Die Vergessene Epoche";
@@ -87,12 +86,80 @@ fn a_short_menu_press_opens_the_guide_and_holds_the_game() {
 }
 
 #[test]
-fn a_game_with_no_guide_says_so() {
+fn a_game_with_no_guide_still_opens_the_menu_and_says_so() {
     let d = card(false);
     let mut a = playing(&d);
     a.apply(Action::QuickMenu);
-    assert!(!a.guide_open());
-    assert_eq!(a.toast(), Some(Toast::NoGuide));
+    assert!(a.guide_open());
+    assert_eq!(a.guide().unwrap().tab, Tab::Guide);
+    assert!(a.take_guide_page().is_some());
+    assert_eq!(a.toast(), None);
+}
+
+#[test]
+fn left_and_right_turn_the_tabs_round_and_l1_r1_page() {
+    let d = card(true);
+    let mut a = playing(&d);
+    a.apply(Action::QuickMenu);
+    let tab = |a: &App| a.guide().unwrap().tab;
+    assert_eq!(tab(&a), Tab::Guide);
+    a.apply(Action::GbaDown(Btn::Right));
+    assert_eq!(tab(&a), Tab::Achievements);
+    a.apply(Action::GbaDown(Btn::Right));
+    assert_eq!(tab(&a), Tab::Settings);
+    a.apply(Action::GbaDown(Btn::Right));
+    assert_eq!(tab(&a), Tab::Guide, "round from the last tab");
+    a.apply(Action::GbaDown(Btn::Left));
+    assert_eq!(tab(&a), Tab::Settings);
+    a.apply(Action::GbaDown(Btn::Left));
+    a.apply(Action::GbaDown(Btn::Left));
+    assert_eq!(tab(&a), Tab::Guide);
+    let top = a.guide().unwrap().top;
+    a.apply(Action::GbaDown(Btn::R1));
+    assert!(a.guide().unwrap().top > top, "R1 still pages the guide");
+}
+
+#[test]
+fn the_guide_keeps_its_place_while_another_tab_shows() {
+    let d = card(true);
+    let mut a = playing(&d);
+    a.apply(Action::QuickMenu);
+    a.apply(Action::GbaDown(Btn::R1));
+    a.apply(Action::GbaDown(Btn::R1));
+    let top = a.guide().unwrap().top;
+    assert!(top > 0.0);
+    a.apply(Action::GbaDown(Btn::Right));
+    a.apply(Action::GbaDown(Btn::Left));
+    assert_eq!(a.guide().unwrap().top, top);
+}
+
+#[test]
+fn the_settings_tab_steps_a_row_with_a_and_x_and_keeps_it() {
+    let d = card(false);
+    let mut a = playing(&d);
+    a.apply(Action::QuickMenu);
+    a.apply(Action::GbaDown(Btn::Left));
+    assert_eq!(a.guide().unwrap().tab, Tab::Settings);
+    let before = read_app_state(d.path()).brightness;
+    a.apply(Action::GbaDown(Btn::X));
+    assert_eq!(
+        read_app_state(d.path()).brightness,
+        before - 1,
+        "X steps back"
+    );
+    a.apply(Action::GbaDown(Btn::A));
+    a.apply(Action::GbaDown(Btn::A));
+    assert_eq!(
+        read_app_state(d.path()).brightness,
+        before + 1,
+        "A steps on"
+    );
+    // Down moves the cursor to blue light
+    a.apply(Action::GbaDown(Btn::Down));
+    a.apply(Action::GbaDown(Btn::A));
+    assert_eq!(read_app_state(d.path()).blue_light, 1);
+    // and the core's options are asked for
+    assert!(a.wants_guide_options());
 }
 
 #[test]

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The game menu on a short MENU press has three tabs that Left and Right turn between: GUIDE
+  (as before, now opening for a game with no guide too, where it says where to put one),
+  ACHIEVEMENTS (the game's list, unlocked first, with points) and SETTINGS (brightness, blue
+  light, volume, screen look, picture size, the Game Boy palette, ghosting, colour correction,
+  rumble, then the running core's own options; Up and Down choose, A steps a value on and X
+  back, each kept at once). L1 and R1 page the guide, so Left and Right no longer do
+  (`screenshots/game-menu-achievements.png`, `screenshots/game-menu-settings.png`).
 - RetroAchievements, softcore only, ported from nickclyde's slot-plus through fragilesilver's
   slot-fragile (rcheevos 12.5): Settings > Achievements takes the player's own account on the
   keyboard screen (Y logs out) and switches the service on or off. A signed-in game is followed

@@ -1219,6 +1219,9 @@ pub struct Page<'a> {
     pub title: &'a str,
     pub keys: &'a str,
     pub ink: GuideInk,
+    /// The tabs across the top, left, and which one is open: none for a bare page.
+    pub tabs: &'a [&'a str],
+    pub tab: usize,
 }
 
 /// The guide's text area on a `w` by `h` screen, `[x, y, w, h]` in screen pixels.
@@ -1286,10 +1289,25 @@ pub fn render_page(
         ink.dim,
         false,
     );
+    // the tabs, the open one lit; the guide's own name goes after them when there is room
+    let mut x = ax as f32;
+    for (i, tab) in page.tabs.iter().enumerate() {
+        let lit = i == page.tab;
+        c.text(
+            glyphs,
+            Face::Sans,
+            band_px,
+            tab,
+            x,
+            band_base(0, GUIDE_HEAD_H),
+            if lit { ink.head } else { ink.dim },
+            lit,
+        );
+        x += adv.width(Face::Sans, tab, band_px) + 18.0;
+    }
     let mut title = page.title.to_string();
-    while !title.is_empty()
-        && adv.width(Face::Sans, &title, band_px) > w as f32 - 3.0 * ax as f32 - rw
-    {
+    let room = w as f32 - x - 2.0 * ax as f32 - rw;
+    while !title.is_empty() && adv.width(Face::Sans, &title, band_px) > room {
         title.pop();
     }
     c.text(
@@ -1297,10 +1315,14 @@ pub fn render_page(
         Face::Sans,
         band_px,
         &title,
-        ax as f32,
+        x,
         band_base(0, GUIDE_HEAD_H),
-        ink.head,
-        true,
+        if page.tabs.is_empty() {
+            ink.head
+        } else {
+            ink.dim
+        },
+        page.tabs.is_empty(),
     );
     let kw = adv.width(Face::Sans, page.keys, 12.0);
     c.text(

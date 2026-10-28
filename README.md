@@ -64,8 +64,9 @@ over on first boot.
   console's lines, ghosting for the television's consoles, and finer brightness steps whose
   lowest is the dimmest picture you can still see.
 - **A five-band equalizer** in Settings, with a test sound, for the handhelds' small speakers.
-- **The in-game guide follows the theme.** `GUIDES/<system>/<game>.txt` or `.html`, on a short
-  MENU press.
+- **The in-game menu has three tabs**, Guide, Achievements and Settings, in the theme's colours: the
+  game's guide, its achievements with points and what is still locked, and a list for brightness,
+  volume, screen look, palette and the running core's own options.
 - **RetroAchievements**, softcore: sign in under Settings > Achievements and the game in the core is
   followed for unlocks, which pop up over it in the theme's colours. Saves, states, rewind and
   fast forward all stay on; there is no hardcore mode.
@@ -85,6 +86,12 @@ over on first boot.
 <img src="screenshots/shelf-nes.png" width="380" alt="The NES shelf in the blue theme">
 <img src="screenshots/game-guide.png" width="380" alt="A game guide open over a paused game, in the theme's colours">
 <br><sub>A shelf in the blue theme, and a game guide</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/game-menu-achievements.png" width="380" alt="The game menu's Achievements tab">
+<img src="screenshots/game-menu-settings.png" width="380" alt="The game menu's Settings tab, with the handheld's settings and the core's options">
+<br><sub>The game menu's Achievements and Settings tabs</sub>
 </p>
 
 Every change is in the [changelog](CHANGELOG.md).
@@ -135,8 +142,10 @@ is the most useful thing you can send.
   kept per system too.
 - A PlayStation game on several discs is one game: DISC, on SELECT+MENU in a game, puts another
   disc in, and the game resumes with the disc that was in the drive.
-- Game guides on a short MENU press in a game: `GUIDES/<system>/<game>.txt` or `.html`, read
-  over the paused game with paging, scrolling and eight text sizes, reopened where it was left.
+- A short MENU press in a game opens the game menu over it, in three tabs that Left and Right turn
+  between: the game's guide (`GUIDES/<system>/<game>.txt` or `.html`, with paging, scrolling and
+  eight text sizes, reopened where it was left), its RetroAchievements, and the settings: what
+  the hotkeys change and the options of the core that runs the game.
 - Resume on boot, save states with a switcher, rewind (not on the PlayStation), fast-forward,
   and turbo buttons on the Game Boys and the NES.
 - Link play between two handhelds over Wi-Fi, for Game Boy and GBA games: Pokémon trades,

@@ -1905,7 +1905,7 @@ impl App {
         self.apply(action);
     }
 
-    fn adjust(&mut self, action: Action) -> bool {
+    pub(crate) fn adjust(&mut self, action: Action) -> bool {
         if action == Action::MuteToggle {
             self.mute_toggle();
             return true;
@@ -2058,7 +2058,7 @@ impl App {
         self.level()
     }
 
-    fn level(&self) -> u8 {
+    pub(crate) fn level(&self) -> u8 {
         if self.headphones {
             self.state.volume_hp
         } else {
