@@ -10,7 +10,6 @@ pub const GET_CAN_DUPE: c_uint = 3;
 pub const GET_SYSTEM_DIRECTORY: c_uint = 9;
 pub const SET_PIXEL_FORMAT: c_uint = 10;
 pub const SET_DISK_CONTROL_INTERFACE: c_uint = 13;
-pub const SET_HW_RENDER: c_uint = 14;
 pub const GET_VARIABLE: c_uint = 15;
 pub const SET_VARIABLES: c_uint = 16;
 pub const GET_VARIABLE_UPDATE: c_uint = 17;
@@ -19,43 +18,12 @@ pub const GET_LOG_INTERFACE: c_uint = 27;
 pub const GET_SAVE_DIRECTORY: c_uint = 31;
 pub const SET_SYSTEM_AV_INFO: c_uint = 32;
 pub const SET_GEOMETRY: c_uint = 37;
-pub const GET_PREFERRED_HW_RENDER: c_uint = 56;
 pub const GET_DISK_CONTROL_INTERFACE_VERSION: c_uint = 57;
 pub const SET_DISK_CONTROL_EXT_INTERFACE: c_uint = 58;
 pub const EXPERIMENTAL: c_uint = 0x10000;
 pub const GET_AUDIO_VIDEO_ENABLE: c_uint = 47 | EXPERIMENTAL;
-pub const SET_HW_SHARED_CONTEXT: c_uint = 44 | EXPERIMENTAL;
 pub const SET_AUDIO_BUFFER_STATUS_CALLBACK: c_uint = 62;
 pub const SET_NETPACKET_INTERFACE: c_uint = 78;
-
-pub const HW_CONTEXT_OPENGLES2: c_uint = 2;
-pub const HW_CONTEXT_OPENGLES3: c_uint = 4;
-pub const HW_CONTEXT_OPENGLES_VERSION: c_uint = 5;
-/// What a core hands `video_refresh` for a frame it drew into the framebuffer.
-pub const HW_FRAME_BUFFER_VALID: usize = usize::MAX;
-
-pub type HwContextResetFn = unsafe extern "C" fn();
-pub type HwGetCurrentFramebufferFn = unsafe extern "C" fn() -> usize;
-pub type HwGetProcAddressFn = unsafe extern "C" fn(*const c_char) -> *const c_void;
-
-/// libretro's retro_hw_render_callback: what a core that draws with the GPU asks for, the
-/// frontend filling in the framebuffer and the function lookup.
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct HwRenderCallback {
-    pub context_type: c_uint,
-    pub context_reset: Option<HwContextResetFn>,
-    pub get_current_framebuffer: Option<HwGetCurrentFramebufferFn>,
-    pub get_proc_address: Option<HwGetProcAddressFn>,
-    pub depth: bool,
-    pub stencil: bool,
-    pub bottom_left_origin: bool,
-    pub version_major: c_uint,
-    pub version_minor: c_uint,
-    pub cache_context: bool,
-    pub context_destroy: Option<HwContextResetFn>,
-    pub debug_context: bool,
-}
 
 pub const RUMBLE_STRONG: c_uint = 0;
 pub const RUMBLE_WEAK: c_uint = 1;

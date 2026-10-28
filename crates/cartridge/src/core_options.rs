@@ -34,10 +34,16 @@ const DIM: f32 = 0.6;
 pub fn kept_options(root: &Path, core: Core) -> Vec<(String, String)> {
     let mut kept: Vec<(String, String)> = ini::read(root, CORE_OPTIONS_FILE)
         .into_iter()
-        .filter(|(key, _)| key.starts_with(core.as_str()))
+        .filter(|(key, _)| key.starts_with(core.as_str()) && !fixed(key))
         .collect();
     kept.sort();
     kept
+}
+
+/// Options this frontend settles itself and leaves no choice in: SwanStation draws in software,
+/// there being no GL here (an old OpenGL choice in the file is not read).
+pub fn fixed(key: &str) -> bool {
+    key == "swanstation_GPU_Renderer"
 }
 
 /// The options of `core` its menu shows: DSperate's screen layout, the gap between its screens
@@ -49,7 +55,7 @@ pub fn shown(core: Core, option: &CoreOption) -> bool {
             option.key.as_str(),
             "dsperate_layout" | "dsperate_screen_gap" | "dsperate_frameskip"
         ),
-        _ => true,
+        _ => !fixed(&option.key),
     }
 }
 

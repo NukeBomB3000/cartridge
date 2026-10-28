@@ -693,30 +693,6 @@ impl Platform for DevicePlatform {
         self.write_backlight(0);
     }
 
-    // devfreq's floor raised to the top of what the GPU runs at, else back to none: a core that
-    // waits on the GPU each frame keeps it too briefly busy for the governor to clock it up
-    fn set_gpu_boost(&mut self, on: bool) {
-        let gpu = self.sysfs.join("class/devfreq/gpu");
-        let floor = if on {
-            let Ok(all) = fs::read_to_string(gpu.join("available_frequencies")) else {
-                return;
-            };
-            match all
-                .split_whitespace()
-                .filter_map(|f| f.parse::<u64>().ok())
-                .max()
-            {
-                Some(top) => top,
-                None => return,
-            }
-        } else {
-            0
-        };
-        if let Err(e) = fs::write(gpu.join("min_freq"), floor.to_string()) {
-            eprintln!("cartridge: gpu floor {floor}: {e}");
-        }
-    }
-
     fn set_cpu_cap(&mut self, khz: Option<u32>) {
         let policy = self.sysfs.join("devices/system/cpu/cpufreq/policy0");
         let Some(top) = read_number(&policy.join("cpuinfo_max_freq")) else {

@@ -485,24 +485,3 @@ fn a_cpu_cap_holds_the_clock_down_and_none_lets_it_run_to_its_top() {
     );
     assert_eq!(cap(&mut p, None), "1512000");
 }
-
-#[test]
-fn a_gpu_boost_raises_devfreqs_floor_to_the_top_and_lets_it_go_after() {
-    let d = sysfs("255", "87");
-    let gpu = d.path().join("class/devfreq/gpu");
-    fs::create_dir_all(&gpu).unwrap();
-    fs::write(
-        gpu.join("available_frequencies"),
-        "420000000 504000000 648000000\n",
-    )
-    .unwrap();
-    fs::write(gpu.join("min_freq"), "0\n").unwrap();
-    let mut p = platform(&d);
-    p.set_gpu_boost(true);
-    assert_eq!(
-        fs::read_to_string(gpu.join("min_freq")).unwrap(),
-        "648000000"
-    );
-    p.set_gpu_boost(false);
-    assert_eq!(fs::read_to_string(gpu.join("min_freq")).unwrap(), "0");
-}

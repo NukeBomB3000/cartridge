@@ -125,7 +125,12 @@ fn dsperates_menu_keeps_only_the_options_a_player_has_a_use_for() {
             "dsperate_frameskip"
         ]
     );
+    // SwanStation shows its options but the renderer, which is settled: software
     assert!(shown(
+        Core::Swanstation,
+        &option("swanstation_GPU_ResolutionScale", &["a"], "a")
+    ));
+    assert!(!shown(
         Core::Swanstation,
         &option("swanstation_GPU_Renderer", &["a"], "a")
     ));

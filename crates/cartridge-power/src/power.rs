@@ -9,7 +9,6 @@ pub struct Power {
     timeout: Duration,
     /// The CPU cap last written, once one has been.
     cpu_cap: Option<Option<u32>>,
-    gpu_boost: Option<bool>,
 }
 
 impl Power {
@@ -20,7 +19,6 @@ impl Power {
             closed: false,
             timeout,
             cpu_cap: None,
-            gpu_boost: None,
         }
     }
 
@@ -29,14 +27,6 @@ impl Power {
         if self.cpu_cap != Some(khz) {
             self.cpu_cap = Some(khz);
             self.platform.set_cpu_cap(khz);
-        }
-    }
-
-    /// The GPU held at its top clock or let go; only a change is written.
-    pub fn set_gpu_boost(&mut self, on: bool) {
-        if self.gpu_boost != Some(on) {
-            self.gpu_boost = Some(on);
-            self.platform.set_gpu_boost(on);
         }
     }
 

@@ -1271,28 +1271,6 @@ impl App {
         self.last_led = None;
     }
 
-    /// SwanStation has been set to a renderer that draws with the GPU: it draws in software
-    /// unless its options say otherwise.
-    pub fn swanstation_draws_with_gpu(&self) -> bool {
-        self.root
-            .as_deref()
-            .and_then(|root| {
-                cartridge_store::ini::value(
-                    root,
-                    crate::core_options::CORE_OPTIONS_FILE,
-                    "swanstation_GPU_Renderer",
-                )
-            })
-            .is_some_and(|r| r != "Software")
-    }
-
-    /// The GPU held at its top clock, or let go.
-    pub fn set_gpu_boost(&mut self, on: bool) {
-        if let Some(power) = self.power.as_mut() {
-            power.set_gpu_boost(on);
-        }
-    }
-
     /// The CPU held to `khz`, or let run at its top.
     pub fn set_cpu_cap(&mut self, khz: Option<u32>) {
         if let Some(power) = self.power.as_mut() {

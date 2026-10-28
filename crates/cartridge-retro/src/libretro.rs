@@ -11,7 +11,6 @@ use crate::core::{
     AvInfo, ButtonMask, CoreError, CoreOption, RetroCore, GBA_H, GBA_W, MAX_FRAME_H, MAX_FRAME_W,
 };
 use crate::ffi::*;
-use crate::hw::{self, HwGl};
 use crate::link::Link;
 use crate::rumble::Rumble;
 
@@ -58,8 +57,6 @@ struct Host {
     /// cartridge leaves alone reads as, as in any frontend, so no core falls back on defaults
     /// of its own. Supafaust forgets its own once a game is loaded.
     defaults: std::collections::HashMap<String, std::ffi::CString>,
-    /// The GL context of a core that draws with the GPU, once it asked for one.
-    hw: Option<HwGl>,
     /// The core's memory as it maps it, for RetroAchievements.
     memory_map: Vec<crate::memory::MemoryDescriptor>,
 }
@@ -93,7 +90,6 @@ impl Host {
             declared: std::collections::HashMap::new(),
             labels: Vec::new(),
             defaults: std::collections::HashMap::new(),
-            hw: None,
             memory_map: Vec::new(),
         }
     }
@@ -183,43 +179,13 @@ unsafe extern "C" fn set_rumble_state(port: c_uint, effect: c_uint, strength: u1
     with_host(|h| h.rumble.set(port, effect, strength)).unwrap_or(false)
 }
 
-unsafe extern "C" fn get_current_framebuffer() -> usize {
-    with_host(|h| h.hw.as_ref().map_or(0, |gl| gl.fbo as usize)).unwrap_or(0)
-}
-
 unsafe extern "C" fn environment(cmd: c_uint, data: *mut c_void) -> bool {
     match cmd {
         crate::memory::SET_MEMORY_MAPS | crate::memory::SET_MEMORY_MAPS_PLAIN => {
             with_host(|h| h.memory_map = crate::memory::descriptors(data)).is_some()
         }
-        // GLES only, the one GL this hardware has; the context is made on the thread the core
-        // loads on, which is the one it runs on, and a core told no draws in software
-        GET_PREFERRED_HW_RENDER => {
-            if data.is_null() {
-                return false;
-            }
-            *(data as *mut c_uint) = HW_CONTEXT_OPENGLES3;
-            true
-        }
-        SET_HW_SHARED_CONTEXT => true,
-        SET_HW_RENDER => {
-            if data.is_null() {
-                return false;
-            }
-            let cb = &mut *(data as *mut HwRenderCallback);
-            if hw::gles_version(cb).is_none() {
-                return false;
-            }
-            cb.get_current_framebuffer = Some(get_current_framebuffer);
-            cb.get_proc_address = Some(hw::get_proc_address);
-            match HwGl::create(*cb) {
-                Ok(gl) => with_host(|h| h.hw = Some(gl)).is_some(),
-                Err(e) => {
-                    eprintln!("cartridge: hw render: {e}");
-                    false
-                }
-            }
-        }
+        // a core asking for a GL context (SET_HW_RENDER) is answered as to any command not known:
+        // no, and it draws in software
         GET_AUDIO_VIDEO_ENABLE => {
             if data.is_null() {
                 return false;
@@ -546,23 +512,6 @@ unsafe extern "C" fn video_refresh(
 ) {
     // a null frame is a duplicate: the last picture stands
     if data.is_null() || width == 0 || height == 0 {
-        return;
-    }
-    if data as usize == HW_FRAME_BUFFER_VALID {
-        with_host(|h| {
-            let Some(gl) = h.hw.as_mut() else {
-                return;
-            };
-            let at = std::time::Instant::now();
-            let pixels = gl.read(width, height);
-            hw::note_read(at.elapsed(), width, height);
-            let format = std::mem::replace(&mut h.format, PixelFormat::Xrgb8888);
-            h.take_frame(pixels.as_ptr(), width, height, width as usize * 4);
-            h.format = format;
-            if let Some(gl) = h.hw.as_mut() {
-                gl.give_back(pixels);
-            }
-        });
         return;
     }
     with_host(|h| h.take_frame(data as *const u8, width, height, pitch));
@@ -974,19 +923,6 @@ impl RetroCore for LibretroCore {
             sample_rate: av.timing.sample_rate,
         };
         self.host.geometry = av.geometry;
-        // a core drawing with the GPU gets its framebuffer, at the most it said it draws, and
-        // is told its context is ready
-        if let Some(gl) = self.host.hw.as_mut() {
-            let (w, h) = (av.geometry.max_width.max(1), av.geometry.max_height.max(1));
-            if let Err(e) = gl.ensure_framebuffer(w, h) {
-                return Err(CoreError::Load(format!("hw render: {e}")));
-            }
-            eprintln!("cartridge: hw render: GLES context, framebuffer {w}x{h}");
-            if let Some(reset) = gl.reset_fn() {
-                let _a = Active::bind(&mut self.host);
-                unsafe { reset() };
-            }
-        }
         unsafe { (self.api.set_controller_port_device)(0, self.port_device) };
         Ok(())
     }

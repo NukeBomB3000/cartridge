@@ -46,9 +46,9 @@ over on first boot.
   40 to 56 % less CPU than mGBA for the same game, which is battery. A Game Boy-only game runs as on
   the original, where SELECT+L2/R2 changes its palette; mGBA stays one press away, and link play
   asks for it.
-- **SwanStation** (the libretro DuckStation) for the PlayStation, drawing with the GPU: cores that
-  ask for OpenGL ES get a GLES 3 context of their own, and the GPU is held at its top clock while
-  one runs. PCSX ReARMed stays the default.
+- **SwanStation** (the libretro DuckStation) for the PlayStation, drawing in software at the
+  PlayStation's own size on a thread of its own: on the RG SP that is more than twice as fast as
+  its OpenGL renderer was, so this has none. PCSX ReARMed stays the default.
 
 <p align="center">
 <img src="screenshots/gambatte-palette.png" width="380" alt="A Game Boy game in Gambatte's palette GB Pocket">

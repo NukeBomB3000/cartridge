@@ -64,8 +64,6 @@ pub trait Platform: Send {
     }
     /// The CPU held to at most `khz`, or let run at its top with None.
     fn set_cpu_cap(&mut self, _khz: Option<u32>) {}
-    /// The GPU held at its top clock, for a core that draws with it, or left to its governor.
-    fn set_gpu_boost(&mut self, _on: bool) {}
     fn battery(&self) -> Option<Battery>;
     fn charge(&self) -> Charge;
     fn set_led(&mut self, state: LedState);

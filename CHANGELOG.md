@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- OpenGL is gone: SwanStation draws in software and the frontend no longer makes a GLES context for
+  a core, hands one to it, reads its frames back or holds the GPU at its top clock. On the RG SP
+  the readback alone cost 7.4 ms of a 16.7 ms frame. The renderer is no longer among SwanStation's
+  options and an old choice of it in `Config/core_options.ini` is not read.
 - SwanStation draws in software now, on a thread of its own, at the PlayStation's own size. On the
   RG SP that runs a 3D scene of 007 at 138 frames a second where the OpenGL renderer runs it at 61
   (headless), and in the game the OpenGL path costs 7.4 ms of every 16.7 ms frame in reading the
