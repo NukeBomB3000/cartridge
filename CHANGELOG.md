@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Tested on an RG40XX V: it reports its one stick on the axes Z and RX, which steer as the d-pad
+  in the menus and in games as the CubeXX's do, and it takes the same build as the other 640x480
+  handhelds. BaseOS names both RG40XX models `rg40xxh`.
 - Screenshots of the screen looks on a 640x480 RG40XX V: `crt-md-plain.png`, `crt-md-scanlines.png`,
   `crt-md.png`.
 - Every cart and disc has a back now. Seen from behind (the new twirl shows it) the models were
