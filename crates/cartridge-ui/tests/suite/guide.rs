@@ -153,3 +153,49 @@ fn the_guide_takes_its_colours_from_the_theme() {
     }
     assert_ne!(GuideInk::of(palette(7)), GuideInk::of(palette(3)));
 }
+
+/// An entry with a picture is set beside it, as tall as the picture at least, and the picture
+/// goes with its first line; a locked one is in the dim ink.
+#[test]
+fn an_entry_makes_room_for_its_picture_and_dims_when_locked() {
+    use cartridge_ui::guide::{entry_icon_px, lay_out, Advances, Block, Ink, Word};
+    use std::sync::Arc;
+    let words = |t: &str| {
+        t.split_whitespace()
+            .map(|w| Word {
+                text: w.into(),
+                bold: false,
+                src: 0,
+            })
+            .collect::<Vec<_>>()
+    };
+    let icon = Arc::new(vec![255u8; 64 * 64 * 4]);
+    let entry = |locked| Block::Entry {
+        icon: Some(icon.clone()),
+        title: words("First Blood"),
+        detail: words("Defeat the first boss"),
+        locked,
+    };
+    let mut adv = Advances::default();
+    let px = 16.0;
+    let laid = lay_out(&mut adv, &[entry(false), entry(true)], 600.0, px);
+    let size = entry_icon_px(px);
+    assert!(
+        laid.height >= 2.0 * size,
+        "{} is under two pictures",
+        laid.height
+    );
+    assert_eq!(laid.lines.iter().filter(|l| l.icon.is_some()).count(), 2);
+    assert!(
+        laid.lines[0].icon.is_some(),
+        "the picture is not on the first line"
+    );
+    let inks: Vec<Ink> = laid
+        .lines
+        .iter()
+        .flat_map(|l| l.runs.iter().map(|r| r.ink))
+        .collect();
+    assert!(inks.contains(&Ink::Head) && inks.contains(&Ink::Dim));
+    // the words stand clear of the picture
+    assert!(laid.lines[0].runs[0].x >= size);
+}

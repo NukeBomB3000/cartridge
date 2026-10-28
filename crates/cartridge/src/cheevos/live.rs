@@ -117,6 +117,63 @@ pub fn sign_in_again(root: &Path) {
     });
 }
 
+// --- the badges of the list in the game menu, fetched one at a time off the main thread ---
+
+enum Badge {
+    Pending,
+    Ready(Arc<Vec<u8>>),
+    Failed,
+}
+
+static BADGES: Mutex<Vec<(String, Badge)>> = Mutex::new(Vec::new());
+static BADGE_VERSION: AtomicU64 = AtomicU64::new(0);
+static BADGE_ASKS: OnceLock<std::sync::mpsc::Sender<String>> = OnceLock::new();
+
+/// A badge, 64 by 64 RGBA pixels, if it has come in. The first ask sets it fetching; each one
+/// that comes in bumps [`badge_version`].
+pub fn badge(url: &str) -> Option<Arc<Vec<u8>>> {
+    if url.is_empty() {
+        return None;
+    }
+    let mut badges = BADGES.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some((_, b)) = badges.iter().find(|(u, _)| u == url) {
+        return match b {
+            Badge::Ready(rgba) => Some(rgba.clone()),
+            Badge::Pending | Badge::Failed => None,
+        };
+    }
+    badges.push((url.to_string(), Badge::Pending));
+    if let Some(asks) = BADGE_ASKS.get() {
+        let _ = asks.send(url.to_string());
+    }
+    None
+}
+
+/// How many badges have come in or failed so far: a list showing them is drawn again when it
+/// changes.
+pub fn badge_version() -> u64 {
+    BADGE_VERSION.load(Ordering::Acquire)
+}
+
+fn fetch_badges(asks: std::sync::mpsc::Receiver<String>) {
+    for url in asks {
+        let Some(live) = LIVE.get() else { continue };
+        let got = live
+            .cheevos
+            .transport()
+            .fetch(&url)
+            .and_then(|png| badge::decode(&png));
+        let mut badges = BADGES.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some((_, b)) = badges.iter_mut().find(|(u, _)| *u == url) {
+            *b = match got {
+                Some(rgba) => Badge::Ready(Arc::new(rgba)),
+                None => Badge::Failed,
+            };
+        }
+        BADGE_VERSION.fetch_add(1, Ordering::AcqRel);
+    }
+}
+
 pub fn start(root: &Path) {
     if LIVE.get().is_some() {
         return;
@@ -145,6 +202,10 @@ pub fn start(root: &Path) {
         sign_in(&root, credentials)
     });
     spawn("cartridge-cheevos-face", draw_faces);
+    let (tx, rx) = std::sync::mpsc::channel();
+    if BADGE_ASKS.set(tx).is_ok() {
+        spawn("cartridge-cheevos-badges", move || fetch_badges(rx));
+    }
 }
 
 fn spawn(name: &str, f: impl FnOnce() + Send + 'static) {

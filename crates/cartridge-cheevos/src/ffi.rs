@@ -17,7 +17,7 @@ pub type Callback = unsafe extern "C" fn(c_int, *const c_char, *mut rc_client_t,
 pub type EventHandler = unsafe extern "C" fn(*const rc_client_event_t, *mut rc_client_t);
 pub type LogHandler = unsafe extern "C" fn(*const c_char, *const rc_client_t);
 pub type AchievementCallback =
-    unsafe extern "C" fn(*mut c_void, *const c_char, *const c_char, u32, c_int);
+    unsafe extern "C" fn(*mut c_void, *const c_char, *const c_char, u32, c_int, i64, *const c_char);
 
 pub const RC_OK: c_int = 0;
 pub const RC_NO_GAME_LOADED: c_int = -29;
@@ -64,11 +64,7 @@ pub struct SlotGame {
 pub type rc_hash_cdreader_open_track_handler =
     Option<unsafe extern "C" fn(path: *const c_char, track: u32) -> *mut c_void>;
 pub type rc_hash_cdreader_open_track_iterator_handler = Option<
-    unsafe extern "C" fn(
-        path: *const c_char,
-        track: u32,
-        iterator: *const c_void,
-    ) -> *mut c_void,
+    unsafe extern "C" fn(path: *const c_char, track: u32, iterator: *const c_void) -> *mut c_void,
 >;
 pub type rc_hash_cdreader_read_sector_handler = Option<
     unsafe extern "C" fn(

@@ -209,11 +209,13 @@ impl Cheevos {
 
     // --- Fragile: the in-game list, and signing in again as someone else ---
 
-    /// The loaded game's achievements, unlocked first; empty with no game loaded.
+    /// The loaded game's achievements: the earned ones first, the newest of them first, then the
+    /// rest as the game lists them; empty with no game loaded.
     pub fn achievements(&self) -> Vec<Achievement> {
         let mut out: Vec<Achievement> = Vec::new();
         let data = (&mut out as *mut Vec<Achievement>).cast::<c_void>();
         unsafe { ffi::slot_achievements(self.client, collect, data) };
+        order(&mut out);
         out
     }
 
@@ -273,6 +275,23 @@ pub struct Achievement {
     pub description: String,
     pub points: u32,
     pub unlocked: bool,
+    /// When it was earned, in seconds since 1970; 0 for one not earned.
+    pub unlocked_at: i64,
+    /// Where its badge is, as it stands now: coloured once earned, grey before.
+    pub badge_url: String,
+}
+
+/// The earned achievements first, the newest of them first, then the rest where they stood: a
+/// stable sort.
+pub fn order(list: &mut [Achievement]) {
+    list.sort_by(|a, b| {
+        b.unlocked
+            .cmp(&a.unlocked)
+            .then_with(|| match (a.unlocked, b.unlocked) {
+                (true, true) => b.unlocked_at.cmp(&a.unlocked_at),
+                _ => std::cmp::Ordering::Equal,
+            })
+    });
 }
 
 unsafe extern "C" fn collect(
@@ -281,6 +300,8 @@ unsafe extern "C" fn collect(
     description: *const c_char,
     points: u32,
     unlocked: c_int,
+    unlocked_at: i64,
+    badge_url: *const c_char,
 ) {
     let out = &mut *data.cast::<Vec<Achievement>>();
     out.push(Achievement {
@@ -288,6 +309,8 @@ unsafe extern "C" fn collect(
         description: ffi::text(description),
         points,
         unlocked: unlocked != 0,
+        unlocked_at,
+        badge_url: ffi::text(badge_url),
     });
 }
 

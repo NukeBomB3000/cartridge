@@ -92,6 +92,20 @@ pub enum Block {
     Rule {
         src: usize,
     },
+    /// An entry in a list that has a picture: its title and what it says under it, set beside
+    /// the picture, a square of 64 by 64 RGBA pixels shown at a few lines' height. `locked` sets
+    /// it in the dim ink.
+    Entry {
+        icon: Option<std::sync::Arc<Vec<u8>>>,
+        title: Vec<Word>,
+        detail: Vec<Word>,
+        locked: bool,
+    },
+}
+
+/// How wide and tall an entry's picture is shown at text size `px`.
+pub fn entry_icon_px(px: f32) -> f32 {
+    (px * 2.6).round()
 }
 
 impl Block {
@@ -103,6 +117,7 @@ impl Block {
             | Block::Item { words, .. } => words.first().map_or(0, |w| w.src),
             Block::Pre { lines } => lines.first().map_or(0, |l| l.1),
             Block::Rule { src } => *src,
+            Block::Entry { title, .. } => title.first().map_or(0, |w| w.src),
         }
     }
 }
@@ -877,6 +892,8 @@ pub struct Line {
     pub base: f32,
     pub runs: Vec<Run>,
     pub rule: bool,
+    /// A picture shown at its left edge, a square `entry_icon_px` across, its top at the line's.
+    pub icon: Option<std::sync::Arc<Vec<u8>>>,
     /// Where its first word is in the guide's text.
     pub at: usize,
 }
@@ -943,6 +960,7 @@ fn flow(
             base,
             runs,
             rule: false,
+            icon: None,
             at,
         });
         out.height += line_h;
@@ -1104,9 +1122,60 @@ pub fn lay_out(adv: &mut Advances, blocks: &[Block], width: f32, px: f32) -> Lai
                             ink: Ink::Mono,
                         }],
                         rule: false,
+                        icon: None,
                         at: *at,
                     });
                     out.height += h;
+                }
+            }
+            Block::Entry {
+                icon,
+                title,
+                detail,
+                locked,
+            } => {
+                let size = entry_icon_px(px);
+                let left = if icon.is_some() {
+                    size + (px * 0.6).round()
+                } else {
+                    0.0
+                };
+                let (first, top) = (out.lines.len(), out.height);
+                let (head, body) = if *locked {
+                    (Ink::Dim, Ink::Dim)
+                } else {
+                    (Ink::Head, Ink::Body)
+                };
+                flow(
+                    adv,
+                    &mut out,
+                    title,
+                    left,
+                    width - left,
+                    px,
+                    head,
+                    None,
+                    true,
+                );
+                if !detail.is_empty() {
+                    flow(
+                        adv,
+                        &mut out,
+                        detail,
+                        left,
+                        width - left,
+                        px,
+                        body,
+                        None,
+                        false,
+                    );
+                }
+                // the picture is as tall as it is, whatever the words are
+                if out.height - top < size {
+                    out.height = top + size;
+                }
+                if let (Some(icon), Some(line)) = (icon, out.lines.get_mut(first)) {
+                    line.icon = Some(icon.clone());
                 }
             }
             Block::Rule { src } => {
@@ -1116,6 +1185,7 @@ pub fn lay_out(adv: &mut Advances, blocks: &[Block], width: f32, px: f32) -> Lai
                     base: 0.0,
                     runs: Vec::new(),
                     rule: true,
+                    icon: None,
                     at: *src,
                 });
                 out.height += px;
@@ -1164,6 +1234,31 @@ impl Canvas<'_> {
                 let i = (row as usize * self.w as usize + col as usize) * 4;
                 self.rgba[i..i + 3].copy_from_slice(&colour);
                 self.rgba[i + 3] = 255;
+            }
+        }
+    }
+
+    /// A square picture of 64 by 64 RGBA pixels, shown `size` across with its top left at
+    /// (`x`, `y`), each pixel the nearest of the picture's, laid over what is there.
+    fn picture(&mut self, x: i32, y: i32, size: i32, rgba: &[u8]) {
+        const SIDE: i32 = 64;
+        if size <= 0 || rgba.len() < (SIDE * SIDE * 4) as usize {
+            return;
+        }
+        for row in 0..size {
+            let py = y + row;
+            if py < self.clip.0 || py >= self.clip.1 {
+                continue;
+            }
+            for col in 0..size {
+                let px = x + col;
+                if px < 0 || px >= self.w as i32 {
+                    continue;
+                }
+                let (sx, sy) = (col * SIDE / size, row * SIDE / size);
+                let s = &rgba[((sy * SIDE + sx) * 4) as usize..][..4];
+                let i = (py as usize * self.w as usize + px as usize) * 4;
+                blend(&mut self.rgba[i..i + 4], s[3] as u32, [s[0], s[1], s[2]]);
             }
         }
     }
@@ -1347,6 +1442,14 @@ pub fn render_page(
             let mid = (y + line.h / 2.0) as i32;
             c.fill(ax as i32, mid, aw as i32, 1, ink.dim);
             continue;
+        }
+        if let Some(icon) = &line.icon {
+            c.picture(
+                ax as i32,
+                y.round() as i32,
+                entry_icon_px(laid.px) as i32,
+                icon,
+            );
         }
         let baseline = (y + line.base).round() as i32;
         for run in &line.runs {

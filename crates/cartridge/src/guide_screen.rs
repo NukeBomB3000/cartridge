@@ -238,6 +238,8 @@ pub struct GuideScreen {
     /// The guide's own text, kept while another tab shows, and where it was left.
     guide_blocks: Vec<Block>,
     guide_top: f32,
+    /// How many badges had come in when the achievements were last laid out.
+    badges_seen: u64,
     /// The settings row the cursor is on, and what the rows are.
     sel: usize,
     rows: Vec<Row>,
@@ -422,6 +424,7 @@ impl App {
             tab: Tab::Guide,
             guide_blocks: blocks.clone(),
             guide_top: 0.0,
+            badges_seen: 0,
             sel: 0,
             rows: Vec::new(),
             options: None,
@@ -570,6 +573,12 @@ impl App {
         if self.guide.is_some() && !matches!(self.phase, crate::app::Phase::Playing { .. }) {
             return self.close_guide();
         }
+        // a badge that came in since the list was laid out: lay it out again with it
+        if self.guide.as_ref().is_some_and(|g| {
+            g.tab == Tab::Achievements && g.badges_seen != crate::cheevos::badge_version()
+        }) {
+            self.fill_tab();
+        }
         let now = self.now() as f64;
         let Some(screen) = &mut self.guide else {
             return;
@@ -610,6 +619,7 @@ impl App {
         let Some(tab) = self.guide.as_ref().map(|g| g.tab) else {
             return;
         };
+        let seen = crate::cheevos::badge_version();
         let blocks = match tab {
             Tab::Guide => None,
             Tab::Achievements => Some(self.achievement_blocks()),
@@ -619,6 +629,7 @@ impl App {
             return;
         };
         screen.blocks = blocks.unwrap_or_else(|| screen.guide_blocks.clone());
+        screen.badges_seen = seen;
         let keep = if tab == Tab::Guide {
             screen.guide_top
         } else {
@@ -671,17 +682,12 @@ impl App {
         )];
         for (i, a) in list.iter().enumerate() {
             let src = (i + 1) * 10;
-            blocks.push(Block::Item {
-                words: words(&format!("{} ({})", a.title, a.points), a.unlocked, src),
-                indent: 0,
-                mark: if a.unlocked { "*" } else { "-" }.to_string(),
+            blocks.push(Block::Entry {
+                icon: crate::cheevos::badge(&a.badge_url),
+                title: words(&format!("{} ({})", a.title, a.points), true, src),
+                detail: words(&a.description, false, src + 1),
+                locked: !a.unlocked,
             });
-            if !a.description.is_empty() {
-                blocks.push(Block::Para {
-                    words: words(&a.description, false, src + 1),
-                    indent: 2,
-                });
-            }
         }
         blocks
     }

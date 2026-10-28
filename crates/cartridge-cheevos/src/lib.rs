@@ -11,7 +11,7 @@ pub mod memory;
 pub mod notice;
 pub mod transport;
 
-pub use client::{Achievement, Cheevos, Login};
+pub use client::{order, Achievement, Cheevos, Login};
 pub use config::{Credentials, Secret, CHEEVOS_FILE};
 pub use notice::Notice;
 pub use transport::{Http, Request, Response, Transport};

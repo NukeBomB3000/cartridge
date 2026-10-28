@@ -131,7 +131,8 @@ const char* slot_user_name(const rc_client_t* client) {
 /* --- Fragile: the loaded game's achievements for the in-game list, and signing out --- */
 
 typedef void (*slot_achievement_cb)(void* data, const char* title, const char* description,
-                                    uint32_t points, int unlocked);
+                                    uint32_t points, int unlocked, int64_t unlock_time,
+                                    const char* badge_url);
 
 /* Calls `cb` for each of the loaded game's core achievements, unlocked ones first as rcheevos
  * buckets them. Returns 0 when no game is loaded. */
@@ -145,7 +146,14 @@ int slot_achievements(rc_client_t* client, slot_achievement_cb cb, void* data) {
     const rc_client_achievement_bucket_t* bucket = &list->buckets[b];
     for (a = 0; a < bucket->num_achievements; ++a) {
       const rc_client_achievement_t* ach = bucket->achievements[a];
-      cb(data, ach->title, ach->description, ach->points, ach->unlocked != 0);
+      char url[256];
+      /* the badge as it stands: coloured once earned, grey before */
+      int state = ach->unlocked ? RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED
+                                : RC_CLIENT_ACHIEVEMENT_STATE_INACTIVE;
+      if (rc_client_achievement_get_image_url(ach, state, url, sizeof(url)) != RC_OK)
+        url[0] = 0;
+      cb(data, ach->title, ach->description, ach->points, ach->unlocked != 0,
+         (int64_t)ach->unlock_time, url);
     }
   }
   rc_client_destroy_achievement_list(list);

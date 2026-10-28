@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The game menu's ACHIEVEMENTS tab shows each achievement's badge beside its title, points and
+  description, grey while it is locked and in colour once earned, and lists the earned ones first,
+  the newest of them first. The badges come in as the handheld fetches them and the list is
+  laid out again with each.
 - L and R are the game's on every system. The Game Boys and the Game Gear no longer keep them for
   the picture's size: SELECT+Y steps it there as everywhere.
 - The bezel's body is darker, `#0e0e0e` instead of `#191919`, wherever a picture leaves it bare.
