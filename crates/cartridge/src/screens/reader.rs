@@ -21,6 +21,8 @@ use crate::nav::Dir;
 /// How long Up or Down is held before the text keeps moving, and how often it moves then.
 const REPEAT_AFTER_MS: f64 = 350.0;
 const REPEAT_EVERY_MS: f64 = 55.0;
+/// How long the text size's figure shows in the foot after it changed.
+const SIZE_SHOWN_MS: f64 = 1500.0;
 
 const SETTINGS_FILE: &str = "Config/reader.ini";
 const KEYS: &str = "L1/R1 PAGE   ▲▼ SCROLL   L2/R2 SIZE   SEL+Y DARK   SEL+X TURN   B CLOSE";
@@ -148,9 +150,36 @@ pub struct ReaderScreen {
     pub stale: bool,
     /// A d-pad button held and when the text next moves for it.
     held: Option<(Btn, f64)>,
+    /// When the text size last changed, for its figure to show in the foot for a moment.
+    size_at: Option<f64>,
 }
 
 impl ReaderScreen {
+    pub fn new(
+        name: &str,
+        key: String,
+        blocks: Vec<Block>,
+        size: usize,
+        dark: bool,
+        turn: Turn,
+    ) -> ReaderScreen {
+        ReaderScreen {
+            name: name.to_string(),
+            key,
+            blocks,
+            adv: Advances::default(),
+            glyphs: Glyphs::default(),
+            laid: Laid::default(),
+            top: -1.0,
+            size,
+            dark,
+            turn,
+            stale: true,
+            held: None,
+            size_at: None,
+        }
+    }
+
     fn lay(&mut self) {
         let (w, h) = self.turn.page(out_w(), out_h());
         self.laid = lay_out(
@@ -176,10 +205,23 @@ impl ReaderScreen {
         }
     }
 
-    fn set_top(&mut self, top: f32) {
-        let top = top
-            .clamp(0.0, max_top(&self.laid, self.page_height()))
-            .round();
+    /// The index of the line the page starts at: the first that begins at or after its top.
+    fn first(&self) -> usize {
+        self.laid.lines.partition_point(|l| l.y < self.top - 0.5)
+    }
+
+    /// Puts the page's top on the line that starts at `y`, or the nearest line below it, so the
+    /// page begins on a whole line. At the end of the text the page is put as low as it goes.
+    fn set_top(&mut self, y: f32) {
+        let max = max_top(&self.laid, self.page_height());
+        let top = if y >= max {
+            max
+        } else {
+            let at = self.laid.lines.partition_point(|l| l.y < y - 0.5);
+            self.laid.lines.get(at).map_or(max, |l| l.y).min(max)
+        }
+        .max(0.0)
+        .round();
         if top != self.top {
             self.top = top;
             self.stale = true;
@@ -191,24 +233,44 @@ impl ReaderScreen {
         self.set_top(fraction.clamp(0.0, 1.0) * max_top(&self.laid, self.page_height()));
     }
 
-    fn line(&self) -> f32 {
-        (GUIDE_SIZES[self.size] * 1.45).round()
+    /// The height of the text's area, and the foot of the page showing.
+    fn area(&self) -> f32 {
+        text_area(1, self.page_height())[3] as f32
     }
 
     fn apply(&mut self, m: Move) {
-        let page = text_area(1, self.page_height())[3] as f32 - self.line();
+        let lines = &self.laid.lines;
+        let first = self.first();
         let to = match m {
-            Move::LineDown => self.top + self.line(),
-            Move::LineUp => self.top - self.line(),
-            Move::PageNext => self.top + page,
-            Move::PagePrev => self.top - page,
+            Move::LineDown => lines.get(first + 1).map(|l| l.y),
+            Move::LineUp => {
+                Some(lines[first.saturating_sub(1).min(lines.len().saturating_sub(1))].y)
+            }
+            // the first line that does not show whole is where the next page starts
+            Move::PageNext => {
+                let fit = lines.partition_point(|l| l.y + l.h <= self.top + self.area() + 0.5);
+                lines.get(fit.max(first + 1)).map(|l| l.y)
+            }
+            // the line a page above the top starts at, at the earliest
+            Move::PagePrev => {
+                let from = lines.partition_point(|l| l.y < self.top - self.area() + 0.5);
+                let at = from.min(first.saturating_sub(1));
+                lines.get(at).map(|l| l.y)
+            }
         };
-        self.set_top(to);
+        match (to, lines.is_empty()) {
+            (Some(y), false) => self.set_top(y),
+            // past the last line: the page goes as low as it can
+            (None, false) if m == Move::LineDown || m == Move::PageNext => self.set_top(f32::MAX),
+            _ => {}
+        }
     }
 
     /// The text a step smaller or larger, still where it was.
-    fn resize(&mut self, step: i32) {
+    fn resize(&mut self, step: i32, now: f64) {
         let size = (self.size as i32 + step).clamp(0, GUIDE_SIZES.len() as i32 - 1) as usize;
+        self.size_at = Some(now);
+        self.stale = true;
         if size != self.size {
             let at = self.fraction();
             self.size = size;
@@ -295,20 +357,7 @@ impl App {
             }
             _ => None,
         };
-        let mut screen = ReaderScreen {
-            name: name.to_string(),
-            key,
-            blocks,
-            adv: Advances::default(),
-            glyphs: Glyphs::default(),
-            laid: Laid::default(),
-            top: -1.0,
-            size,
-            dark,
-            turn,
-            stale: true,
-            held: None,
-        };
+        let mut screen = ReaderScreen::new(name, key, blocks, size, dark, turn);
         screen.lay();
         screen.go_to(kept.unwrap_or(0.0));
         self.reader = Some(screen);
@@ -350,8 +399,8 @@ impl App {
             Action::ShaderNext => screen.rotate(),
             Action::GbaDown(Btn::R1) | Action::ShelfRight => screen.apply(Move::PageNext),
             Action::GbaDown(Btn::L1) | Action::ShelfLeft => screen.apply(Move::PagePrev),
-            Action::GbaDown(Btn::R2) | Action::FfStart => screen.resize(1),
-            Action::GbaDown(Btn::L2) | Action::RewindStart => screen.resize(-1),
+            Action::GbaDown(Btn::R2) | Action::FfStart => screen.resize(1, now),
+            Action::GbaDown(Btn::L2) | Action::RewindStart => screen.resize(-1, now),
             Action::GbaDown(btn @ (Btn::Up | Btn::Down | Btn::Left | Btn::Right)) => {
                 if let Some(m) = move_of(btn, screen.turn) {
                     screen.apply(m);
@@ -373,6 +422,10 @@ impl App {
         let Some(screen) = &mut self.reader else {
             return;
         };
+        if screen.size_at.is_some_and(|at| now - at > SIZE_SHOWN_MS) {
+            screen.size_at = None;
+            screen.stale = true;
+        }
         if let Some((btn, next)) = screen.held {
             if now >= next {
                 if let Some(m) = move_of(btn, screen.turn) {
@@ -402,17 +455,22 @@ impl App {
         } else {
             light()
         };
+        let sized = format!("TEXT SIZE {} / {}", screen.size + 1, GUIDE_SIZES.len());
+        let keys = if screen.size_at.is_some() {
+            sized.as_str()
+        } else if screen.turn == Turn::Upright {
+            KEYS
+        } else {
+            KEYS_TURNED
+        };
         let page = Page {
             title: &screen.name,
-            keys: if screen.turn == Turn::Upright {
-                KEYS
-            } else {
-                KEYS_TURNED
-            },
+            keys,
             ink,
             tabs: &[],
             tab: 0,
             battery,
+            whole_lines: true,
         };
         let (w, h) = screen.turn.page(out_w(), out_h());
         let rgba = render_page(&mut screen.glyphs, &screen.laid, screen.top, &page, w, h);
@@ -490,6 +548,83 @@ mod tests {
         assert_eq!(turned(&rgba, 3, 2, Turn::Upright), rgba);
         assert_eq!(Turn::Clockwise.page(640, 480), (480, 640));
         assert_eq!(Turn::Upright.page(640, 480), (640, 480));
+    }
+
+    fn long_text() -> String {
+        (1..=120)
+            .map(|i| {
+                format!("Line number {i} of a long enough text to fill the page and then some.")
+            })
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    }
+
+    #[test]
+    fn every_move_puts_the_page_on_the_start_of_a_line_and_the_end_on_the_last() {
+        for turn in [Turn::Upright, Turn::Clockwise] {
+            let mut r =
+                ReaderScreen::new("T", String::new(), parse_txt(&long_text()), 2, false, turn);
+            r.lay();
+            r.go_to(0.0);
+            let starts: Vec<f32> = r.laid.lines.iter().map(|l| l.y).collect();
+            let max = max_top(&r.laid, r.page_height());
+            assert!(max > 0.0, "the text is longer than a page");
+            let on_a_line = |top: f32| starts.iter().any(|y| (*y - top).abs() < 1.0) || top == max;
+            let mut seen = Vec::new();
+            for m in [
+                Move::PageNext,
+                Move::LineDown,
+                Move::PageNext,
+                Move::LineDown,
+                Move::PagePrev,
+                Move::LineUp,
+            ] {
+                r.apply(m);
+                assert!(
+                    on_a_line(r.top),
+                    "{turn:?} {m:?}: the top {} is between lines",
+                    r.top
+                );
+                seen.push(r.top);
+            }
+            assert!(seen.windows(2).any(|w| w[0] != w[1]), "the moves move");
+            // to the end and no further: the last page is as low as it goes
+            for _ in 0..400 {
+                r.apply(Move::PageNext);
+            }
+            assert_eq!(r.top, max.round());
+            r.apply(Move::LineDown);
+            assert_eq!(r.top, max.round(), "no further");
+            // and back to the top
+            for _ in 0..400 {
+                r.apply(Move::PagePrev);
+            }
+            assert_eq!(r.top, 0.0);
+        }
+    }
+
+    #[test]
+    fn a_page_never_cuts_a_line_at_its_foot() {
+        let mut r = ReaderScreen::new(
+            "T",
+            String::new(),
+            parse_txt(&long_text()),
+            2,
+            false,
+            Turn::Upright,
+        );
+        r.lay();
+        r.go_to(0.3);
+        let area = r.area();
+        // the lines the page shows whole end inside its area, and the next one does not fit
+        let shown: Vec<_> = r
+            .laid
+            .lines
+            .iter()
+            .filter(|l| l.y >= r.top - 0.5 && l.y + l.h <= r.top + area + 0.5)
+            .collect();
+        assert!(!shown.is_empty());
+        assert!(shown.iter().all(|l| l.y + l.h <= r.top + area + 0.5));
     }
 
     #[test]

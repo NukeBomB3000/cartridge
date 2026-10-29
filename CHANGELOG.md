@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The reader sets the page in whole lines. The line at the top and the foot of a page was drawn
+  half; now the page always begins on the start of a line, a line that would be cut is left for
+  the next page, and every move (a line, a page, back, to the end) lands on a line. A change of
+  the text size (L2 and R2, the same eight sizes as the guide, kept) shows its figure, `TEXT SIZE
+  4 / 8`, in the foot for a moment. Screenshot: `reader-turned.png`.
+- The picture viewer lays nothing over a picture by itself any more: A shows the name and place,
+  and A hides them again.
 - Pictures and books, on shelves of their own after the video's. A folder of pictures under
   `Pictures/` stands as a Polaroid wearing its first picture, the folder's name written on its
   chin; A on a folder with folders goes in and B comes out, and a folder of pictures opens the

@@ -1,6 +1,7 @@
 //! The picture viewer, opened by A on a Polaroid: the folder's pictures one at a time over the
 //! whole canvas. Left and Right (and L1 and R1) turn to the one before and after, Y fits the
-//! picture to the screen or stretches it, A shows its name and place for a few seconds, B closes.
+//! picture to the screen or stretches it, A shows or hides its name and place (nothing is laid
+//! over a picture until A asks), B closes.
 //! Where the folder was left is kept, and a long A on the Polaroid starts again from the first.
 
 use cartridge_input::{Action, Btn};
@@ -9,7 +10,7 @@ use cartridge_store::Platform;
 use cartridge_ui::kit::palette::Palette;
 use cartridge_ui::kit::panel::panel_face;
 use cartridge_ui::kit::row::panel_height;
-use cartridge_ui::{Draw, Millis, UndoFace};
+use cartridge_ui::{Draw, UndoFace};
 
 use crate::app::{App, Phase};
 use crate::list_view::{LegendHint, ListView, RowLabel, RowValue, ViewRow};
@@ -22,16 +23,14 @@ use crate::video_mode::VideoMode;
 pub const WIDTH: u32 = 260;
 /// The panel's title.
 pub const TITLE: &str = "PICTURES";
-/// How long the panel stays up after a press, in milliseconds.
-pub const SHOWN_MS: Millis = 3000;
 
-/// The screen: the folder's pictures, the one showing, and when the panel was last asked for.
+/// The screen: the folder's pictures, the one showing, and whether A has asked for the panel.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ViewScreen {
     pub name: String,
     pub files: Vec<std::path::PathBuf>,
     pub index: usize,
-    pub asked_at: Millis,
+    pub info: bool,
 }
 
 pub fn view_of(screen: &ViewScreen, stretched: bool) -> ListView {
@@ -97,13 +96,12 @@ impl App {
         if let Some(root) = self.root.clone() {
             self.video_mode = crate::video_mode::video_mode_for(&root, Platform::Video);
         }
-        let asked_at = self.now();
         self.go(
             Phase::Pictures(ViewScreen {
                 name: name.to_string(),
                 files,
                 index,
-                asked_at,
+                info: false,
             }),
             Dir::Deeper,
         );
@@ -132,9 +130,14 @@ impl App {
     }
 
     pub(crate) fn pictures_input(&mut self, action: Action) {
-        let now = self.now();
         let step = match action {
             Action::GbaDown(Btn::B) | Action::QuickMenu => return self.close_pictures(),
+            Action::GbaDown(Btn::A) => {
+                if let Phase::Pictures(screen) = &mut self.phase {
+                    screen.info = !screen.info;
+                }
+                0
+            }
             Action::ShelfRight | Action::GbaDown(Btn::Right | Btn::R1) => 1i64,
             Action::ShelfLeft | Action::GbaDown(Btn::Left | Btn::L1) => -1,
             Action::PictureToggle | Action::GbaDown(Btn::Y) => {
@@ -153,7 +156,6 @@ impl App {
         let Phase::Pictures(screen) = &mut self.phase else {
             return;
         };
-        screen.asked_at = now;
         if step == 0 {
             return;
         }
@@ -165,12 +167,13 @@ impl App {
         self.save_picture_place();
     }
 
-    /// The panel's list while it is up: for a few seconds after a press.
+    /// The panel's list while it is up: only while A has asked for it, never by itself.
     pub fn viewer_view(&self) -> Option<ListView> {
         let Phase::Pictures(screen) = &self.phase else {
             return None;
         };
-        (self.now().saturating_sub(screen.asked_at) < SHOWN_MS)
+        screen
+            .info
             .then(|| view_of(screen, self.video_mode == VideoMode::Stretch))
     }
 

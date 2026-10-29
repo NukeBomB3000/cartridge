@@ -265,6 +265,7 @@ fn the_achievements_list_draws_with_its_badges() {
         tabs: &tabs,
         tab: 1,
         battery: Some((72, false)),
+        whole_lines: false,
     };
     let rgba = render_page(&mut Glyphs::default(), &laid, 0.0, &page, w, h);
     let mut png = Vec::new();

@@ -1336,6 +1336,9 @@ pub struct Page<'a> {
     pub tab: usize,
     /// The battery's charge in percent, and whether it is charging, for the corner of the band.
     pub battery: Option<(u8, bool)>,
+    /// Draw only the lines that show whole: a line the page's top or foot cuts is left out, which
+    /// a book wants and a guide scrolled by the pixel does not.
+    pub whole_lines: bool,
 }
 
 /// The guide's text area on a `w` by `h` screen, `[x, y, w, h]` in screen pixels.
@@ -1490,6 +1493,9 @@ pub fn render_page(
         let y = ay as f32 + line.y - top;
         if y >= (ay + ah) as f32 {
             break;
+        }
+        if page.whole_lines && (line.y < top - 0.5 || line.y + line.h > top + ah as f32 + 0.5) {
+            continue;
         }
         if line.rule {
             let mid = (y + line.h / 2.0) as i32;

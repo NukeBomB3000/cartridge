@@ -1005,6 +1005,7 @@ impl App {
             tabs: &tabs,
             tab: screen.tab.index(),
             battery,
+            whole_lines: false,
         };
         Some(render_page(
             &mut screen.glyphs,
