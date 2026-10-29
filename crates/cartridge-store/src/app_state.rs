@@ -285,7 +285,12 @@ fn parse(text: &str) -> Option<AppState> {
             "font" => font = Font::from_key(value),
             "stick_lights" => stick_lights = StickLights::from_key(value),
             "light_colour" => light_colour = light_colour_index(value),
-            "light_level" => light_level = value.parse::<u8>().ok().map(|v| v.clamp(1, LIGHT_LEVEL_MAX)),
+            "light_level" => {
+                light_level = value
+                    .parse::<u8>()
+                    .ok()
+                    .map(|v| v.clamp(1, LIGHT_LEVEL_MAX))
+            }
             "eq" => eq = eq_value(value),
             "eq_hp" => eq_hp = eq_value(value),
             "tv_ghosting" => tv_ghosting = flag(value),

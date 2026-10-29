@@ -4,7 +4,7 @@ use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, nds, snes, snes::SnesShell};
+use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape};
 use crate::silhouette::GbShell;
 
 /// How thick a cart is, as a share of its width: a Game Pak is about 8 mm thick and 57 wide.
@@ -66,10 +66,12 @@ pub enum CartModel {
     Sega8(Sega8Shell),
     /// The Nintendo DS Game Card.
     Nds,
+    /// A compact cassette: a folder of music.
+    Tape,
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 15] = [
+    pub const ALL: [CartModel; 16] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -85,6 +87,7 @@ impl CartModel {
         CartModel::Sega8(Sega8Shell::MasterSystem),
         CartModel::Sega8(Sega8Shell::MarkIii),
         CartModel::Nds,
+        CartModel::Tape,
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -105,6 +108,7 @@ impl CartModel {
             CartModel::Sega8(Sega8Shell::MasterSystem) => 12,
             CartModel::Sega8(Sega8Shell::MarkIii) => 13,
             CartModel::Nds => 14,
+            CartModel::Tape => 15,
         }
     }
 
@@ -116,6 +120,7 @@ impl CartModel {
             CartModel::Disc => disc::THICK,
             CartModel::HuCard => hucard::THICK,
             CartModel::Nds => nds::THICK,
+            CartModel::Tape => tape::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
             CartModel::Sega8(shell) => sega8::thick(shell),
@@ -249,9 +254,19 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::Disc => disc::outline(),
         CartModel::HuCard => hucard::outline(),
         CartModel::Nds => nds::outline(),
+        CartModel::Tape => tape::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
         CartModel::Sega8(shell) => sega8::outline(shell),
+    }
+}
+
+/// The holes through a cart, each a closed contour in drawing units, wound the other way round
+/// from the outline: only the cassette has any, the two hubs'.
+pub fn holes(model: CartModel) -> Vec<Vec<(f32, f32)>> {
+    match model {
+        CartModel::Tape => tape::holes(),
+        _ => Vec::new(),
     }
 }
 
@@ -274,6 +289,7 @@ const BACK_SHADE: f32 = 0.86;
 fn back(
     model: CartModel,
     points: &[(f32, f32)],
+    holes: &[Vec<(f32, f32)>],
     (uw, uh): (f32, f32),
     thick: f32,
 ) -> Vec<MeshVertex> {
@@ -297,12 +313,73 @@ fn back(
         uv,
         shade: BACK_SHADE,
     };
-    let mut out: Vec<MeshVertex> = triangulate(points)
+    let plate = bridged(points, holes);
+    let mut out: Vec<MeshVertex> = triangulate(&plate)
         .into_iter()
-        .flat_map(|[i, j, k]| [vertex(points[i]), vertex(points[j]), vertex(points[k])])
+        .flat_map(|[i, j, k]| [vertex(plate[i]), vertex(plate[j]), vertex(plate[k])])
         .collect();
     out.extend(crate::back::relief(model, uv, (uw, uh), thick, BACK_SHADE));
     out
+}
+
+/// Whether the segments `a`-`b` and `c`-`d` cross each other, strictly: touching at an end does
+/// not count.
+fn crosses(a: (f32, f32), b: (f32, f32), c: (f32, f32), d: (f32, f32)) -> bool {
+    let side = |p: (f32, f32), q: (f32, f32), r: (f32, f32)| {
+        (q.0 - p.0) * (r.1 - p.1) - (q.1 - p.1) * (r.0 - p.0)
+    };
+    let (d1, d2) = (side(a, b, c), side(a, b, d));
+    let (d3, d4) = (side(c, d, a), side(c, d, b));
+    ((d1 > 1e-4 && d2 < -1e-4) || (d1 < -1e-4 && d2 > 1e-4))
+        && ((d3 > 1e-4 && d4 < -1e-4) || (d3 < -1e-4 && d4 > 1e-4))
+}
+
+/// `outline` with each of `holes` joined to it by a bridge: one polygon that touches itself along
+/// the bridges, the shape [`triangulate`] cuts into ears. Each bridge is the shortest segment
+/// between a point of a hole and a point of the polygon so far that crosses no edge of either or
+/// of a hole still to be joined, so it lies in the plate.
+fn bridged(outline: &[(f32, f32)], holes: &[Vec<(f32, f32)>]) -> Vec<(f32, f32)> {
+    let mut poly = outline.to_vec();
+    let mut pending: Vec<&Vec<(f32, f32)>> = holes.iter().filter(|h| h.len() >= 3).collect();
+    let dist = |p: (f32, f32), q: (f32, f32)| (p.0 - q.0).powi(2) + (p.1 - q.1).powi(2);
+    while !pending.is_empty() {
+        let mut best: Option<(f32, usize, usize, usize)> = None;
+        for (hole_at, hole) in pending.iter().enumerate() {
+            for (hi, &h) in hole.iter().enumerate() {
+                for (pi, &p) in poly.iter().enumerate() {
+                    let d = dist(h, p);
+                    if best.is_some_and(|(b, ..)| d >= b) {
+                        continue;
+                    }
+                    let in_the_way = |edges: &[(f32, f32)]| {
+                        (0..edges.len()).any(|i| {
+                            let (c, e) = (edges[i], edges[(i + 1) % edges.len()]);
+                            crosses(h, p, c, e)
+                        })
+                    };
+                    if in_the_way(&poly) || pending.iter().any(|other| in_the_way(other)) {
+                        continue;
+                    }
+                    best = Some((d, hole_at, hi, pi));
+                }
+            }
+        }
+        let Some((_, hole_at, hi, pi)) = best else {
+            // no free bridge: the hole stays out of the plate rather than spoil it
+            pending.remove(0);
+            continue;
+        };
+        let hole = pending.remove(hole_at);
+        let mut joined = Vec::with_capacity(poly.len() + hole.len() + 2);
+        joined.extend_from_slice(&poly[..=pi]);
+        for j in 0..=hole.len() {
+            joined.push(hole[(hi + j) % hole.len()]);
+        }
+        joined.push(poly[pi]);
+        joined.extend_from_slice(&poly[pi + 1..]);
+        poly = joined;
+    }
+    poly
 }
 
 fn edge_len((a, b): ((f32, f32), (f32, f32))) -> f32 {
@@ -335,6 +412,7 @@ fn triangulate(points: &[(f32, f32)]) -> Vec<[usize; 3]> {
                 && rest
                     .iter()
                     .filter(|&&k| k != p && k != q && k != r)
+                    .filter(|&&k| ![a, b, c].contains(&points[k]))
                     .all(|&k| !inside(points[k], a, b, c))
         });
         // a polygon with no ear left is degenerate: take what is there
@@ -348,16 +426,10 @@ fn triangulate(points: &[(f32, f32)]) -> Vec<[usize; 3]> {
     out
 }
 
-/// A cart in few polygons: its face, the whole texture laid over a few cells, whose outline
-/// the texture's own alpha cuts; and its sides, one flat polygon for each cut of its outline
-/// `points` (in drawing units, the drawing `uw` by `uh`), back to `thick`, each taking its
-/// colour from the face just inside its edge. Sides come first, so the face covers them.
-pub(crate) fn extruded(
-    model: CartModel,
-    points: &[(f32, f32)],
-    (uw, uh): (f32, f32),
-    thick: f32,
-) -> Vec<MeshVertex> {
+/// The sides round one contour of a cart, `points` in drawing units (the drawing `uw` by `uh`):
+/// a flat polygon for each cut of it, from the face back to `thick`, each taking its colour
+/// from the face just inside its edge, which is on the far side of the wall from where it faces.
+fn walls(points: &[(f32, f32)], (uw, uh): (f32, f32), thick: f32) -> Vec<MeshVertex> {
     let mut out = Vec::new();
     for (i, &a) in points.iter().enumerate() {
         let b = points[(i + 1) % points.len()];
@@ -386,7 +458,25 @@ pub(crate) fn extruded(
         );
         out.extend([a0, b0, b1, a0, b1, a1]);
     }
-    out.extend(back(model, points, (uw, uh), thick));
+    out
+}
+
+/// A cart in few polygons: its face, the whole texture laid over a few cells, whose outline
+/// the texture's own alpha cuts; and its sides, one flat polygon for each cut of its outline
+/// `points` (in drawing units, the drawing `uw` by `uh`), back to `thick`, each taking its
+/// colour from the face just inside its edge. Sides come first, so the face covers them.
+pub(crate) fn extruded(
+    model: CartModel,
+    points: &[(f32, f32)],
+    (uw, uh): (f32, f32),
+    thick: f32,
+) -> Vec<MeshVertex> {
+    let mut out = Vec::new();
+    let holes = holes(model);
+    for contour in std::iter::once(points).chain(holes.iter().map(Vec::as_slice)) {
+        out.extend(walls(contour, (uw, uh), thick));
+    }
+    out.extend(back(model, points, &holes, (uw, uh), thick));
     let (cols, rows) = FACE_CELLS;
     let at = |c: usize, r: usize| {
         let (u, v) = (c as f32 / cols as f32, r as f32 / rows as f32);
@@ -645,5 +735,52 @@ mod tests {
                 );
             }
         }
+    }
+
+    fn shoelace(points: &[(f32, f32)]) -> f32 {
+        (0..points.len())
+            .map(|i| {
+                let (a, b) = (points[i], points[(i + 1) % points.len()]);
+                a.0 * b.1 - b.0 * a.1
+            })
+            .sum::<f32>()
+            / 2.0
+    }
+
+    /// The cassette's holes go through it: its back is the outline less the holes, and each
+    /// hole has a wall all the way round, from the face back to the back.
+    #[test]
+    fn the_cassette_back_leaves_the_hub_holes_open() {
+        let model = CartModel::Tape;
+        let (outline, (uw, uh)) = outline(model);
+        let holes = holes(model);
+        assert_eq!(holes.len(), 6);
+        let want = shoelace(&outline).abs() - holes.iter().map(|h| shoelace(h).abs()).sum::<f32>();
+        let thick = model.thick();
+        let mesh = cart_mesh(model);
+        let plate: f32 = mesh
+            .chunks_exact(3)
+            .filter(|t| {
+                t.iter()
+                    .all(|v| (v.xyz[2] - thick).abs() < 1e-6 && v.normal[2] == 1.0)
+            })
+            .map(|t| {
+                let p: Vec<(f32, f32)> = t.iter().map(|v| (v.xyz[0] * uw, v.xyz[1] * uh)).collect();
+                shoelace(&p).abs()
+            })
+            .sum();
+        assert!(
+            (plate - want).abs() / want < 0.01,
+            "the back plate is {plate}, the outline less its holes {want}"
+        );
+        // every hole has as many wall slices as it has cuts, two triangles to each
+        let walls = mesh
+            .chunks_exact(3)
+            .filter(|t| t.iter().all(|v| v.normal[2] == 0.0))
+            .count();
+        assert_eq!(
+            walls,
+            2 * (outline.len() + holes.iter().map(Vec::len).sum::<usize>())
+        );
     }
 }

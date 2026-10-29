@@ -14,6 +14,7 @@ pub mod info;
 pub mod keyboard;
 pub mod labels;
 pub mod lone;
+pub mod music;
 pub mod network;
 pub mod power;
 pub mod settings;

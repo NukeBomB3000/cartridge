@@ -437,6 +437,10 @@ pub struct App {
     pub(crate) state_autosave_at: Millis,
     pub(crate) pending_save: Option<std::thread::JoinHandle<()>>,
     pub(crate) battery_at: Millis,
+    /// The folders open on the Music shelf, from `Music/` down, and the tape each was entered
+    /// from.
+    pub(crate) music_path: Vec<String>,
+    pub(crate) music_back: Vec<usize>,
     hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
@@ -631,6 +635,8 @@ impl App {
             state_autosave_at: STATE_AUTOSAVE_MS,
             pending_save: None,
             battery_at: BATTERY_POLL_MS,
+            music_path: Vec::new(),
+            music_back: Vec::new(),
             hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,
@@ -658,6 +664,7 @@ impl App {
         if app.focus.is_some() {
             app.lay_out_shelves();
         }
+        app.fill_music(0);
         app.wifi.start(app.state.wifi);
         app.ssh.start(app.state.ssh, Some(root));
         app.bluetooth.start(app.state.bluetooth);
@@ -781,7 +788,8 @@ impl App {
 
     /// The ROM of the cart the shelf rests on, while the shelf is what shows.
     pub fn browsed_rom(&self) -> Option<&std::path::Path> {
-        if !matches!(self.phase, Phase::Shelf) {
+        // a tape's ROM is a folder: nothing to read ahead
+        if !matches!(self.phase, Phase::Shelf) || self.on_music_shelf() {
             return None;
         }
         let shelf = self.shelf();
@@ -1675,6 +1683,7 @@ impl App {
             Phase::Shelf => match action {
                 Action::GbaDown(Btn::X) if self.core_picker.is_none() => self.open_core_picker(),
                 Action::GbaDown(Btn::Y) if self.core_picker.is_none() => self.open_shell_screen(),
+                Action::GbaDown(Btn::B) if self.on_music_shelf() => self.leave_tape(),
                 _ if self.core_picker.is_some() => self.core_picker_input(action),
                 // START is the settings button on the shelf; MENU opens nothing here
                 Action::GbaDown(Btn::Start) => self.open_settings(),
@@ -2893,6 +2902,9 @@ impl App {
         if !self.on_shelf() || self.start_notice_shown() {
             return;
         }
+        if self.on_music_shelf() {
+            return self.open_tape();
+        }
         let Some(cart) = self
             .shelf()
             .carts
@@ -3853,6 +3865,9 @@ impl App {
         self.shelf_platform = cartridge_ui::Printed::default();
         self.pill_letter = None;
         self.faces_stale = true;
+        self.music_path.clear();
+        self.music_back.clear();
+        self.fill_music(0);
     }
 
     /// Starts picking Five Games' games on the shelf, with every system's carts on it and the
@@ -3924,7 +3939,7 @@ impl App {
 }
 
 /// A shelf of the launcher's own: its carts do tricks as well as sway.
-fn playful(mut shelf: Shelf) -> Shelf {
+pub(crate) fn playful(mut shelf: Shelf) -> Shelf {
     shelf.set_playful(true);
     shelf
 }

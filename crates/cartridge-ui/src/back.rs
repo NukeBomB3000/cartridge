@@ -109,6 +109,15 @@ fn shapes(model: CartModel) -> Vec<Shape> {
             all.extend(print(0.19, 0.3, 0.08, &[0.5, 0.34, 0.42]));
             all.extend(ridges(0.12, 0.88, 0.8, 0.04, 3));
         }
+        CartModel::Tape => {
+            // clear of the holes, which go through to the back: the hubs' and the foot's
+            all.push(Rect([0.1, 0.1, 0.9, 0.36], RECESS, 1));
+            all.extend(print(0.16, 0.14, 0.07, &[0.5, 0.36]));
+            all.extend(screw(0.033, 0.042, 0.018));
+            all.extend(screw(0.967, 0.042, 0.018));
+            all.extend(screw(0.03, 0.93, 0.018));
+            all.extend(screw(0.97, 0.93, 0.018));
+        }
         CartModel::Disc => {}
     }
     all

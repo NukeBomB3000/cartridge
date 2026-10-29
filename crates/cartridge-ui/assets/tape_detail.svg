@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 214">
+  <!-- the shell's edge is rounded over: its left and top catch the light, its right and bottom turn away -->
+  <rect x="0" y="8" width="2" height="198" fill="#fff" fill-opacity="0.4"/>
+  <rect x="8" y="0" width="320" height="2" fill="#fff" fill-opacity="0.35"/>
+  <rect x="334" y="8" width="2" height="198" fill="#000" fill-opacity="0.4"/>
+  <rect x="8" y="212" width="320" height="2" fill="#000" fill-opacity="0.3"/>
+  <!-- the head's trapezoid across the foot: a step out of the face, lit along its top and left, shaded on its right -->
+  <polygon points="60,172 260,172 270,207 50,207" fill="#000" fill-opacity="0.16"/>
+  <polygon points="60,172 260,172 260,174 60,174" fill="#fff" fill-opacity="0.4"/>
+  <polygon points="60,172 62,172 52,207 50,207" fill="#fff" fill-opacity="0.3"/>
+  <polygon points="258,172 260,172 270,207 268,207" fill="#000" fill-opacity="0.35"/>
+  <rect x="142" y="186" width="52" height="18" fill="#000" fill-opacity="0.22"/>
+  <rect x="142" y="186" width="52" height="1.4" fill="#000" fill-opacity="0.3"/>
+  <rect x="142" y="202.6" width="52" height="1.4" fill="#fff" fill-opacity="0.3"/>
+  <!-- the corners' and the middle screw's wells -->
+  <circle cx="11" cy="9" r="6" fill="#000" fill-opacity="0.3"/>
+  <circle cx="325" cy="9" r="6" fill="#000" fill-opacity="0.3"/>
+  <circle cx="10" cy="199" r="6" fill="#000" fill-opacity="0.3"/>
+  <circle cx="326" cy="199" r="6" fill="#000" fill-opacity="0.3"/>
+  <circle cx="165" cy="181" r="5" fill="#000" fill-opacity="0.3"/>
+  <!-- the label's paper stands a little proud of the shell: a lit lip along its top, a shadow under its foot -->
+  <rect x="22" y="12" width="288" height="1.4" fill="#000" fill-opacity="0.3"/>
+  <rect x="22" y="169" width="288" height="1.6" fill="#000" fill-opacity="0.32"/>
+</svg>

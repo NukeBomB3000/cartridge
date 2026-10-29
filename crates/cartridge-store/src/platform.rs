@@ -15,10 +15,13 @@ pub enum Platform {
     Sms,
     /// The Nintendo DS, on DSperate: both its screens laid out in one picture by the core.
     Nds,
+    /// Music, on tapes: not games, so no core runs them; the folders of `Music/` stand on this
+    /// shelf and its player plays what is in them.
+    Music,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 11] = [
+    pub const ALL: [Platform; 12] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -30,6 +33,7 @@ impl Platform {
         Platform::Gg,
         Platform::Sms,
         Platform::Nds,
+        Platform::Music,
     ];
 
     pub fn name(self) -> &'static str {
@@ -45,6 +49,7 @@ impl Platform {
             Platform::Gg => "Game Gear",
             Platform::Sms => "Master System",
             Platform::Nds => "Nintendo DS",
+            Platform::Music => "Music",
         }
     }
 
@@ -61,6 +66,7 @@ impl Platform {
             Platform::Gg => "GG",
             Platform::Sms => "SMS",
             Platform::Nds => "NDS",
+            Platform::Music => "Music",
         }
     }
 
@@ -76,6 +82,7 @@ impl Platform {
             Platform::Gg => &["gg"],
             Platform::Sms => &["sms"],
             Platform::Nds => &["nds"],
+            Platform::Music => crate::music::EXTENSIONS,
         }
     }
 
@@ -92,6 +99,8 @@ impl Platform {
             Platform::Sms => (256, 192),
             // the top screen half again as big over the bottom one, as DSperate lays them out
             Platform::Nds => (384, 480),
+            // no picture: the player draws its own screen
+            Platform::Music => (320, 240),
         }
     }
 
@@ -139,6 +148,8 @@ impl Platform {
             Platform::Gba => Some(1_200_000),
             // DSperate barely keeps up at the top clock: 54 to 60 fps in NSMB and Mario Kart
             Platform::Snes | Platform::Ps1 | Platform::Nds => None,
+            // decoding a song takes a fraction of a core
+            Platform::Music => Some(720_000),
         }
     }
 

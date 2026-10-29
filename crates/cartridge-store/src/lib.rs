@@ -6,12 +6,12 @@ mod config;
 mod core;
 mod focus;
 mod font;
-mod stick_lights;
 pub mod gb;
 mod gb_palette;
 mod gba;
 pub mod ini;
 pub mod md;
+pub mod music;
 pub mod nds;
 mod platform;
 pub mod ps1;
@@ -20,6 +20,7 @@ mod ring;
 mod scan;
 pub mod snes;
 mod stamp;
+mod stick_lights;
 mod theme;
 mod title;
 
@@ -39,7 +40,6 @@ pub use core::{
 };
 pub use focus::{read_focus, write_focus, FOCUS_FILE, FOCUS_MAX};
 pub use font::Font;
-pub use stick_lights::{light_colour_index, StickLights, LIGHT_COLOURS, LIGHT_LEVEL_MAX};
 pub use gb_palette::{GbColors, GbPalette};
 pub use gba::{header_clean, header_code, header_title};
 pub use platform::Platform;
@@ -49,5 +49,6 @@ pub use scan::{initial, is_hidden, scan, sort_key, Cart, StoreError};
 pub use stamp::{
     civil_from_days, days_from_civil, days_in_month, format_stamp, parse_stamp, stamp_now,
 };
+pub use stick_lights::{light_colour_index, StickLights, LIGHT_COLOURS, LIGHT_LEVEL_MAX};
 pub use theme::{Theme, THEME_FILE};
 pub use title::{clean_title, TITLE_MAX};

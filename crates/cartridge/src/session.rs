@@ -584,7 +584,9 @@ impl Session {
             | Platform::Nes
             | Platform::Md
             | Platform::Sms
-            | Platform::Nds => Setup::Console,
+            | Platform::Nds
+            // never started as a game: the music has a player of its own
+            | Platform::Music => Setup::Console,
             // the Game Gear has no cable or palette here, only its LCD's ghosting
             Platform::Gg => Setup::Handheld {
                 serial: "auto",

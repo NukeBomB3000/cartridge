@@ -7,7 +7,7 @@ use crate::label_cut::label_art;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, nds, snes, snes::SnesShell};
+use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape};
 use crate::shell::{shell_for, Finish, Shell};
 use crate::silhouette::{
     cart_depth, cart_mask, detail_mask, gb_cart_depth, gb_cart_mask, gb_detail_mask, Detail,
@@ -116,7 +116,8 @@ pub fn gb_shell_of(cart: &Cart) -> Option<GbShell> {
         | Platform::Md
         | Platform::Gg
         | Platform::Sms
-        | Platform::Nds => None,
+        | Platform::Nds
+        | Platform::Music => None,
         Platform::Gb | Platform::Gbc => Some(match cart.shell.map(|c| c.outline) {
             Some(Outline::Notched) => GbShell::Notched,
             Some(Outline::Rounded) => GbShell::Rounded,
@@ -143,6 +144,7 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
         Platform::Sms => CartModel::Sega8(sega8::master_system_shell_of(cart)),
         Platform::Nds => CartModel::Nds,
+        Platform::Music => CartModel::Tape,
     }
 }
 
@@ -164,6 +166,7 @@ pub(crate) fn spec(model: CartModel) -> Spec {
         CartModel::Disc => disc::spec(),
         CartModel::HuCard => hucard::spec(),
         CartModel::Nds => nds::spec(),
+        CartModel::Tape => tape::spec(),
         CartModel::Nes(shell) => nes::spec(shell),
         CartModel::Md(shell) => md::spec(shell),
         CartModel::Sega8(shell) => sega8::spec(shell),
@@ -216,6 +219,7 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
         Platform::Md => md::face_box(MdShell::MegaDrive),
         Platform::Gg => sega8::face_box(Sega8Shell::GameGear),
         Platform::Nds => (nds::W, nds::H),
+        Platform::Music => (tape::W, tape::H),
         Platform::Sms => sega8::face_box(Sega8Shell::MasterSystem),
         Platform::Nes => nes::face_box(NesShell::Nes),
         Platform::Pce => (hucard::W, hucard::H),
@@ -238,6 +242,7 @@ pub fn cart_box(platform: Platform) -> (u32, u32) {
         Platform::Md => CartModel::Md(MdShell::MegaDrive),
         Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
         Platform::Nds => CartModel::Nds,
+        Platform::Music => CartModel::Tape,
         Platform::Sms => CartModel::Sega8(Sega8Shell::MasterSystem),
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(NesShell::Nes),
@@ -288,6 +293,7 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Nds => platform == Platform::Nds,
+            CartModel::Tape => platform == Platform::Music,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),
             CartModel::Snes(_) => platform == Platform::Snes,
             CartModel::Disc => platform == Platform::Ps1,
@@ -328,11 +334,16 @@ fn face_of(cart: &Cart, scans: bool) -> CartFace {
     let scan = cart.label.as_deref().filter(|_| scans);
     let label = match scan.and_then(|p| label_art(p, lw, lh)) {
         Some(rgba) => rgba,
+        None if model == CartModel::Tape => tape_label(&s, &label_text(cart)),
+        None if model == CartModel::Tape => tape_label(&s, &label_text(cart)),
         None => generated_label(&s, &label_text(cart)),
     };
     mould_detail(&s, &mut face);
     recess_label(&s, &mut face, &shell);
     paste_label(&s, &mut face, &label);
+    if model == CartModel::Tape {
+        tape::paint(&mut face, label_colour(&label_text(cart)));
+    }
     clip_to_silhouette(&s, &mut face);
     face
 }
@@ -663,6 +674,52 @@ fn generated_label(s: &Spec, title: &str) -> Vec<u8> {
         };
         paint(shadow, (SHADOW, SHADOW), 153);
         paint(ink, (0, 0), 255);
+    }
+    rgba
+}
+
+/// A cassette's writing strip: white paper with the folder's name written across it, in as big
+/// a hand as the strip holds, on up to two lines, over two faint rules.
+fn tape_label(s: &Spec, title: &str) -> Vec<u8> {
+    const PAPER: [u8; 3] = [0xf3, 0xf1, 0xea];
+    const INK: [u8; 3] = [0x1c, 0x1a, 0x22];
+    const SIDE: u32 = 8;
+    let (_, _, lw, lh) = s.label;
+    let mut rgba = Vec::with_capacity((lw * lh * 4) as usize);
+    for y in 0..lh {
+        // a little lighter at the top, as the other labels are lit
+        let k = 8 - y as i32 * 12 / lh.max(1) as i32;
+        let c = PAPER.map(|c| (c as i32 + k).clamp(0, 255) as u8);
+        for _ in 0..lw {
+            rgba.extend_from_slice(&[c[0], c[1], c[2], 255]);
+        }
+    }
+    // the rules a writing strip is printed with
+    for y in [lh / 3, 2 * lh / 3] {
+        for x in SIDE..lw - SIDE {
+            let i = ((y * lw + x) * 4) as usize;
+            for c in 0..3 {
+                rgba[i + c] = (rgba[i + c] as u32 * 88 / 100) as u8;
+            }
+        }
+    }
+    if let Some(font) = text::label_font() {
+        let layout = text::fit_box(
+            font,
+            title,
+            (lw - 2 * SIDE) as f32,
+            (lh - 6) as f32,
+            2,
+            32.0,
+            14.0,
+        );
+        let cover = embolden(&text::coverage(lw, lh, &layout), lw as usize);
+        for (px, a) in rgba.chunks_exact_mut(4).zip(cover) {
+            let a = a as u32;
+            for c in 0..3 {
+                px[c] = ((INK[c] as u32 * a + px[c] as u32 * (255 - a)) / 255) as u8;
+            }
+        }
     }
     rgba
 }

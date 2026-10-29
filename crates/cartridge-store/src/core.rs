@@ -139,11 +139,16 @@ impl Core {
             Platform::Nes => &[Core::Fceumm],
             Platform::Md | Platform::Gg | Platform::Sms => &[Core::GenesisPlusGx],
             Platform::Nds => &[Core::Dsperate],
+            // songs are decoded by the player, not by a core
+            Platform::Music => &[],
         }
     }
 
     pub fn default_for(platform: Platform) -> Core {
-        Core::for_platform(platform)[0]
+        Core::for_platform(platform)
+            .first()
+            .copied()
+            .unwrap_or_default()
     }
 }
 

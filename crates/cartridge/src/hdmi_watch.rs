@@ -28,7 +28,10 @@ pub struct Hotplug {
 
 /// Whether the extcon state says a cable is in: `HDMI=1`.
 pub fn cable_in(state: &str) -> bool {
-    state.trim().strip_prefix("HDMI=").is_some_and(|v| v.trim() == "1")
+    state
+        .trim()
+        .strip_prefix("HDMI=")
+        .is_some_and(|v| v.trim() == "1")
 }
 
 impl Default for Hotplug {

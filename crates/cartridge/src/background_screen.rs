@@ -251,8 +251,8 @@ impl BackgroundScreen {
             Sel::LightColour => ViewRow {
                 label: RowLabel::Setting("Light Colour"),
                 value: Some(RowValue::Choice(
-                    LIGHT_COLOURS[(lights.unwrap_or_default().colour as usize)
-                        .min(LIGHT_COLOURS.len() - 1)]
+                    LIGHT_COLOURS
+                        [(lights.unwrap_or_default().colour as usize).min(LIGHT_COLOURS.len() - 1)]
                     .1,
                 )),
                 dim: !Self::lit(Sel::LightColour, lights),

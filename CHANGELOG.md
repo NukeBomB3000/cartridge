@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Music on tapes. The folders of `Music/` stand on a new Music shelf, after the last system, as
+  compact cassettes in 3D: black plastic, a white writing strip with the folder's name, a
+  coloured band with the window, the hubs as real holes through the shell (as are the four in the
+  head's trapezoid), guide rollers and five screws, after a photo of a Denon DX1. On a tape whose
+  folder has folders in it A goes into it, the shelf then showing those, and B comes back out;
+  a folder with only songs in it is a tape to play (the player itself comes next). Y gives a
+  tape its colour, clear or glitter plastic as it does a game. Screenshot: `music-tape-shelf.png`.
 - HDMI out on the H700 handhelds' mini HDMI port (tested on an RG40XX H with a monitor): with a
   cable in as cartridge starts, `System/hdmi.sh` switches the display engine to the HDMI
   transmitter (1080p60) before the frontend comes up, and cartridge then draws a 960x540 canvas

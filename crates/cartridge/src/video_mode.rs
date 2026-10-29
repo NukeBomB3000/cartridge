@@ -181,6 +181,7 @@ pub fn screen_on_frame(
         | Platform::Nes
         | Platform::Md
         | Platform::Sms
+        | Platform::Music
         | Platform::Nds => {
             let h = (cw * SRC_H as f32 / SRC_W as f32).round();
             let view = GameView {

@@ -66,6 +66,9 @@ pub const GENESIS_SHELL: Shell = shell([0x2a, 0x2a, 0x2d], Finish::Solid);
 pub const GAME_GEAR_SHELL: Shell = shell([0x26, 0x26, 0x29], Finish::Solid);
 pub const MASTER_SYSTEM_SHELL: Shell = shell([0x1e, 0x1e, 0x21], Finish::Solid);
 /// The DS Game Card, in its dark grey.
+/// A cassette's plastic: black and solid to start with, as a tape bought new; the shelf's colour
+/// screen can make it clear, which a Denon one is.
+pub const TAPE_SHELL: Shell = shell([0x1e, 0x1f, 0x23], Finish::Solid);
 pub const NDS_SHELL: Shell = shell([0x3a, 0x3b, 0x40], Finish::Solid);
 
 /// The NES Game Pak, in its grey.
@@ -138,6 +141,7 @@ pub fn shell_for(cart: &Cart) -> Shell {
         },
         Platform::Gg => GAME_GEAR_SHELL,
         Platform::Nds => NDS_SHELL,
+        Platform::Music => TAPE_SHELL,
         Platform::Sms => MASTER_SYSTEM_SHELL,
         Platform::Nes => match crate::models::nes::shell_of(cart) {
             NesShell::Nes => NES_SHELL,

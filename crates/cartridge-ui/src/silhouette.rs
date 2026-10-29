@@ -213,6 +213,24 @@ pub(crate) fn rasterise_detail(svg: &str, w: u32, h: u32) -> Option<Detail> {
     Some(Detail { shadow, highlight })
 }
 
+/// `svg` drawn `w` by `h` as straight (not premultiplied) RGBA.
+pub(crate) fn rasterise_rgba(svg: &str, w: u32, h: u32) -> Option<Vec<u8>> {
+    let px = render(svg, w, h)?;
+    let mut out = Vec::with_capacity((w * h * 4) as usize);
+    for p in px.data().chunks_exact(4) {
+        let a = p[3] as u32;
+        let un = |c: u8| {
+            if a == 0 {
+                0
+            } else {
+                ((c as u32 * 255 + a / 2) / a).min(255) as u8
+            }
+        };
+        out.extend_from_slice(&[un(p[0]), un(p[1]), un(p[2]), p[3]]);
+    }
+    Some(out)
+}
+
 pub(crate) fn rasterise_svg(svg: &str, w: u32, h: u32) -> Option<Vec<u8>> {
     let px = render(svg, w, h)?;
     Some(px.data().iter().skip(3).step_by(4).copied().collect())

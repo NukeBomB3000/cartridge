@@ -1,8 +1,8 @@
 use cartridge_store::{Cart, Platform};
 use cartridge_ui::{
-    cart_mesh, gb_silhouette, outline, posed_face, push_cart_side, silhouette, snes_silhouette,
-    CartMeshes, CartModel, Draw, GbShell, MeshId, Pose, Shelf, SnesShell, TexId, ACTIVE_SCALE,
-    CART_H, OUTLINE_INSET, THICK,
+    cart_mesh, gb_silhouette, holes, outline, posed_face, push_cart_side, silhouette,
+    snes_silhouette, CartMeshes, CartModel, Draw, GbShell, MeshId, Pose, Shelf, SnesShell, TexId,
+    ACTIVE_SCALE, CART_H, OUTLINE_INSET, THICK,
 };
 
 const DT: f32 = 1.0 / 60.0;
@@ -533,15 +533,19 @@ fn every_model_has_a_back_as_big_as_its_face_outline() {
             continue;
         }
         let (points, (uw, uh)) = outline(model);
-        let shoelace: f32 = (0..points.len())
-            .map(|i| {
-                let (a, b) = (points[i], points[(i + 1) % points.len()]);
-                a.0 * b.1 - b.0 * a.1
-            })
-            .sum::<f32>()
-            .abs()
-            / 2.0
-            / (uw * uh);
+        let area = |points: &[(f32, f32)]| -> f32 {
+            (0..points.len())
+                .map(|i| {
+                    let (a, b) = (points[i], points[(i + 1) % points.len()]);
+                    a.0 * b.1 - b.0 * a.1
+                })
+                .sum::<f32>()
+                .abs()
+                / 2.0
+        };
+        // the back has its holes through it, which are no part of it
+        let shoelace =
+            (area(&points) - holes(model).iter().map(|h| area(h)).sum::<f32>()) / (uw * uh);
         assert!(
             (back - shoelace).abs() < 0.002,
             "{model:?}: the back covers {back} of the drawing, its outline {shoelace}"

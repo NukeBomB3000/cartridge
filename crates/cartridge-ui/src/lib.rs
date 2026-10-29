@@ -113,7 +113,7 @@ pub use shell::{
 };
 pub use silhouette::{gb_silhouette, silhouette, GbShell};
 pub use spin::{
-    cart_mesh, outline, posed_cart, posed_face, push_cart_side, CartMeshes, CartModel, Pose,
+    cart_mesh, holes, outline, posed_cart, posed_face, push_cart_side, CartMeshes, CartModel, Pose,
     OUTLINE_INSET, THICK,
 };
 pub use sprite::{CELL, CELL_PX, SPRITE_PX};

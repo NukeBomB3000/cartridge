@@ -13,6 +13,7 @@ mod gb;
 mod gba;
 mod ini;
 mod md;
+mod music;
 mod platform;
 mod ps1;
 mod ps1_scan;
