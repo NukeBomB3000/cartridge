@@ -191,7 +191,10 @@ impl Session {
     }
 
     pub fn frame(&self) -> Option<FrameRef> {
-        self.emu.as_ref().and_then(|e| e.latest_frame())
+        self.emu
+            .as_ref()
+            .and_then(|e| e.latest_frame())
+            .or_else(|| self.app.video_frame())
     }
 
     pub fn core_settling(&self) -> bool {
@@ -389,8 +392,9 @@ impl Session {
                 self.act(action);
             }
         }
-        self.app
-            .set_game_ready(self.emu.as_ref().is_some_and(EmuHandle::has_published));
+        self.app.set_game_ready(
+            self.emu.as_ref().is_some_and(EmuHandle::has_published) || self.app.video_published(),
+        );
         self.sync_speed();
         self.sync_rewind_hud();
         self.sync_ff_hud();

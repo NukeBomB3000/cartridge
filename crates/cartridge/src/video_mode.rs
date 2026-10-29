@@ -148,6 +148,9 @@ pub fn screen_on_frame(
     mode: VideoMode,
     frame: (u32, u32),
 ) -> Screen {
+    if platform == Platform::Video {
+        return video_screen(c, mode, frame);
+    }
     if is_console(platform) {
         return console_screen(c, platform, mode, frame);
     }
@@ -204,6 +207,30 @@ pub fn screen_on_frame(
                 bands: around(c, whole),
             }
         }
+    }
+}
+
+/// A video on canvas `c`: its picture as large as the canvas holds in its own shape, in the
+/// middle with black round it, or stretched over all of the canvas.
+fn video_screen(c: Canvas, mode: VideoMode, frame: (u32, u32)) -> Screen {
+    let (cw, ch) = (c.w as f32, c.h as f32);
+    let (fw, fh) = (frame.0.max(1) as f32, frame.1.max(1) as f32);
+    let rect = if mode == VideoMode::Stretch {
+        [0.0, 0.0, cw, ch]
+    } else {
+        let scale = (cw / fw).min(ch / fh);
+        let (w, h) = ((fw * scale).round(), (fh * scale).round());
+        [((cw - w) / 2.0).round(), ((ch - h) / 2.0).round(), w, h]
+    };
+    let view = GameView {
+        rect,
+        uv: WHOLE_TEXTURE,
+        filter: Filter::Sharp,
+    };
+    Screen {
+        view,
+        still: view,
+        bands: Vec::new(),
     }
 }
 

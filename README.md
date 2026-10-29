@@ -215,8 +215,10 @@ Every change is in the [changelog](CHANGELOG.md).
   ScreenScraper, one for each disc of a PlayStation game.
 - Bluetooth, on handhelds that have it: pair a device and connect it, or forget it. Game sound and
   gamepads over Bluetooth are still to come.
-- Music: the folders of `Music/` as cassette tapes on a shelf of their own; A goes into a folder or
-  plays the songs in it, B comes back out.
+- Music and video: the folders of `Music/` stand as cassette tapes and those of `Videos/` as VHS
+  tapes, on shelves of their own; A goes into a folder or plays what is in it, B comes back out. A
+  film or an album goes on where it was left; a long A starts again. Videos are decoded by
+  `System/ffmpeg`, FFmpeg built from its own source (LGPL, `scripts/build-ffmpeg.sh`).
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take
   (Night is grey, Amber is Mega Man Zero's own), the bottom bar's font, Bold or Thin, and, on the
   RG40XX and the CubeXX, how the stick lights glow: off, in the theme's colour following the display's brightness, or in a colour and brightness of their own.

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- A video player. A on a VHS tape plays the video (a folder of videos plays from the one that was
+  picked on, and L1 and R1 go to the one before and after). The picture is decoded by FFmpeg,
+  scaled to the screen, and the sound is the clock the picture is shown by. MP4, MKV, AVI, MOV,
+  WebM, TS and MPEG, H.264, HEVC, MPEG-4, VP8 and VP9 with AAC, MP3, AC3, FLAC, Vorbis or Opus.
+  Measured on the RG40XX H: a 1080p30 H.264 video decodes at 2.2 times its own speed, using about
+  40% of the four cores, and drops two frames in three hundred. A pauses and plays, Left and
+  Right jump ten seconds, Up and Down a minute, X picks the next sound track, Y fits the picture
+  to the screen or stretches it, B stops. A panel with the name and place shows while paused and
+  for a few seconds after a press. `System/ffmpeg` is FFmpeg 7.1.5 built from its own source,
+  LGPL, no GPL parts: `scripts/build-ffmpeg.sh` checks the source's signature and builds it.
+  Screenshot: `video-player.png`.
+- Where a film or an album was left is kept (`Config/media_resume.ini`) and a short A goes on from
+  there; a long A (as for a game) starts again from the beginning. A film that was all but
+  watched starts again of itself.
 - A long name no longer gets cut. On the shelf the name under the carts scrolls through the row
   when it is wider than it: it waits, runs to its end, waits there and starts over. The labels of
   the tapes and the VHS cassettes set a long name on a finer grid, down to nine pixels, so the

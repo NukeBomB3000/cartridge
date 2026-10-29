@@ -374,7 +374,8 @@ pub fn label_colour(title: &str) -> [u8; 3] {
 }
 
 pub fn label_text(cart: &Cart) -> String {
-    clean_label(&cart.stem)
+    // a video's file name, or a folder's, spells its words with underscores
+    clean_label(&cart.stem.replace('_', " "))
 }
 
 pub fn clean_label(stem: &str) -> String {

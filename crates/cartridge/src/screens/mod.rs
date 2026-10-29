@@ -22,3 +22,4 @@ pub mod settings;
 pub mod shelf;
 pub mod sleep;
 pub mod ssh;
+pub mod video_play;

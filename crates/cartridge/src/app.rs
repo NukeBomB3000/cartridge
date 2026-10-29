@@ -286,6 +286,8 @@ pub enum Phase {
     Sleep(SleepScreen),
     /// The music player, opened by A on a tape of songs.
     Music(crate::screens::music_play::MusicScreen),
+    /// The video player, opened by A on a VHS tape.
+    Video(crate::screens::video_play::VideoScreen),
     Doze {
         cart: Option<String>,
     },
@@ -452,6 +454,12 @@ pub struct App {
     pub(crate) music_panel: Option<Lone>,
     /// The screen is dimmed and the stick lights are off, the player having stood unused.
     pub(crate) music_dim: bool,
+    /// The line the tape that plays is kept under, and when its place was last written.
+    pub(crate) music_key: Option<String>,
+    pub(crate) media_saved_at: Millis,
+    /// The video that plays, if any, the panel over it, and how its picture is laid on the screen.
+    pub(crate) video: Option<crate::video_player::Player>,
+    pub(crate) video_panel: Option<Lone>,
     hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
@@ -653,6 +661,10 @@ impl App {
             audio_ring: None,
             music_panel: None,
             music_dim: false,
+            music_key: None,
+            media_saved_at: 0,
+            video: None,
+            video_panel: None,
             hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,
@@ -1756,6 +1768,7 @@ impl App {
             Phase::Equalizer(_) => self.equalizer_input(action),
             Phase::Sleep(_) => self.sleep_input(action),
             Phase::Music(_) => self.music_input(action),
+            Phase::Video(_) => self.video_input(action),
             _ => {}
         }
     }
@@ -2277,7 +2290,10 @@ impl App {
     }
 
     fn step_screen(&mut self, dt: f32) {
-        let lit = matches!(self.phase, Phase::Playing { .. } | Phase::Polaroids { .. });
+        let lit = matches!(
+            self.phase,
+            Phase::Playing { .. } | Phase::Polaroids { .. } | Phase::Video(_)
+        );
         let step = if lit {
             dt / POWER_ON_S
         } else {
@@ -2323,6 +2339,7 @@ impl App {
             self.autosave();
         }
         self.tick_music();
+        self.tick_video();
         if !self.shutting_down() && self.hotplug.poll(self.now()) {
             self.restart_for_cable();
         }
@@ -2586,6 +2603,7 @@ impl App {
             Phase::Equalizer(_) => self.draw_equalizer_screen(out),
             Phase::Sleep(_) => self.draw_sleep_screen(out),
             Phase::Music(_) => self.draw_music_screen(out),
+            Phase::Video(_) => self.draw_video_screen(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
             Phase::Cheevos(_) if typing_of(phase).is_none() => self.draw_cheevos(out),
             // the modal and its panels stand over the backdrop, with nothing between
@@ -2924,7 +2942,8 @@ impl App {
             return;
         }
         if self.on_media_shelf() {
-            return self.open_tape();
+            self.play_held = None;
+            return self.open_tape(clean);
         }
         let Some(cart) = self
             .shelf()
@@ -3522,7 +3541,7 @@ impl App {
         }
         // the music player, playing or paused, keeps the handheld awake as a game does: it
         // dims the screen instead
-        if matches!(self.phase, Phase::Music(_)) {
+        if matches!(self.phase, Phase::Music(_) | Phase::Video(_)) {
             return false;
         }
         if matches!(self.phase, Phase::Doze { .. } | Phase::SetClock { .. }) || self.power.is_none()

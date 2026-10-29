@@ -78,8 +78,9 @@ pub struct Status {
 }
 
 impl Player {
-    /// Starts playing `songs` from the first into `ring`, at `volume`.
-    pub fn start(ring: Arc<Ring>, songs: Vec<PathBuf>, volume: u8) -> Player {
+    /// Starts playing `songs` into `ring`, at `volume`, from the song `start.0` and its
+    /// millisecond `start.1`.
+    pub fn start(ring: Arc<Ring>, songs: Vec<PathBuf>, volume: u8, start: (usize, u64)) -> Player {
         let (tx, rx) = channel();
         let shared = Arc::new(Shared {
             index: AtomicUsize::new(0),
@@ -95,7 +96,7 @@ impl Player {
             let shared = shared.clone();
             std::thread::Builder::new()
                 .name("cartridge-music".into())
-                .spawn(move || run(&ring, &songs, &shared, &rx))
+                .spawn(move || run(&ring, &songs, &shared, &rx, start))
                 .ok()
         };
         Player { tx, shared, thread }
@@ -288,8 +289,11 @@ enum Next {
     Stop,
 }
 
-fn run(ring: &Ring, songs: &[PathBuf], shared: &Shared, rx: &Receiver<Cmd>) {
-    let mut at = 0usize;
+fn run(ring: &Ring, songs: &[PathBuf], shared: &Shared, rx: &Receiver<Cmd>, start: (usize, u64)) {
+    let mut at = if start.0 < songs.len() { start.0 } else { 0 };
+    let mut resume = (start.0 < songs.len())
+        .then_some(start.1)
+        .filter(|ms| *ms > 0);
     while at < songs.len() {
         shared.index.store(at, Ordering::Relaxed);
         shared.pos_ms.store(0, Ordering::Relaxed);
@@ -301,6 +305,13 @@ fn run(ring: &Ring, songs: &[PathBuf], shared: &Shared, rx: &Receiver<Cmd>) {
             *title = track.title.clone();
         }
         shared.dur_ms.store(track.dur_ms, Ordering::Relaxed);
+        // the first song goes on from where it was left
+        if let Some(ms) = resume.take() {
+            if track.dur_ms == 0 || ms + 5_000 < track.dur_ms {
+                track.seek_to(ms);
+                shared.pos_ms.store(track.pos_ms, Ordering::Relaxed);
+            }
+        }
         match play_track(ring, &mut track, shared, rx, at, songs.len()) {
             Next::Stop => return,
             Next::Go(to) => at = to,
@@ -472,7 +483,7 @@ mod tests {
             .collect();
         let ring = Arc::new(Ring::new(crate::audio::ring_capacity(48000)));
         ring.reopen(48000);
-        let player = Player::start(ring.clone(), songs, 100);
+        let player = Player::start(ring.clone(), songs, 100, (0, 0));
         let wait = |what: &str, mut done: Box<dyn FnMut() -> bool>| {
             for _ in 0..400 {
                 if done() {

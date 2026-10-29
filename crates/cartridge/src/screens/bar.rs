@@ -148,7 +148,7 @@ pub fn actions_on(phase: &Phase) -> Option<Actions> {
         | Phase::SetClock { .. }
         | Phase::About => Some(Actions::Menu),
         Phase::Polaroids { .. } => Some(Actions::Switcher),
-        Phase::Playing { .. } | Phase::Doze { .. } => None,
+        Phase::Playing { .. } | Phase::Video(_) | Phase::Doze { .. } => None,
     }
 }
 

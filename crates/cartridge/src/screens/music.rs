@@ -88,8 +88,9 @@ impl App {
         }
     }
 
-    /// A on a tape: its folder is opened, or its files are played.
-    pub(crate) fn open_tape(&mut self) {
+    /// A on a tape: its folder is opened, or its files are played, from where they were left,
+    /// or from the first with a long A (`clean`).
+    pub(crate) fn open_tape(&mut self, clean: bool) {
         let Some(kind) = self.shelf_kind() else {
             return;
         };
@@ -98,8 +99,8 @@ impl App {
         };
         if media::plays(kind, &cart.rom) {
             match kind {
-                Kind::Music => self.play_tape(&cart.stem, &cart.rom),
-                Kind::Video => self.play_video(&cart.stem, &cart.rom),
+                Kind::Music => self.play_tape(&cart.stem, &cart.rom, clean),
+                Kind::Video => self.play_video(&cart.stem, &cart.rom, clean),
             }
             return;
         }
@@ -121,7 +122,4 @@ impl App {
         let at = self.media_back[n].pop().unwrap_or(0);
         self.fill_media(kind, at);
     }
-
-    /// A on a tape of videos: the player comes next.
-    fn play_video(&mut self, _name: &str, _folder: &std::path::Path) {}
 }

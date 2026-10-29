@@ -49,6 +49,7 @@ mod sync_sleep;
 mod sync_start_notice;
 mod sync_switcher;
 mod sync_top_bar;
+mod sync_video;
 
 use lone::Baked;
 use sync_about::sync_about;
@@ -77,6 +78,7 @@ use sync_sleep::sync_sleep;
 use sync_start_notice::sync_start_notice;
 use sync_switcher::{sync_switcher, Switcher};
 use sync_top_bar::{sync_top_bar, TopBarTexes};
+use sync_video::sync_video;
 
 const DOZE_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -127,6 +129,7 @@ pub struct Frontend {
     equalizer: Baked<(crate::equalizer_screen::EqView, u8)>,
     sleep: Baked<(ListView, u8)>,
     music: Baked<(ListView, u8)>,
+    video: Baked<(ListView, u8)>,
     core_options: Baked<(String, ListView, u8)>,
     shell: Baked<(ListView, u8)>,
     /// The POWER menu's panel and the one shown after its choice.
@@ -224,6 +227,7 @@ impl Frontend {
             equalizer: Baked::default(),
             sleep: Baked::default(),
             music: Baked::default(),
+            video: Baked::default(),
             core_options: Baked::default(),
             shell: Baked::default(),
             power: PowerPanels::default(),
@@ -424,6 +428,7 @@ impl Frontend {
         sync_equalizer(self.session.app_mut(), compositor, &mut self.equalizer);
         sync_sleep(self.session.app_mut(), compositor, &mut self.sleep);
         sync_music(self.session.app_mut(), compositor, &mut self.music);
+        sync_video(self.session.app_mut(), compositor, &mut self.video);
         sync_core_options(self.session.app_mut(), compositor, &mut self.core_options);
         sync_shell(self.session.app_mut(), compositor, &mut self.shell);
         sync_power(self.session.app_mut(), compositor, &mut self.power);

@@ -21,6 +21,9 @@ pub const MUSIC_DIM_MS: cartridge_ui::Millis = 30_000;
 /// How many times dimmer the screen is then: its brightness step divided by this.
 const DIM_DIVISOR: u8 = 4;
 
+/// How often the place in the tape is written, in milliseconds.
+const SAVE_PLACE_MS: cartridge_ui::Millis = 5_000;
+
 /// How wide the panel is, in art pixels.
 pub const WIDTH: u32 = 300;
 
@@ -82,7 +85,7 @@ impl App {
     }
 
     /// Starts the songs of `folder` playing, under the name `tape`, and opens the screen.
-    pub(crate) fn play_tape(&mut self, tape: &str, folder: &std::path::Path) {
+    pub(crate) fn play_tape(&mut self, tape: &str, folder: &std::path::Path, clean: bool) {
         let Some(ring) = self.audio_ring.clone() else {
             return;
         };
@@ -90,7 +93,20 @@ impl App {
         if songs.is_empty() {
             return;
         }
-        self.music = Some(Player::start(ring, songs, self.output_volume()));
+        // from where the tape was left, unless a long A asked for the first song
+        let key = self
+            .root
+            .as_ref()
+            .map(|root| crate::media_resume::key(root, folder));
+        let start = match (&self.root, &key) {
+            (Some(root), Some(key)) if !clean => {
+                crate::media_resume::read(root, key).unwrap_or((0, 0))
+            }
+            _ => (0, 0),
+        };
+        self.music_key = key;
+        self.media_saved_at = self.now();
+        self.music = Some(Player::start(ring, songs, self.output_volume(), start));
         self.go(
             Phase::Music(MusicScreen {
                 tape: tape.to_string(),
@@ -101,6 +117,7 @@ impl App {
 
     /// Stops the music and puts the tape back on the shelf.
     fn stop_tape(&mut self) {
+        self.save_music_place();
         self.music = None;
         self.go(Phase::Shelf, Dir::Back);
     }
@@ -138,6 +155,21 @@ impl App {
         }
     }
 
+    /// Writes the song the tape is at and how far into it, or forgets the place of a tape that
+    /// has played out.
+    fn save_music_place(&mut self) {
+        let (Some(root), Some(key), Some(player)) = (&self.root, &self.music_key, &self.music)
+        else {
+            return;
+        };
+        let status = player.status();
+        if status.ended {
+            crate::media_resume::clear(root, key);
+        } else {
+            crate::media_resume::write(root, key, status.number - 1, status.pos_ms);
+        }
+    }
+
     /// Per tick: the song's volume follows the handheld's, and a tape that has played out goes
     /// back to the shelf.
     pub(crate) fn tick_music(&mut self) {
@@ -152,6 +184,10 @@ impl App {
         // press, or leaving the player, brings both back
         let idle = matches!(self.phase, Phase::Music(_))
             && self.now().saturating_sub(self.last_input_at) >= MUSIC_DIM_MS;
+        if self.music.is_some() && self.now().saturating_sub(self.media_saved_at) >= SAVE_PLACE_MS {
+            self.media_saved_at = self.now();
+            self.save_music_place();
+        }
         if idle != self.music_dim {
             self.music_dim = idle;
             self.dim_for_music(idle);
