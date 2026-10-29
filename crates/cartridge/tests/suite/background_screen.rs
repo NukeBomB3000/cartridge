@@ -469,3 +469,38 @@ fn a_still_picture_pattern_is_drawn_rather_than_the_colour_alone() {
         );
     }
 }
+
+#[test]
+fn stick_lights_are_a_row_only_where_the_handheld_has_them() {
+    use cartridge::background_screen::{BackgroundScreen, Outcome};
+    use cartridge_input::{Action, Btn};
+    use cartridge_store::{BackdropStyle, Font, StickLights};
+
+    let look = Backdrop {
+        style: BackdropStyle::Grid,
+        moving: true,
+        colour: 0,
+    };
+    let screen = BackgroundScreen::default();
+    assert_eq!(screen.view(look, Font::Bold, None).rows.len(), 4);
+    let with = screen.view(look, Font::Bold, Some(StickLights::Off));
+    assert_eq!(with.rows.len(), 5);
+
+    let mut screen = BackgroundScreen { sel: Sel::Lights };
+    let out = screen.input(
+        look,
+        Font::Bold,
+        Some(StickLights::Off),
+        false,
+        Action::GbaDown(Btn::Right),
+    );
+    assert_eq!(out, Outcome::Lights(StickLights::Colour));
+    let out = screen.input(
+        look,
+        Font::Bold,
+        Some(StickLights::Off),
+        false,
+        Action::GbaDown(Btn::Left),
+    );
+    assert_eq!(out, Outcome::Lights(StickLights::Rainbow));
+}

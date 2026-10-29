@@ -4,6 +4,7 @@
 //! the next frame; a new font redraws the bar's actions under it in that frame too.
 
 use cartridge_input::Action;
+use cartridge_store::StickLights;
 use cartridge_ui::kit::palette::Palette;
 use cartridge_ui::kit::panel::panel_face;
 use cartridge_ui::kit::row::panel_height;
@@ -31,11 +32,16 @@ pub fn background_face(view: &ListView, pal: &Palette) -> UndoFace {
 
 impl App {
     pub(crate) fn background_input(&mut self, action: Action) {
-        let (look, font, wallpaper) = (self.backdrop(), self.state.font, self.wallpaper.is_some());
+        let (look, font, lights, wallpaper) = (
+            self.backdrop(),
+            self.state.font,
+            self.has_stick_lights().then_some(self.state.stick_lights),
+            self.wallpaper.is_some(),
+        );
         let Phase::Background(screen) = &mut self.phase else {
             return;
         };
-        match screen.input(look, font, wallpaper, action) {
+        match screen.input(look, font, lights, wallpaper, action) {
             BackgroundOutcome::Close => self.go(
                 Phase::Settings {
                     row: SettingsRow::Background,
@@ -47,10 +53,16 @@ impl App {
                 self.state.backdrop_moving = b.moving;
                 self.state.backdrop_colour = b.colour;
                 self.persist();
+                self.glow_sticks();
             }
             BackgroundOutcome::Font(font) => {
                 self.state.font = font;
                 self.persist();
+            }
+            BackgroundOutcome::Lights(lights) => {
+                self.state.stick_lights = lights;
+                self.persist();
+                self.glow_sticks();
             }
             BackgroundOutcome::Stay => {}
         }
@@ -59,9 +71,56 @@ impl App {
     /// The THEME screen's list, while it is open.
     pub fn background_view(&self) -> Option<ListView> {
         match &self.phase {
-            Phase::Background(screen) => Some(screen.view(self.backdrop(), self.state.font)),
+            Phase::Background(screen) => Some(screen.view(
+                self.backdrop(),
+                self.state.font,
+                self.has_stick_lights().then_some(self.state.stick_lights),
+            )),
             _ => None,
         }
+    }
+
+    /// The handheld has lights in its sticks: the card carries the script that drives them, and
+    /// BaseOS says it is a model that has them. Anywhere else the row is left out.
+    pub fn has_stick_lights(&self) -> bool {
+        let Some(root) = &self.root else {
+            return false;
+        };
+        root.join("System/rgb.sh").exists()
+            && std::fs::read_to_string("/etc/baseos-release").is_ok_and(|text| {
+                ["rg40xxh", "rg40xxv", "rgcubexx"]
+                    .iter()
+                    .any(|t| text.contains(&format!("BASEOS_TARGET={t}")))
+            })
+    }
+
+    /// Sets the sticks' lights to what the card remembers: `System/rgb.sh` does it, on a
+    /// thread of its own as it waits on the lights' controller. A card without the script, and
+    /// a handheld without lights, do nothing.
+    pub(crate) fn glow_sticks(&self) {
+        let Some(root) = &self.root else {
+            return;
+        };
+        if !self.has_stick_lights() {
+            return;
+        }
+        let script = root.join("System/rgb.sh");
+        let [r, g, b] = cartridge_ui::backdrop_rgb(self.state.backdrop_colour);
+        let [r, g, b] = [r.to_string(), g.to_string(), b.to_string()];
+        let mut cmd = std::process::Command::new("/bin/sh");
+        cmd.arg(script);
+        match self.state.stick_lights {
+            StickLights::Off => cmd.arg("off"),
+            StickLights::Colour => cmd.args(["solid", &r, &g, &b, "40"]),
+            StickLights::Breathe => cmd.args(["breath", "slow", &r, &g, &b, "40"]),
+            StickLights::Rainbow => cmd.args(["rainbow", "40"]),
+        };
+        cmd.stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null());
+        std::thread::spawn(move || {
+            let _ = cmd.status();
+        });
     }
 
     pub fn set_background_panel(&mut self, panel: Lone) {

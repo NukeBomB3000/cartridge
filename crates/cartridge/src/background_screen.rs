@@ -2,7 +2,7 @@
 //! as it is changed, and the font the bar's actions write their words in.
 
 use cartridge_input::{Action, Btn};
-use cartridge_store::{BackdropStyle, Font, BACKDROP_COLOURS};
+use cartridge_store::{BackdropStyle, Font, StickLights, BACKDROP_COLOURS};
 use cartridge_ui::backdrop_colour_name;
 
 use crate::list_view::{LegendHint, ListView, RowLabel, RowValue, ViewRow};
@@ -44,11 +44,13 @@ pub enum Sel {
     Motion,
     Colour,
     Font,
+    /// The analog sticks' lights, on a handheld that has them.
+    Lights,
 }
 
 impl Sel {
     /// The panel's rows, top to bottom.
-    pub const ALL: [Sel; 4] = [Sel::Style, Sel::Motion, Sel::Colour, Sel::Font];
+    pub const ALL: [Sel; 5] = [Sel::Style, Sel::Motion, Sel::Colour, Sel::Font, Sel::Lights];
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -68,6 +70,7 @@ pub enum Outcome {
     Close,
     Changed(Backdrop),
     Font(Font),
+    Lights(StickLights),
 }
 
 /// The styles a card offers: the wallpaper only where there is one.
@@ -94,17 +97,17 @@ impl BackgroundScreen {
     /// Every style has a use for the font, which is the bar's.
     fn applies(look: Backdrop, sel: Sel) -> bool {
         match sel {
-            Sel::Style | Sel::Font => true,
+            Sel::Style | Sel::Font | Sel::Lights => true,
             Sel::Motion => look.style.moves(),
             Sel::Colour => look.style.coloured(),
         }
     }
 
     /// The rows the cursor can stand on for this style.
-    fn rows(look: Backdrop) -> Vec<Sel> {
+    fn rows(look: Backdrop, lights: Option<StickLights>) -> Vec<Sel> {
         Sel::ALL
             .into_iter()
-            .filter(|sel| Self::applies(look, *sel))
+            .filter(|sel| Self::applies(look, *sel) && (*sel != Sel::Lights || lights.is_some()))
             .collect()
     }
 
@@ -112,10 +115,11 @@ impl BackgroundScreen {
         &mut self,
         look: Backdrop,
         font: Font,
+        lights: Option<StickLights>,
         wallpaper: bool,
         action: Action,
     ) -> Outcome {
-        let rows = Self::rows(look);
+        let rows = Self::rows(look, lights);
         if !rows.contains(&self.sel) {
             self.sel = Sel::Style;
         }
@@ -142,12 +146,20 @@ impl BackgroundScreen {
                 next.colour = step(&colours, look.colour, forward);
             }
             Sel::Font => return Outcome::Font(step(&Font::ALL, font, forward)),
+            Sel::Lights => {
+                let lights = lights.unwrap_or_default();
+                return Outcome::Lights(step(&StickLights::ALL, lights, forward));
+            }
         }
         Outcome::Changed(next)
     }
 
-    pub fn view(&self, look: Backdrop, font: Font) -> ListView {
-        let at = Sel::ALL.iter().position(|r| *r == self.sel).unwrap_or(0);
+    pub fn view(&self, look: Backdrop, font: Font, lights: Option<StickLights>) -> ListView {
+        let shown: Vec<Sel> = Sel::ALL
+            .into_iter()
+            .filter(|sel| *sel != Sel::Lights || lights.is_some())
+            .collect();
+        let at = shown.iter().position(|r| *r == self.sel).unwrap_or(0);
         let row = |sel: &Sel| match sel {
             Sel::Style => ViewRow {
                 label: RowLabel::Setting("Background"),
@@ -173,10 +185,15 @@ impl BackgroundScreen {
                 value: Some(RowValue::Choice(font.label())),
                 dim: false,
             },
+            Sel::Lights => ViewRow {
+                label: RowLabel::Setting("Stick Lights"),
+                value: Some(RowValue::Choice(lights.unwrap_or_default().label())),
+                dim: false,
+            },
         };
         // the panel holds its rows and nothing under them, as flow.html draws it
         ListView {
-            rows: Sel::ALL.iter().map(row).collect(),
+            rows: shown.iter().map(row).collect(),
             lit: Some(at),
             status: Vec::new(),
             legend: vec![LegendHint::Back, LegendHint::Change],

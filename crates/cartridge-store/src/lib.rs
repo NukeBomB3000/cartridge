@@ -6,6 +6,7 @@ mod config;
 mod core;
 mod focus;
 mod font;
+mod stick_lights;
 pub mod gb;
 mod gb_palette;
 mod gba;
@@ -38,6 +39,7 @@ pub use core::{
 };
 pub use focus::{read_focus, write_focus, FOCUS_FILE, FOCUS_MAX};
 pub use font::Font;
+pub use stick_lights::StickLights;
 pub use gb_palette::{GbColors, GbPalette};
 pub use gba::{header_clean, header_code, header_title};
 pub use platform::Platform;

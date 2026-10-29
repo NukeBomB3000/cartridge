@@ -659,6 +659,7 @@ impl App {
         app.wifi.start(app.state.wifi);
         app.ssh.start(app.state.ssh, Some(root));
         app.bluetooth.start(app.state.bluetooth);
+        app.glow_sticks();
         app.labels = Labels::new(label_jobs(root), Account::load(root));
         if let Some(fell) = persist::take_starting(root) {
             eprintln!("cartridge: {fell} took cartridge down as it started; it is not resumed");

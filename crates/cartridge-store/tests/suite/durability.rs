@@ -219,6 +219,7 @@ fn a_card_from_before_the_settings_keeps_all_its_values() {
             eq: [0; 5],
             eq_hp: [0; 5],
             tv_ghosting: false,
+            stick_lights: cartridge_store::StickLights::Off,
         }
     );
 }

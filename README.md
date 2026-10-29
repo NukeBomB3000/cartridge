@@ -216,6 +216,7 @@ Every change is in the [changelog](CHANGELOG.md).
 - Bluetooth, on handhelds that have it: pair a device and connect it, or forget it. Game sound and
   gamepads over Bluetooth are still to come.
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take
+  (and, on the RG40XX and the CubeXX, how the stick lights glow: off, steady, breathing or rainbow)
   (Night is grey, Amber is Mega Man Zero's own), and the bottom bar's font, Bold or Thin.
 - On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
 - A pixel font, a top bar with the radios, the trophy, the clock and the battery, and a bottom bar

@@ -142,6 +142,7 @@ fn background_view(colour: u8) -> cartridge::list_view::ListView {
             colour,
         },
         Font::Bold,
+        None,
     )
 }
 
@@ -449,6 +450,7 @@ fn the_theme_panel_keeps_its_four_rows() {
             colour: 0,
         },
         Font::Thin,
+        None,
     );
     assert_eq!(view.rows.len(), 4);
     assert!(view.rows[1].dim, "Solid does not move");
