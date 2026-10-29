@@ -201,7 +201,7 @@ Every change is in the [changelog](CHANGELOG.md).
 
 **In the game**
 - A short MENU press opens the game menu over the game, in three tabs that L1 and R1 turn between:
-  the game's guide (`GUIDES/<system>/<game>.txt` or `.html`, with paging, scrolling and eight
+  the game's guide (`Guides/<system>/<game>.txt` or `.html`, with paging, scrolling and eight
   text sizes, reopened where it was left), its RetroAchievements, and the settings: what the
   hotkeys change and the options of the core that runs the game.
 - A tap of SELECT opens CONTROLS: what every button does, on the shelf and in a game, on one

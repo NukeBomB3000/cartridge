@@ -1,6 +1,6 @@
 //! The game menu a short MENU press opens over a game, in three tabs that L1 and R1 turn
 //! between: the game's guide, the game's achievements and the settings. The guide is a
-//! walkthrough the player keeps in GUIDES/<system>/ named as the game is, TXT or HTML, read over
+//! walkthrough the player keeps in Guides/<system>/ named as the game is, TXT or HTML, read over
 //! the paused game. Left and Right turn a page, Up and Down move a line and keep moving while held,
 //! L2 and R2 make the text smaller or larger, X goes on to the game's next guide when it has
 //! several (kept in a folder named as the game), and B or MENU close it. The settings tab is a
@@ -28,7 +28,7 @@ use cartridge_ui::{clean_label, SettingsRow};
 use crate::app::App;
 
 /// The folder on the card the guides are kept in, a folder for each system under it.
-pub const GUIDES_DIR: &str = "GUIDES";
+pub const GUIDES_DIR: &str = "Guides";
 const MARKS_FILE: &str = "guides.txt";
 
 /// How long Up or Down is held before the guide keeps moving, and how often it moves then.
@@ -118,7 +118,7 @@ fn heading(text: &str, src: usize) -> Block {
     }
 }
 
-/// Where the player was in each guide, by its path under GUIDES, and the size they read at.
+/// Where the player was in each guide, by its path under Guides, and the size they read at.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct GuideMarks {
     pub size: Option<usize>,
@@ -476,18 +476,18 @@ impl App {
             heading(&format!("No guide for {game}"), 0),
             para("Put a walkthrough on the card as a TXT or HTML file named just like the game:", 1),
             Block::Item {
-                words: words(&format!("GUIDES/{dir}/{stem}.txt"), true, 2),
+                words: words(&format!("Guides/{dir}/{stem}.txt"), true, 2),
                 indent: 0,
                 mark: "-".to_string(),
             },
             Block::Item {
-                words: words(&format!("GUIDES/{dir}/{stem}.html"), true, 3),
+                words: words(&format!("Guides/{dir}/{stem}.html"), true, 3),
                 indent: 0,
                 mark: "-".to_string(),
             },
             para(
                 &format!(
-                    "Several guides for one game go in a folder with that name, GUIDES/{dir}/{stem}/. Capitals, brackets and punctuation in the name do not matter."
+                    "Several guides for one game go in a folder with that name, Guides/{dir}/{stem}/. Capitals, brackets and punctuation in the name do not matter."
                 ),
                 4,
             ),

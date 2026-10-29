@@ -1,4 +1,4 @@
-//! The game guide a short MENU press opens over a game: found in GUIDES/<system> by the game's
+//! The game guide a short MENU press opens over a game: found in Guides/<system> by the game's
 //! name, held paused under it, paged, scrolled and sized, closed with B or MENU, and opened
 //! again where it was left, even after the next boot.
 
@@ -17,7 +17,7 @@ const GAME: &str = "Golden Sun - Die Vergessene Epoche";
 fn card(with_guide: bool) -> TempDir {
     let d = root_with_games(Platform::Gba, &[GAME]);
     if with_guide {
-        let dir = d.path().join("GUIDES/GBA");
+        let dir = d.path().join("Guides/GBA");
         std::fs::create_dir_all(&dir).unwrap();
         let text: String = (0..400)
             .map(|i| {
@@ -97,7 +97,7 @@ fn a_game_with_no_guide_still_opens_the_menu_and_says_so() {
     // and says what the file is to be called: the game's name as the card has it
     let hint = a.guide().unwrap().text_of_tab();
     assert!(
-        hint.contains(&format!("GUIDES/GBA/{GAME}.txt")),
+        hint.contains(&format!("Guides/GBA/{GAME}.txt")),
         "the hint does not name the file: {hint}"
     );
 }

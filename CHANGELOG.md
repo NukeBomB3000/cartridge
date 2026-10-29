@@ -85,7 +85,7 @@
 - An earned achievement buzzes the motor for 120 ms as its panel comes up, in a game too, and
   not with Rumble off in Settings.
 - A game with no guide says what its file is to be called, as the card has the game's name:
-  `GUIDES/GB/Adventure Island.txt` or `.html`, or a folder of that name for several
+  `Guides/GB/Adventure Island.txt` or `.html`, or a folder of that name for several
   (`screenshots/game-menu-no-guide.png`). RetroAchievements' own warning about an unknown
   emulator is no longer listed among a game's achievements.
 - A game held under the game menu right after it started no longer leaves the note that it took
@@ -197,7 +197,7 @@
   start), with a new logo on the boot screen. Copy the new `System/` over the old one; the old
   `System/omega-zero` can be deleted.
 - Game guides: a short MENU press in a game opens its walkthrough over the paused game, from
-  `GUIDES/<system>/<game>.txt` (or `.html`/`.htm`), matched by name with brackets and case left
+  `Guides/<system>/<game>.txt` (or `.html`/`.htm`), matched by name with brackets and case left
   out; several guides go in a folder named as the game, X steps through them. L1/R1 or
   Left/Right turn a page, Up/Down scroll and keep scrolling while held, L2/R2 make the text
   smaller or larger (8 sizes), B or MENU close it. A double MENU press still opens the save

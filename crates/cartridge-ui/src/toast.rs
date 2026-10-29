@@ -50,7 +50,7 @@ pub enum Toast {
     /// Picking Five Games' games: a sixth asked for, or START with none.
     PickAtMost,
     PickAtLeast,
-    /// A short MENU press in a game with no guide in GUIDES for it.
+    /// A short MENU press in a game with no guide in Guides for it.
     NoGuide,
 }
 
