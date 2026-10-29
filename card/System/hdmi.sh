@@ -55,6 +55,8 @@ fb_size() {
 	fbset -fb /dev/fb0 -g 0 0 0 0 32 2>/dev/null
 	sleep 0.25
 	fbset -fb /dev/fb0 -g "$1" "$2" "$1" "$(($2 * 2))" 32 2>/dev/null
+	# the pan offset of the old size (the LCD's 480) is not a page of the new one
+	echo 0,0 > "$FB/pan" 2>/dev/null
 }
 
 wait_for() {

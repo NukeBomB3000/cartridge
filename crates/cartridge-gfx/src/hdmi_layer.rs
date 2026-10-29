@@ -176,19 +176,20 @@ pub fn settle() {
         return;
     }
     let hdmi = std::fs::read_to_string(ATTR_SYS).is_ok_and(|text| hdmi_active(&text));
-    let Some(fb) = page_size() else {
+    let Some((fb, on_a_page)) = page_size() else {
         return;
     };
     let win = window_on(fb, hdmi);
-    if current_layer().is_some_and(|config| layer_fits(&config, fb, win)) {
+    if on_a_page && current_layer().is_some_and(|config| layer_fits(&config, fb, win)) {
         return;
     }
     zero_pan();
     commit_layer(fb, win);
 }
 
-/// One page of fb0, as its geometry says.
-fn page_size() -> Option<(u32, u32)> {
+/// One page of fb0, as its geometry says, and whether the pan offset stands on a page: the
+/// LCD's 480 left over in a 540-high framebuffer tears the picture across two of them.
+fn page_size() -> Option<((u32, u32), bool)> {
     // SAFETY: a plain ioctl on a descriptor opened and closed here, into a 160-byte
     // fb_var_screeninfo buffer as the kernel's struct is
     unsafe {
@@ -199,7 +200,10 @@ fn page_size() -> Option<(u32, u32)> {
         let mut var = [0u32; 40];
         let got = ioctl(fd, FBIOGET_VSCREENINFO, var.as_mut_ptr() as *mut c_void);
         close(fd);
-        (got == 0 && var[X_RES] > 0 && var[Y_RES] > 0).then_some((var[X_RES], var[Y_RES]))
+        (got == 0 && var[X_RES] > 0 && var[Y_RES] > 0).then_some((
+            (var[X_RES], var[Y_RES]),
+            var[X_OFFSET] == 0 && var[Y_OFFSET] % var[Y_RES] == 0,
+        ))
     }
 }
 
