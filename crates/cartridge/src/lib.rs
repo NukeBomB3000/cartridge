@@ -37,6 +37,7 @@ pub mod list_view;
 pub mod nav;
 pub mod opening;
 pub mod pacing;
+pub mod music_player;
 pub mod persist;
 pub mod prefetch;
 pub mod resample;

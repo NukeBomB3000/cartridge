@@ -82,9 +82,4 @@ impl App {
         let at = self.music_back.pop().unwrap_or(0);
         self.fill_music(at);
     }
-
-    /// The tape's songs, played in the order they are listed in.
-    fn play_tape(&mut self, _name: &str, _folder: &std::path::Path) {
-        // the player comes next: for now the tape is only opened
-    }
 }

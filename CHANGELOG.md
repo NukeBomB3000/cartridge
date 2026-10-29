@@ -2,23 +2,18 @@
 
 ## Unreleased
 
-- Music on tapes. The folders of `Music/` stand on a new Music shelf, after the last system, as
-  compact cassettes in 3D: black plastic, a white writing strip with the folder's name, a
-  coloured band with the window, the hubs as real holes through the shell (as are the four in the
-  head's trapezoid), guide rollers and five screws, after a photo of a Denon DX1. On a tape whose
-  folder has folders in it A goes into it, the shelf then showing those, and B comes back out;
-  a folder with only songs in it is a tape to play (the player itself comes next). Y gives a
-  tape its colour, clear or glitter plastic as it does a game. Screenshot: `music-tape-shelf.png`.
-- HDMI out on the H700 handhelds' mini HDMI port (tested on an RG40XX H with a monitor): with a
-  cable in as cartridge starts, `System/hdmi.sh` switches the display engine to the HDMI
-  transmitter (1080p60) before the frontend comes up, and cartridge then draws a 960x540 canvas
-  1:1 that the engine doubles exactly, so the pixels stay sharp. SELECT+Y's stretch fills the whole
-  16:9 screen. Sound goes to the monitor (ALSA's default is routed to the HDMI codec while it has
-  the output) and the volume keys work. No reboot is needed. The cable can go in and out while
-  cartridge runs: it looks once a second, saves the game where it stands and starts again (never
-  more than once in half a minute), and the launcher puts the output where the cable is, the LCD
-  with none. The monitor's own modes are not read: the handheld's EDID read comes back empty, so
-  the signal is always 1080p60.
+- Music on tapes, with a player. The folders of `Music/` stand on a new Music shelf, after the
+  last system, as compact cassettes in 3D: black plastic, a white writing strip with the folder's
+  name, a coloured band with the window, the hubs as real holes through the shell (as are the four
+  in the head's trapezoid), guide rollers and five screws, after a photo of a Denon DX1. On a tape
+  whose folder has folders in it A goes into it, the shelf then showing those, and B comes back
+  out; a folder with only songs in it is a tape to play: A starts its songs (MP3, FLAC, OGG, WAV,
+  AAC and M4A, decoded with symphonia) in order, and the NOW PLAYING screen shows the song, its
+  place in the tape and the time. A plays and pauses, Left and Right jump ten seconds, L1 and R1
+  go to the song before and after, B stops. The player keeps the handheld awake, as a game does,
+  but dims the screen after 30 seconds unused and puts the stick lights out; a press brings both
+  back. Y gives a tape its colour, clear or glitter plastic as it does a game. Screenshots:
+  `music-tape-shelf.png`, `music-tape-album.png`, `music-player.png`.
 - The stick lights of the RG40XX V and H and the RG CubeXX, dark under BaseOS, can be switched on:
   Settings > Theme > Stick Lights is Off, Theme (the theme's colour, as bright as the display, so
   they dim with it) or Colour, which opens Light Colour (nine colours) and Light Brightness (10 to

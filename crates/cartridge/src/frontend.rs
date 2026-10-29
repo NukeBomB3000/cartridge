@@ -44,6 +44,7 @@ mod sync_opening;
 mod sync_power;
 mod sync_settings;
 mod sync_shell;
+mod sync_music;
 mod sync_sleep;
 mod sync_start_notice;
 mod sync_switcher;
@@ -71,6 +72,7 @@ use sync_opening::{sync_opening, TerminalRows};
 use sync_power::{sync_power, PowerPanels};
 use sync_settings::{sync_settings, SettingsTexes};
 use sync_shell::sync_shell;
+use sync_music::sync_music;
 use sync_sleep::sync_sleep;
 use sync_start_notice::sync_start_notice;
 use sync_switcher::{sync_switcher, Switcher};
@@ -124,6 +126,7 @@ pub struct Frontend {
     background: Baked<(ListView, u8)>,
     equalizer: Baked<(crate::equalizer_screen::EqView, u8)>,
     sleep: Baked<(ListView, u8)>,
+    music: Baked<(ListView, u8)>,
     core_options: Baked<(String, ListView, u8)>,
     shell: Baked<(ListView, u8)>,
     /// The POWER menu's panel and the one shown after its choice.
@@ -220,6 +223,7 @@ impl Frontend {
             background: Baked::default(),
             equalizer: Baked::default(),
             sleep: Baked::default(),
+            music: Baked::default(),
             core_options: Baked::default(),
             shell: Baked::default(),
             power: PowerPanels::default(),
@@ -412,6 +416,7 @@ impl Frontend {
         );
         sync_equalizer(self.session.app_mut(), compositor, &mut self.equalizer);
         sync_sleep(self.session.app_mut(), compositor, &mut self.sleep);
+        sync_music(self.session.app_mut(), compositor, &mut self.music);
         sync_core_options(self.session.app_mut(), compositor, &mut self.core_options);
         sync_shell(self.session.app_mut(), compositor, &mut self.shell);
         sync_power(self.session.app_mut(), compositor, &mut self.power);

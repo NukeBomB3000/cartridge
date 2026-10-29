@@ -67,8 +67,10 @@ impl Session {
         if let Err(e) = sink.open(OUTPUT_HZ) {
             eprintln!("cartridge: audio: {e}");
         }
+        let mut app = App::boot(&root);
+        app.set_audio_ring(sink.ring());
         Session {
-            app: App::boot(&root),
+            app,
             root,
             emu: None,
             sink,

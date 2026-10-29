@@ -24,6 +24,7 @@ gilrs = { workspace = true, optional = true }
 libloading = { workspace = true }
 lz4_flex = { workspace = true }
 png = { workspace = true }
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "flac", "vorbis", "aac", "isomp4", "wav", "ogg", "pcm", "alac"] }
 
 [dev-dependencies]
 cartridge-gfx = { path = "../cartridge-gfx", default-features = false, features = ["test-support"] }

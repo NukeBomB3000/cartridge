@@ -144,6 +144,7 @@ pub fn actions_on(phase: &Phase) -> Option<Actions> {
         | Phase::Background(_)
         | Phase::Equalizer(_)
         | Phase::Sleep(_)
+        | Phase::Music(_)
         | Phase::SetClock { .. }
         | Phase::About => Some(Actions::Menu),
         Phase::Polaroids { .. } => Some(Actions::Switcher),

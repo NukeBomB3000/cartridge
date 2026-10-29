@@ -284,6 +284,8 @@ pub enum Phase {
     Equalizer(EqualizerScreen),
     /// When the handheld sleeps and powers off by itself, opened from Settings.
     Sleep(SleepScreen),
+    /// The music player, opened by A on a tape of songs.
+    Music(crate::screens::music_play::MusicScreen),
     Doze {
         cart: Option<String>,
     },
@@ -423,7 +425,7 @@ pub struct App {
     pub(crate) power: Option<Power>,
     pub(crate) dozed_at: Millis,
     /// When something was last pressed, for the sleep after the quiet.
-    last_input_at: Millis,
+    pub(crate) last_input_at: Millis,
     /// The handheld went to sleep by itself, its lid open: any button wakes it.
     dozed_idle: bool,
     /// The lid is closed.
@@ -444,6 +446,12 @@ pub struct App {
     /// The Music shelf holds other tapes than the faces it was last drawn with: only they are
     /// drawn again, not every game's.
     pub(crate) music_stale: bool,
+    /// The song that plays, if any, and the ring it plays into.
+    pub(crate) music: Option<crate::music_player::Player>,
+    pub(crate) audio_ring: Option<std::sync::Arc<crate::audio::Ring>>,
+    pub(crate) music_panel: Option<Lone>,
+    /// The screen is dimmed and the stick lights are off, the player having stood unused.
+    pub(crate) music_dim: bool,
     hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
@@ -641,6 +649,10 @@ impl App {
             music_path: Vec::new(),
             music_back: Vec::new(),
             music_stale: false,
+            music: None,
+            audio_ring: None,
+            music_panel: None,
+            music_dim: false,
             hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,
@@ -1741,6 +1753,7 @@ impl App {
             Phase::Background(_) => self.background_input(action),
             Phase::Equalizer(_) => self.equalizer_input(action),
             Phase::Sleep(_) => self.sleep_input(action),
+            Phase::Music(_) => self.music_input(action),
             _ => {}
         }
     }
@@ -2307,6 +2320,7 @@ impl App {
         if self.now() >= self.autosave_at.min(self.state_autosave_at) {
             self.autosave();
         }
+        self.tick_music();
         if !self.shutting_down() && self.hotplug.poll(self.now()) {
             self.restart_for_cable();
         }
@@ -2569,6 +2583,7 @@ impl App {
             Phase::Background(_) => self.draw_background_screen(out),
             Phase::Equalizer(_) => self.draw_equalizer_screen(out),
             Phase::Sleep(_) => self.draw_sleep_screen(out),
+            Phase::Music(_) => self.draw_music_screen(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
             Phase::Cheevos(_) if typing_of(phase).is_none() => self.draw_cheevos(out),
             // the modal and its panels stand over the backdrop, with nothing between
@@ -3501,6 +3516,11 @@ impl App {
     fn idle_expired(&self) -> bool {
         let min = self.state.sleep_idle_min;
         if min == 0 || self.link_active() || self.shutting_down() || self.labels.working() {
+            return false;
+        }
+        // the music player, playing or paused, keeps the handheld awake as a game does: it
+        // dims the screen instead
+        if matches!(self.phase, Phase::Music(_)) {
             return false;
         }
         if matches!(self.phase, Phase::Doze { .. } | Phase::SetClock { .. }) || self.power.is_none()
