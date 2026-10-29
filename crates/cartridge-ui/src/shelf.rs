@@ -71,6 +71,7 @@ pub fn model_pitch(model: CartModel) -> f32 {
     match model {
         CartModel::HuCard => hucard::PITCH,
         CartModel::Nds => crate::models::nds::PITCH,
+        CartModel::Book => crate::models::book::PITCH,
         _ => model_shelf_box(model).0,
     }
 }

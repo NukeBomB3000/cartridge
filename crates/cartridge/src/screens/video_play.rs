@@ -187,7 +187,7 @@ impl App {
             Action::ShelfRight | Action::GbaDown(Btn::Right) => player.send(Cmd::Seek(SEEK_SECS)),
             Action::GbaDown(Btn::Up) => player.send(Cmd::Seek(SEEK_BIG_SECS)),
             Action::GbaDown(Btn::Down) => player.send(Cmd::Seek(-SEEK_BIG_SECS)),
-            Action::GbaDown(Btn::Y) => {
+            Action::PictureToggle | Action::GbaDown(Btn::Y) => {
                 self.video_mode = match self.video_mode {
                     VideoMode::Stretch => VideoMode::Aspect,
                     _ => VideoMode::Stretch,
@@ -217,12 +217,16 @@ impl App {
 
     /// The newest picture of the video that plays.
     pub fn video_frame(&self) -> Option<crate::frames::FrameRef> {
-        self.video.as_ref().and_then(|p| p.frame())
+        self.video
+            .as_ref()
+            .and_then(|p| p.frame())
+            .or_else(|| self.picture_loader.as_ref().and_then(|l| l.frame()))
     }
 
     /// A picture of the video has been shown.
     pub fn video_published(&self) -> bool {
         self.video.as_ref().is_some_and(|p| p.published())
+            || self.picture_loader.as_ref().is_some_and(|l| l.published())
     }
 
     pub(crate) fn draw_video_screen(&self, out: &mut Vec<Draw>) {

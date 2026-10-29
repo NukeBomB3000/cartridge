@@ -40,6 +40,7 @@ pub mod nav;
 pub mod opening;
 pub mod pacing;
 pub mod persist;
+pub mod picture_loader;
 pub mod prefetch;
 pub mod resample;
 pub mod rewind;

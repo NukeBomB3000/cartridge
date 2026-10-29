@@ -22,6 +22,11 @@ pub const THICK: f32 = 28.0 / 130.0;
 /// How big the book stands on the shelf, as a share of its own size.
 pub const SHELF_SCALE: f32 = 1.0;
 
+/// How far apart books stand on the shelf: the width, the round of the spine that stands out
+/// beyond it on the left (half the thickness), and a gap, so neighbours turned to the eye do not
+/// run into each other.
+pub const PITCH: f32 = W as f32 + (THICK * W as f32) / 2.0 + 34.0;
+
 pub const W: u32 = 190;
 pub const H: u32 = 292;
 

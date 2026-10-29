@@ -288,6 +288,10 @@ pub enum Phase {
     Music(crate::screens::music_play::MusicScreen),
     /// The video player, opened by A on a VHS tape.
     Video(crate::screens::video_play::VideoScreen),
+    /// The picture viewer, opened by A on a Polaroid.
+    Pictures(crate::screens::picture_view::ViewScreen),
+    /// The book reader, opened by A on a book.
+    Reader,
     Doze {
         cart: Option<String>,
     },
@@ -460,6 +464,13 @@ pub struct App {
     /// The video that plays, if any, the panel over it, and how its picture is laid on the screen.
     pub(crate) video: Option<crate::video_player::Player>,
     pub(crate) video_panel: Option<Lone>,
+    /// The picture viewer's loader, the folder it shows and its panel.
+    pub(crate) picture_loader: Option<crate::picture_loader::Loader>,
+    pub(crate) picture_folder: Option<std::path::PathBuf>,
+    pub(crate) viewer_panel: Option<Lone>,
+    /// The book that is open, and its page as uploaded.
+    pub(crate) reader: Option<crate::screens::reader::ReaderScreen>,
+    pub(crate) reader_tex: Option<TexId>,
     hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
@@ -665,6 +676,11 @@ impl App {
             media_saved_at: 0,
             video: None,
             video_panel: None,
+            picture_loader: None,
+            picture_folder: None,
+            viewer_panel: None,
+            reader: None,
+            reader_tex: None,
             hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,
@@ -1771,6 +1787,8 @@ impl App {
             Phase::Sleep(_) => self.sleep_input(action),
             Phase::Music(_) => self.music_input(action),
             Phase::Video(_) => self.video_input(action),
+            Phase::Pictures(_) => self.pictures_input(action),
+            Phase::Reader => self.reader_input(action),
             _ => {}
         }
     }
@@ -2294,7 +2312,7 @@ impl App {
     fn step_screen(&mut self, dt: f32) {
         let lit = matches!(
             self.phase,
-            Phase::Playing { .. } | Phase::Polaroids { .. } | Phase::Video(_)
+            Phase::Playing { .. } | Phase::Polaroids { .. } | Phase::Video(_) | Phase::Pictures(_)
         );
         let step = if lit {
             dt / POWER_ON_S
@@ -2342,6 +2360,7 @@ impl App {
         }
         self.tick_music();
         self.tick_video();
+        self.tick_reader();
         if !self.shutting_down() && self.hotplug.poll(self.now()) {
             self.restart_for_cable();
         }
@@ -2606,6 +2625,8 @@ impl App {
             Phase::Sleep(_) => self.draw_sleep_screen(out),
             Phase::Music(_) => self.draw_music_screen(out),
             Phase::Video(_) => self.draw_video_screen(out),
+            Phase::Pictures(_) => self.draw_viewer_screen(out),
+            Phase::Reader => self.draw_reader(out),
             Phase::Labels(_) if typing_of(phase).is_none() => self.draw_labels(out),
             Phase::Cheevos(_) if typing_of(phase).is_none() => self.draw_cheevos(out),
             // the modal and its panels stand over the backdrop, with nothing between
@@ -3038,6 +3059,10 @@ impl App {
         self.video = None;
         self.save_music_place();
         self.music = None;
+        self.save_picture_place();
+        self.picture_loader = None;
+        self.save_reader_place();
+        self.reader = None;
     }
 
     fn doze(&mut self) {
@@ -3552,7 +3577,10 @@ impl App {
         }
         // the music player, playing or paused, keeps the handheld awake as a game does: it
         // dims the screen instead
-        if matches!(self.phase, Phase::Music(_) | Phase::Video(_)) {
+        if matches!(
+            self.phase,
+            Phase::Music(_) | Phase::Video(_) | Phase::Pictures(_) | Phase::Reader
+        ) {
             return false;
         }
         if matches!(self.phase, Phase::Doze { .. } | Phase::SetClock { .. }) || self.power.is_none()

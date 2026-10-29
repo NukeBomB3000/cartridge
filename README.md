@@ -215,8 +215,10 @@ Every change is in the [changelog](CHANGELOG.md).
   ScreenScraper, one for each disc of a PlayStation game.
 - Bluetooth, on handhelds that have it: pair a device and connect it, or forget it. Game sound and
   gamepads over Bluetooth are still to come.
-- Music and video: the folders of `Music/` stand as cassette tapes and those of `Videos/` as VHS
-  tapes, on shelves of their own; A goes into a folder or plays what is in it, B comes back out. A
+- Music, video, pictures and books: the folders of `Music/` stand as cassette tapes, those of
+  `Videos/` as VHS tapes, those of `Pictures/` as Polaroids and the EPUBs of `Books/` as books, on
+  shelves of their own (the books are read with an optional dark page and a screen turned for
+  reading upright); A goes into a folder or plays what is in it, B comes back out. A
   film or an album goes on where it was left; a long A starts again. Videos are decoded by
   `System/ffmpeg`, FFmpeg built from its own source (LGPL, `scripts/build-ffmpeg.sh`).
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take

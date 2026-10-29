@@ -127,11 +127,3 @@ impl App {
         self.fill_media(kind, at);
     }
 }
-
-impl App {
-    /// A on a folder of pictures: the viewer comes next.
-    fn show_pictures(&mut self, _name: &str, _folder: &std::path::Path, _clean: bool) {}
-
-    /// A on a book: the reader comes next.
-    fn open_book(&mut self, _name: &str, _book: &std::path::Path, _clean: bool) {}
-}

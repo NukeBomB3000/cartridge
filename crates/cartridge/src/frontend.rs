@@ -50,6 +50,7 @@ mod sync_start_notice;
 mod sync_switcher;
 mod sync_top_bar;
 mod sync_video;
+mod sync_viewer;
 
 use lone::Baked;
 use sync_about::sync_about;
@@ -79,6 +80,7 @@ use sync_start_notice::sync_start_notice;
 use sync_switcher::{sync_switcher, Switcher};
 use sync_top_bar::{sync_top_bar, TopBarTexes};
 use sync_video::sync_video;
+use sync_viewer::sync_viewer;
 
 const DOZE_TIMEOUT: Duration = Duration::from_secs(180);
 
@@ -103,6 +105,7 @@ pub struct Frontend {
     /// The DISC screen's panel and bar.
     disc: DiscTexes,
     guide_tex: Option<TexId>,
+    reader_tex: Option<TexId>,
     core_asked: Option<String>,
     core_board_tex: Option<TexId>,
     core_lid_tex: Option<TexId>,
@@ -130,6 +133,7 @@ pub struct Frontend {
     sleep: Baked<(ListView, u8)>,
     music: Baked<(ListView, u8)>,
     video: Baked<(ListView, u8)>,
+    viewer: Baked<(ListView, u8)>,
     core_options: Baked<(String, ListView, u8)>,
     shell: Baked<(ListView, u8)>,
     /// The POWER menu's panel and the one shown after its choice.
@@ -205,6 +209,7 @@ impl Frontend {
             link: LinkTexes::default(),
             disc: DiscTexes::default(),
             guide_tex: None,
+            reader_tex: None,
             core_asked: None,
             core_board_tex: None,
             core_lid_tex: None,
@@ -228,6 +233,7 @@ impl Frontend {
             sleep: Baked::default(),
             music: Baked::default(),
             video: Baked::default(),
+            viewer: Baked::default(),
             core_options: Baked::default(),
             shell: Baked::default(),
             power: PowerPanels::default(),
@@ -429,6 +435,7 @@ impl Frontend {
         sync_sleep(self.session.app_mut(), compositor, &mut self.sleep);
         sync_music(self.session.app_mut(), compositor, &mut self.music);
         sync_video(self.session.app_mut(), compositor, &mut self.video);
+        sync_viewer(self.session.app_mut(), compositor, &mut self.viewer);
         sync_core_options(self.session.app_mut(), compositor, &mut self.core_options);
         sync_shell(self.session.app_mut(), compositor, &mut self.shell);
         sync_power(self.session.app_mut(), compositor, &mut self.power);
@@ -448,6 +455,10 @@ impl Frontend {
         );
         sync_link(self.session.app_mut(), compositor, &mut self.link);
         sync_disc(self.session.app_mut(), compositor, &mut self.disc);
+        if let Some(rgba) = self.session.app_mut().take_reader_page() {
+            let tex = upload_rgba(compositor, &mut self.reader_tex, out_w(), out_h(), &rgba);
+            self.session.app_mut().set_reader_tex(tex);
+        }
         if let Some(rgba) = self.session.app_mut().take_guide_page() {
             let tex = upload_rgba(compositor, &mut self.guide_tex, out_w(), out_h(), &rgba);
             self.session.app_mut().set_guide_tex(tex);

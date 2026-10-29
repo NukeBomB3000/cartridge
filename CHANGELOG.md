@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- Pictures and books, on shelves of their own after the video's. A folder of pictures under
+  `Pictures/` stands as a Polaroid wearing its first picture, the folder's name written on its
+  chin; A on a folder with folders goes in and B comes out, and a folder of pictures opens the
+  viewer: Left and Right (L1, R1) turn to the picture before and after, A shows its name and place
+  for a few seconds, Y or SELECT+Y fits the picture to the screen or stretches it, B closes. JPEGs
+  are decoded no bigger than the screen needs (a 24 megapixel photo is read at an eighth of its
+  size) and turned upright by their Exif data, PNGs too. Where the folder was left is kept; a long
+  A starts again. A book (`Books/*.epub`, `.txt`) stands as a hardback with its own cover, a round
+  spine on the left and a page block set back from the boards, its leaves lined across the sides.
+  Screenshots: `pictures-polaroid.png`, `picture-viewer.png`, `books-shelf.png`.
+- The book reader. A on a book opens it in the guide's type: Up and Down move a line (kept
+  moving while held), Left, Right, L1 and R1 turn a page, L2 and R2 make the text smaller or
+  larger. SELECT+Y, the picture-size hotkey, switches a dark page on or off, and SELECT+X turns the
+  screen a quarter (clockwise, back, upright) to read upright: the d-pad turns with the page. The
+  place, the size, the dark and the turn are kept, and a long A starts the book from its top.
+  EPUB covers are cut from the book to `Labels/Books/.covers/`; a card's own
+  `Labels/Books/<name>.png` takes their place. Screenshots: `reader-light.png`,
+  `reader-dark.png`, `reader-turned.png`.
+- The VHS tapes show their tape: a roll round each reel, one thick and one thin, as much on a side
+  as the tape's name says, and always the same for a name.
 - A video player. A on a VHS tape plays the video (a folder of videos plays from the one that was
   picked on, and L1 and R1 go to the one before and after). The picture is decoded by FFmpeg,
   scaled to the screen, and the sound is the clock the picture is shown by. MP4, MKV, AVI, MOV,
