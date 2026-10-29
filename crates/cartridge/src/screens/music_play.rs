@@ -104,6 +104,12 @@ impl App {
             }
             _ => (0, 0),
         };
+        eprintln!(
+            "cartridge: music: {} from song {} at {} ms",
+            folder.display(),
+            start.0 + 1,
+            start.1
+        );
         self.music_key = key;
         self.media_saved_at = self.now();
         self.music = Some(Player::start(ring, songs, self.output_volume(), start));
@@ -157,7 +163,7 @@ impl App {
 
     /// Writes the song the tape is at and how far into it, or forgets the place of a tape that
     /// has played out.
-    fn save_music_place(&mut self) {
+    pub(crate) fn save_music_place(&mut self) {
         let (Some(root), Some(key), Some(player)) = (&self.root, &self.music_key, &self.music)
         else {
             return;

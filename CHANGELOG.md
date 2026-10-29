@@ -15,7 +15,9 @@
   Screenshot: `video-player.png`.
 - Where a film or an album was left is kept (`Config/media_resume.ini`) and a short A goes on from
   there; a long A (as for a game) starts again from the beginning. A film that was all but
-  watched starts again of itself.
+  watched starts again of itself. The place kept is never written over before a picture of the
+  film has been shown (it showed 0 until then, so a quick stop lost it), and it is also kept when
+  the handheld goes to sleep or restarts for a cable.
 - A long name no longer gets cut. On the shelf the name under the carts scrolls through the row
   when it is wider than it: it waits, runs to its end, waits there and starts over. The labels of
   the tapes and the VHS cassettes set a long name on a finer grid, down to nine pixels, so the

@@ -1437,6 +1437,8 @@ impl App {
         let _ = std::fs::write(marker, "");
         eprintln!("cartridge: hdmi: the cable changed, starting again");
         self.close_game_menu();
+        self.save_video_place();
+        self.save_music_place();
         self.flush_resume();
         self.persist();
         std::process::exit(0);
@@ -3030,6 +3032,14 @@ impl App {
         }
     }
 
+    /// Puts away what plays, its place kept: a video or a tape, when the handheld goes to sleep.
+    fn stop_media(&mut self) {
+        self.save_video_place();
+        self.video = None;
+        self.save_music_place();
+        self.music = None;
+    }
+
     fn doze(&mut self) {
         self.dozed_idle = false;
         self.flush_browsed();
@@ -3042,6 +3052,7 @@ impl App {
         if matches!(self.phase, Phase::Doze { .. }) {
             return;
         }
+        self.stop_media();
         self.flush_resume();
         let cart = match &mut self.phase {
             Phase::Playing { cart } | Phase::Polaroids { cart } => Some(std::mem::take(cart)),

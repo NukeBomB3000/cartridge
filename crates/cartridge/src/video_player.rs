@@ -233,7 +233,7 @@ impl Player {
     ) -> Player {
         let (tx, rx) = channel();
         let shared = Arc::new(Shared {
-            pos_ms: AtomicU64::new(0),
+            pos_ms: AtomicU64::new(start_ms.unwrap_or(0)),
             dur_ms: AtomicU64::new(0),
             paused: AtomicBool::new(false),
             ended: AtomicBool::new(false),
@@ -449,7 +449,6 @@ fn run(
     let mut first = start_ms;
     while at < files.len() {
         shared.index.store(at, Ordering::Relaxed);
-        shared.pos_ms.store(0, Ordering::Relaxed);
         shared.track.store(0, Ordering::Relaxed);
         let file = &files[at];
         let title = file
@@ -471,6 +470,9 @@ fn run(
         shared.tracks.store(info.audio.len(), Ordering::Relaxed);
         // the first video goes on from where it was left, if that is worth it
         let from = crate::media_resume::video_start(first.take(), info.duration_ms);
+        // the place shown is the one it starts from until a picture of it is shown
+        shared.pos_ms.store(from, Ordering::Relaxed);
+        shared.published.store(false, Ordering::Relaxed);
         let video = Playing {
             ffmpeg,
             ring,

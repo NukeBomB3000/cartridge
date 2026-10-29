@@ -83,9 +83,9 @@ impl Player {
     pub fn start(ring: Arc<Ring>, songs: Vec<PathBuf>, volume: u8, start: (usize, u64)) -> Player {
         let (tx, rx) = channel();
         let shared = Arc::new(Shared {
-            index: AtomicUsize::new(0),
+            index: AtomicUsize::new(if start.0 < songs.len() { start.0 } else { 0 }),
             count: songs.len(),
-            pos_ms: AtomicU64::new(0),
+            pos_ms: AtomicU64::new(if start.0 < songs.len() { start.1 } else { 0 }),
             dur_ms: AtomicU64::new(0),
             paused: AtomicBool::new(false),
             ended: AtomicBool::new(false),
@@ -296,7 +296,9 @@ fn run(ring: &Ring, songs: &[PathBuf], shared: &Shared, rx: &Receiver<Cmd>, star
         .filter(|ms| *ms > 0);
     while at < songs.len() {
         shared.index.store(at, Ordering::Relaxed);
-        shared.pos_ms.store(0, Ordering::Relaxed);
+        if resume.is_none() {
+            shared.pos_ms.store(0, Ordering::Relaxed);
+        }
         let Some(mut track) = Track::open(&songs[at]) else {
             at += 1;
             continue;

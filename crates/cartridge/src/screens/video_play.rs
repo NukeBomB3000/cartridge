@@ -135,6 +135,11 @@ impl App {
             }
             _ => None,
         };
+        eprintln!(
+            "cartridge: video: {} from {} ms",
+            files[0].display(),
+            kept.unwrap_or(0)
+        );
         self.media_saved_at = self.now();
         self.video = Some(Player::start(
             ffmpeg,
@@ -239,12 +244,13 @@ impl App {
     }
 
     /// Writes how far into its file the video is.
-    fn save_video_place(&mut self) {
+    pub(crate) fn save_video_place(&mut self) {
         let (Some(root), Some(player)) = (&self.root, &self.video) else {
             return;
         };
         let status = player.status();
-        if status.file.as_os_str().is_empty() {
+        // nothing is written over what was kept before a picture of the video has been shown
+        if status.file.as_os_str().is_empty() || !player.published() {
             return;
         }
         let key = crate::media_resume::key(root, &status.file);
