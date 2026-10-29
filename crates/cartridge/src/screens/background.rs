@@ -4,14 +4,14 @@
 //! the next frame; a new font redraws the bar's actions under it in that frame too.
 
 use cartridge_input::Action;
-use cartridge_store::StickLights;
+use cartridge_store::{StickLights, LIGHT_COLOURS};
 use cartridge_ui::kit::palette::Palette;
 use cartridge_ui::kit::panel::panel_face;
 use cartridge_ui::kit::row::panel_height;
 use cartridge_ui::{Draw, SettingsRow, UndoFace};
 
 use crate::app::{App, Phase};
-use crate::background_screen::Outcome as BackgroundOutcome;
+use crate::background_screen::{Glow, Outcome as BackgroundOutcome};
 use crate::list_view::ListView;
 use crate::nav::Dir;
 use crate::screens::lone::{hold, rows_height, Lone};
@@ -35,7 +35,7 @@ impl App {
         let (look, font, lights, wallpaper) = (
             self.backdrop(),
             self.state.font,
-            self.has_stick_lights().then_some(self.state.stick_lights),
+            self.has_stick_lights().then(|| self.glow()),
             self.wallpaper.is_some(),
         );
         let Phase::Background(screen) = &mut self.phase else {
@@ -59,8 +59,10 @@ impl App {
                 self.state.font = font;
                 self.persist();
             }
-            BackgroundOutcome::Lights(lights) => {
-                self.state.stick_lights = lights;
+            BackgroundOutcome::Lights(glow) => {
+                self.state.stick_lights = glow.mode;
+                self.state.light_colour = glow.colour;
+                self.state.light_level = glow.level;
                 self.persist();
                 self.glow_sticks();
             }
@@ -74,9 +76,18 @@ impl App {
             Phase::Background(screen) => Some(screen.view(
                 self.backdrop(),
                 self.state.font,
-                self.has_stick_lights().then_some(self.state.stick_lights),
+                self.has_stick_lights().then(|| self.glow()),
             )),
             _ => None,
+        }
+    }
+
+    /// The sticks' lights as the card has them set.
+    fn glow(&self) -> Glow {
+        Glow {
+            mode: self.state.stick_lights,
+            colour: self.state.light_colour,
+            level: self.state.light_level,
         }
     }
 
@@ -98,6 +109,15 @@ impl App {
     /// thread of its own as it waits on the lights' controller. A card without the script, and
     /// a handheld without lights, do nothing.
     pub(crate) fn glow_sticks(&self) {
+        self.light_sticks(false);
+    }
+
+    /// The lights go dark for the sleep, whatever they are set to.
+    pub(crate) fn darken_sticks(&self) {
+        self.light_sticks(true);
+    }
+
+    fn light_sticks(&self, dark: bool) {
         let Some(root) = &self.root else {
             return;
         };
@@ -105,15 +125,33 @@ impl App {
             return;
         }
         let script = root.join("System/rgb.sh");
-        let [r, g, b] = cartridge_ui::backdrop_rgb(self.state.backdrop_colour);
-        let [r, g, b] = [r.to_string(), g.to_string(), b.to_string()];
+        let (rgb, percent) = match self.state.stick_lights {
+            _ if dark => (None, 0),
+            StickLights::Off => (None, 0),
+            // the display's own steps, so the lights dim as it does
+            StickLights::Theme => (
+                Some(cartridge_ui::backdrop_rgb(self.state.backdrop_colour)),
+                cartridge_power::backlight_value(self.state.brightness, 100).max(5),
+            ),
+            StickLights::Colour => {
+                let at = (self.state.light_colour as usize).min(LIGHT_COLOURS.len() - 1);
+                (
+                    Some(LIGHT_COLOURS[at].2),
+                    u32::from(self.state.light_level) * 10,
+                )
+            }
+        };
         let mut cmd = std::process::Command::new("/bin/sh");
         cmd.arg(script);
-        match self.state.stick_lights {
-            StickLights::Off => cmd.arg("off"),
-            StickLights::Colour => cmd.args(["solid", &r, &g, &b, "40"]),
-            StickLights::Breathe => cmd.args(["breath", "slow", &r, &g, &b, "40"]),
-            StickLights::Rainbow => cmd.args(["rainbow", "40"]),
+        match rgb {
+            None => cmd.arg("off"),
+            Some([r, g, b]) => cmd.args([
+                "solid".to_string(),
+                r.to_string(),
+                g.to_string(),
+                b.to_string(),
+                percent.to_string(),
+            ]),
         };
         cmd.stdin(std::process::Stdio::null())
             .stdout(std::process::Stdio::null())

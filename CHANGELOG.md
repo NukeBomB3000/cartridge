@@ -3,9 +3,10 @@
 ## Unreleased
 
 - The stick lights of the RG40XX V and H and the RG CubeXX, dark under BaseOS, can be switched on:
-  Settings > Theme > Stick Lights is Off, Colour (steady, in the theme's colour), Breathe or
-  Rainbow, and the card remembers it. `System/rgb.sh` drives them through the lights' controller on
-  UART5 (`solid`, `breath`, `rainbow`, `off`). The row only shows on a handheld that has the
+  Settings > Theme > Stick Lights is Off, Theme (the theme's colour, as bright as the display, so
+  they dim with it) or Colour, which opens Light Colour (nine colours) and Light Brightness (10 to
+  100 %). They go dark while the handheld sleeps and come back on waking. `System/rgb.sh` drives
+  them through the lights' controller on UART5. The rows only show on a handheld that has the
   lights. Screenshot: `theme-stick-lights.png`.
 - The sticks of a handheld that has them (RG40XX V and H, RG CubeXX) are real analog sticks to a
   game that reads them: PlayStation games on PCSX ReARMed and on SwanStation get a DualShock whose

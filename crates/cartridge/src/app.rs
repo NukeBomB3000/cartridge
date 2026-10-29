@@ -1988,6 +1988,9 @@ impl App {
         if let (HudKind::Brightness, Some(power)) = (kind, &mut self.power) {
             power.set_backlight(value);
         }
+        if kind == HudKind::Brightness && moved {
+            self.glow_sticks();
+        }
         if moved || unmuted {
             self.persist();
         }
@@ -2969,6 +2972,7 @@ impl App {
         self.phase = Phase::Doze { cart };
         self.dozed_at = self.now();
         self.radio.ask(RadioJob::Cool);
+        self.darken_sticks();
         if let Some(power) = &mut self.power {
             power.on_close();
         }
@@ -2992,6 +2996,7 @@ impl App {
             self.state.high_refresh = false;
             self.persist();
         }
+        self.glow_sticks();
     }
 
     pub fn on_doze_timeout(&mut self) {

@@ -471,9 +471,8 @@ fn a_still_picture_pattern_is_drawn_rather_than_the_colour_alone() {
 }
 
 #[test]
-fn stick_lights_are_a_row_only_where_the_handheld_has_them() {
-    use cartridge::background_screen::{BackgroundScreen, Outcome};
-    use cartridge_input::{Action, Btn};
+fn stick_lights_are_rows_only_where_the_handheld_has_them() {
+    use cartridge::background_screen::{BackgroundScreen, Glow, Outcome};
     use cartridge_store::{BackdropStyle, Font, StickLights};
 
     let look = Backdrop {
@@ -481,26 +480,42 @@ fn stick_lights_are_a_row_only_where_the_handheld_has_them() {
         moving: true,
         colour: 0,
     };
+    let press = |screen: &mut BackgroundScreen, glow: Glow, btn| {
+        screen.input(look, Font::Bold, Some(glow), false, Action::GbaDown(btn))
+    };
+    let off = Glow {
+        mode: StickLights::Off,
+        colour: 6,
+        level: 5,
+    };
     let screen = BackgroundScreen::default();
     assert_eq!(screen.view(look, Font::Bold, None).rows.len(), 4);
-    let with = screen.view(look, Font::Bold, Some(StickLights::Off));
-    assert_eq!(with.rows.len(), 5);
+    assert_eq!(screen.view(look, Font::Bold, Some(off)).rows.len(), 7);
 
     let mut screen = BackgroundScreen { sel: Sel::Lights };
-    let out = screen.input(
-        look,
-        Font::Bold,
-        Some(StickLights::Off),
-        false,
-        Action::GbaDown(Btn::Right),
-    );
-    assert_eq!(out, Outcome::Lights(StickLights::Colour));
-    let out = screen.input(
-        look,
-        Font::Bold,
-        Some(StickLights::Off),
-        false,
-        Action::GbaDown(Btn::Left),
-    );
-    assert_eq!(out, Outcome::Lights(StickLights::Rainbow));
+    let Outcome::Lights(theme) = press(&mut screen, off, Btn::Right) else {
+        panic!("the mode changes")
+    };
+    assert_eq!(theme.mode, StickLights::Theme);
+    let Outcome::Lights(own) = press(&mut screen, theme, Btn::Right) else {
+        panic!("the mode changes")
+    };
+    assert_eq!(own.mode, StickLights::Colour);
+
+    // colour and brightness are for the Colour mode: the cursor passes them in the others
+    let mut screen = BackgroundScreen { sel: Sel::Lights };
+    press(&mut screen, theme, Btn::Down);
+    assert_eq!(screen.sel, Sel::Style);
+    let mut screen = BackgroundScreen { sel: Sel::Lights };
+    press(&mut screen, own, Btn::Down);
+    assert_eq!(screen.sel, Sel::LightColour);
+    let Outcome::Lights(more) = press(&mut screen, own, Btn::Right) else {
+        panic!("the colour changes")
+    };
+    assert_eq!(more.colour, 7);
+    screen.sel = Sel::LightLevel;
+    let Outcome::Lights(dim) = press(&mut screen, Glow { level: 1, ..own }, Btn::Left) else {
+        panic!("the level holds")
+    };
+    assert_eq!(dim.level, 1);
 }

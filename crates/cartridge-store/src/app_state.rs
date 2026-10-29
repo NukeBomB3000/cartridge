@@ -5,7 +5,7 @@ use crate::backdrop::{colour_index, BackdropStyle, BACKDROP_COLOURS, NIGHT};
 use crate::font::Font;
 use crate::gb_palette::GbColors;
 use crate::platform::Platform;
-use crate::stick_lights::StickLights;
+use crate::stick_lights::{light_colour_index, StickLights, LIGHT_COLOURS, LIGHT_LEVEL_MAX};
 
 pub const BRIGHTNESS_MAX: u8 = 20;
 
@@ -91,6 +91,10 @@ pub struct AppState {
     pub font: Font,
     /// How the analog sticks' lights glow.
     pub stick_lights: StickLights,
+    /// Which of [`LIGHT_COLOURS`] the lights are in, in their own colour.
+    pub light_colour: u8,
+    /// How bright they are then, 1 to [`LIGHT_LEVEL_MAX`].
+    pub light_level: u8,
 }
 
 impl Default for AppState {
@@ -128,6 +132,8 @@ impl Default for AppState {
             backdrop_colour: NIGHT,
             font: Font::Bold,
             stick_lights: StickLights::Off,
+            light_colour: 6,
+            light_level: 5,
             eq: [0; EQ_BANDS],
             eq_hp: [0; EQ_BANDS],
             tv_ghosting: false,
@@ -158,7 +164,7 @@ pub const RUMBLE_LEVEL_MAX: u8 = 3;
 
 pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
     let text = format!(
-        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\nstick_lights={}\neq={}\neq_hp={}\ntv_ghosting={}\ncheevos={}\nsleep_idle_min={}\nsleep_off_min={}\nbrowsed={}\nbrowsed_platform={}\nbrowsed_index={}\n",
+        "cart={}\ncart_platform={}\nbacklight={}\nblue_light={}\nvolume={}\nvolume_hp={}\nmuted={}\nmuted_hp={}\nclock_set={}\nutc_offset_min={}\nrumble={}\nrumble_level={}\nff_speed={}\nff_sound={}\ncolour_correction={}\nlcd_ghosting={}\ngb_palette={}\nhigh_refresh={}\nwifi={}\nssh={}\nbluetooth={}\nbackdrop={}\nbackdrop_moving={}\nbackdrop_colour={}\nfont={}\nstick_lights={}\nlight_colour={}\nlight_level={}\neq={}\neq_hp={}\ntv_ghosting={}\ncheevos={}\nsleep_idle_min={}\nsleep_off_min={}\nbrowsed={}\nbrowsed_platform={}\nbrowsed_index={}\n",
         s.cart.as_deref().unwrap_or(""),
         s.cart_platform.map_or(String::new(), platform_key),
         s.brightness,
@@ -185,6 +191,8 @@ pub fn write_app_state(root: &Path, s: &AppState) -> std::io::Result<()> {
         BACKDROP_COLOURS[(s.backdrop_colour as usize).min(BACKDROP_COLOURS.len() - 1)],
         s.font.key(),
         s.stick_lights.key(),
+        LIGHT_COLOURS[(s.light_colour as usize).min(LIGHT_COLOURS.len() - 1)].0,
+        s.light_level.clamp(1, LIGHT_LEVEL_MAX),
         eq_text(&s.eq),
         eq_text(&s.eq_hp),
         s.tv_ghosting as u8,
@@ -226,6 +234,8 @@ fn parse(text: &str) -> Option<AppState> {
     let mut backdrop_colour = None;
     let mut font = None;
     let mut stick_lights = None;
+    let mut light_colour = None;
+    let mut light_level = None;
     let mut eq = None;
     let mut eq_hp = None;
     let mut tv_ghosting = None;
@@ -274,6 +284,8 @@ fn parse(text: &str) -> Option<AppState> {
             "backdrop_colour" => backdrop_colour = colour_index(value),
             "font" => font = Font::from_key(value),
             "stick_lights" => stick_lights = StickLights::from_key(value),
+            "light_colour" => light_colour = light_colour_index(value),
+            "light_level" => light_level = value.parse::<u8>().ok().map(|v| v.clamp(1, LIGHT_LEVEL_MAX)),
             "eq" => eq = eq_value(value),
             "eq_hp" => eq_hp = eq_value(value),
             "tv_ghosting" => tv_ghosting = flag(value),
@@ -321,6 +333,8 @@ fn parse(text: &str) -> Option<AppState> {
         backdrop_colour: backdrop_colour.unwrap_or(fallback.backdrop_colour),
         font: font.unwrap_or(fallback.font),
         stick_lights: stick_lights.unwrap_or(fallback.stick_lights),
+        light_colour: light_colour.unwrap_or(fallback.light_colour),
+        light_level: light_level.unwrap_or(fallback.light_level),
         eq: eq.unwrap_or(fallback.eq),
         eq_hp: eq_hp.unwrap_or(fallback.eq_hp),
         tv_ghosting: tv_ghosting.unwrap_or(fallback.tv_ghosting),

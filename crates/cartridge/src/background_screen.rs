@@ -2,7 +2,9 @@
 //! as it is changed, and the font the bar's actions write their words in.
 
 use cartridge_input::{Action, Btn};
-use cartridge_store::{BackdropStyle, Font, StickLights, BACKDROP_COLOURS};
+use cartridge_store::{
+    BackdropStyle, Font, StickLights, BACKDROP_COLOURS, LIGHT_COLOURS, LIGHT_LEVEL_MAX,
+};
 use cartridge_ui::backdrop_colour_name;
 
 use crate::list_view::{LegendHint, ListView, RowLabel, RowValue, ViewRow};
@@ -37,6 +39,14 @@ impl Backdrop {
     }
 }
 
+/// How the sticks' lights are set, on a handheld that has them.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Glow {
+    pub mode: StickLights,
+    pub colour: u8,
+    pub level: u8,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Sel {
     /// The background's style, on the row named Background.
@@ -46,11 +56,23 @@ pub enum Sel {
     Font,
     /// The analog sticks' lights, on a handheld that has them.
     Lights,
+    /// Their own colour, when they are not in the theme's.
+    LightColour,
+    /// Their own brightness, when they are not following the display's.
+    LightLevel,
 }
 
 impl Sel {
     /// The panel's rows, top to bottom.
-    pub const ALL: [Sel; 5] = [Sel::Style, Sel::Motion, Sel::Colour, Sel::Font, Sel::Lights];
+    pub const ALL: [Sel; 7] = [
+        Sel::Style,
+        Sel::Motion,
+        Sel::Colour,
+        Sel::Font,
+        Sel::Lights,
+        Sel::LightColour,
+        Sel::LightLevel,
+    ];
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -70,7 +92,7 @@ pub enum Outcome {
     Close,
     Changed(Backdrop),
     Font(Font),
-    Lights(StickLights),
+    Lights(Glow),
 }
 
 /// The styles a card offers: the wallpaper only where there is one.
@@ -98,16 +120,38 @@ impl BackgroundScreen {
     fn applies(look: Backdrop, sel: Sel) -> bool {
         match sel {
             Sel::Style | Sel::Font | Sel::Lights => true,
+            // only a colour of their own has a colour and a brightness to pick
+            Sel::LightColour | Sel::LightLevel => true,
             Sel::Motion => look.style.moves(),
             Sel::Colour => look.style.coloured(),
         }
     }
 
+    /// Whether the panel has a row at all: the lights' only where there are lights.
+    fn shown(sel: Sel, lights: Option<Glow>) -> bool {
+        match sel {
+            Sel::Lights | Sel::LightColour | Sel::LightLevel => lights.is_some(),
+            _ => true,
+        }
+    }
+
+    /// Whether a lights row has a use: a colour and a brightness of their own only in the
+    /// Colour mode, which leaves them faint in the others.
+    fn lit(sel: Sel, lights: Option<Glow>) -> bool {
+        match sel {
+            Sel::LightColour | Sel::LightLevel => {
+                lights.is_some_and(|g| g.mode == StickLights::Colour)
+            }
+            _ => true,
+        }
+    }
+
     /// The rows the cursor can stand on for this style.
-    fn rows(look: Backdrop, lights: Option<StickLights>) -> Vec<Sel> {
+    fn rows(look: Backdrop, lights: Option<Glow>) -> Vec<Sel> {
         Sel::ALL
             .into_iter()
-            .filter(|sel| Self::applies(look, *sel) && (*sel != Sel::Lights || lights.is_some()))
+            .filter(|sel| Self::applies(look, *sel) && Self::shown(*sel, lights))
+            .filter(|sel| Self::lit(*sel, lights))
             .collect()
     }
 
@@ -115,7 +159,7 @@ impl BackgroundScreen {
         &mut self,
         look: Backdrop,
         font: Font,
-        lights: Option<StickLights>,
+        lights: Option<Glow>,
         wallpaper: bool,
         action: Action,
     ) -> Outcome {
@@ -146,18 +190,32 @@ impl BackgroundScreen {
                 next.colour = step(&colours, look.colour, forward);
             }
             Sel::Font => return Outcome::Font(step(&Font::ALL, font, forward)),
-            Sel::Lights => {
-                let lights = lights.unwrap_or_default();
-                return Outcome::Lights(step(&StickLights::ALL, lights, forward));
+            Sel::Lights | Sel::LightColour | Sel::LightLevel => {
+                let mut glow = lights.unwrap_or_default();
+                match self.sel {
+                    Sel::Lights => glow.mode = step(&StickLights::ALL, glow.mode, forward),
+                    Sel::LightColour => {
+                        let colours: Vec<u8> = (0..LIGHT_COLOURS.len() as u8).collect();
+                        glow.colour = step(&colours, glow.colour, forward);
+                    }
+                    _ => {
+                        glow.level = if forward {
+                            (glow.level + 1).min(LIGHT_LEVEL_MAX)
+                        } else {
+                            glow.level.saturating_sub(1).max(1)
+                        }
+                    }
+                }
+                return Outcome::Lights(glow);
             }
         }
         Outcome::Changed(next)
     }
 
-    pub fn view(&self, look: Backdrop, font: Font, lights: Option<StickLights>) -> ListView {
+    pub fn view(&self, look: Backdrop, font: Font, lights: Option<Glow>) -> ListView {
         let shown: Vec<Sel> = Sel::ALL
             .into_iter()
-            .filter(|sel| *sel != Sel::Lights || lights.is_some())
+            .filter(|sel| Self::shown(*sel, lights))
             .collect();
         let at = shown.iter().position(|r| *r == self.sel).unwrap_or(0);
         let row = |sel: &Sel| match sel {
@@ -187,8 +245,25 @@ impl BackgroundScreen {
             },
             Sel::Lights => ViewRow {
                 label: RowLabel::Setting("Stick Lights"),
-                value: Some(RowValue::Choice(lights.unwrap_or_default().label())),
+                value: Some(RowValue::Choice(lights.unwrap_or_default().mode.label())),
                 dim: false,
+            },
+            Sel::LightColour => ViewRow {
+                label: RowLabel::Setting("Light Colour"),
+                value: Some(RowValue::Choice(
+                    LIGHT_COLOURS[(lights.unwrap_or_default().colour as usize)
+                        .min(LIGHT_COLOURS.len() - 1)]
+                    .1,
+                )),
+                dim: !Self::lit(Sel::LightColour, lights),
+            },
+            Sel::LightLevel => ViewRow {
+                label: RowLabel::Setting("Light Brightness"),
+                value: Some(RowValue::Picked(format!(
+                    "{}0%",
+                    lights.unwrap_or_default().level
+                ))),
+                dim: !Self::lit(Sel::LightLevel, lights),
             },
         };
         // the panel holds its rows and nothing under them, as flow.html draws it

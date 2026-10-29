@@ -217,7 +217,7 @@ Every change is in the [changelog](CHANGELOG.md).
   gamepads over Bluetooth are still to come.
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take
   (Night is grey, Amber is Mega Man Zero's own), the bottom bar's font, Bold or Thin, and, on the
-  RG40XX and the CubeXX, how the stick lights glow: off, steady, breathing or rainbow.
+  RG40XX and the CubeXX, how the stick lights glow: off, in the theme's colour following the display's brightness, or in a colour and brightness of their own.
 - On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
 - A pixel font, a top bar with the radios, the trophy, the clock and the battery, and a bottom bar
   with the buttons.
