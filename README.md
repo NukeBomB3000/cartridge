@@ -1,9 +1,10 @@
 <h1 align="center"><img src="assets/logo/cartridge-boot-logo@2x.png" width="520" alt="Cartridge"></h1>
 
-<p align="center"><b>A shelf of real-looking cartridges and discs for Anbernic H700 handhelds.</b><br>
+<p align="center"><b>A shelf of real-looking cartridges, discs, tapes, prints and books for Anbernic H700 handhelds.</b><br>
 Pick a game off the shelf, pull it down into the handheld and play: GBA, GBC, GB, Game Gear, NES,
-SNES, Master System, Mega Drive, PC Engine, PlayStation and Nintendo DS, on
-<a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>.</p>
+SNES, Master System, Mega Drive, PC Engine, PlayStation and Nintendo DS. The same shelf holds
+your music as cassettes, your films as VHS tapes, your pictures as Polaroids and your books as
+books, on <a href="https://github.com/pvaibhav/BaseOS">BaseOS</a>.</p>
 
 <p align="center">
 <a href="https://github.com/NukeBomB3000/cartridge/releases"><b>Download</b></a> ·
@@ -36,6 +37,13 @@ way: one button to play, one to resume, nothing to set up first.
   its achievements and the settings, a five-band equalizer, save states with a switcher, rewind,
   fast-forward, link play between two handhelds, Wi-Fi, Bluetooth and SSH, all without leaving
   the shelf.
+- **More than games.** Music, films, pictures and ebooks have shelves of their own, with the same
+  navigation: the folders of `Music/` are cassettes, `Videos/` VHS tapes, `Pictures/` Polaroids and
+  the EPUBs of `Books/` hardbacks. Each has its own player, and each remembers where you were.
+- **A television, too.** Plug an HDMI cable into an RG40XX, an RG CubeXX or an RG SP and the
+  handheld switches over, no reboot: the picture is sharp at twice its size on a 1080p signal,
+  and unplugging brings the screen back. The RG40XX's analog sticks are real sticks in a
+  PlayStation game, and their lights can follow the theme.
 - **Easy on the battery and the card.** Each system gets the CPU clock it needs, the handheld
   sleeps by itself and powers off a few minutes later, and the autosave spares the card.
 - **Picks up where you left it.** It resumes the last game at boot, or opens the shelf on the cart
@@ -164,6 +172,71 @@ over on first boot.
 <br><sub>The DS pause menu, and the shelf that opens where it was left</sub>
 </p>
 
+## Music, video, pictures and books
+
+The shelf goes on past the games. Each kind has a shelf after the Nintendo DS's, with one model
+for what it holds, and each opens its own player. Folders work the same everywhere: A on a tape
+whose folder has folders in it goes in, B comes out, and a folder with only the kind's files in it
+is something to play. A short A goes on from where you were, a long A (as for a game) starts again,
+and holding MENU leaves a player as it ejects a game.
+
+<p align="center">
+<img src="screenshots/music-tape-shelf.png" width="380" alt="The Music shelf: a compact cassette in black plastic, its folder's name on the white strip, the two hubs cut right through the shell">
+<img src="screenshots/music-tape-album.png" width="380" alt="Albums of an artist as cassettes, each with a colour band of its own">
+<br><sub>Music: every folder is a cassette. The hubs and the holes in its foot are real holes, and Y paints it like a cart</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/music-player.png" width="380" alt="NOW PLAYING: the song, its place in the album, the time and the state">
+<img src="screenshots/video-vhs-shelf.png" width="380" alt="The Video shelf: VHS tapes with the film's name on the black label and a roll of tape on each reel">
+<br><sub>The music player (MP3, FLAC, OGG, WAV, AAC, M4A), and the Video shelf</sub>
+</p>
+
+- **Music** is decoded with [Symphonia](https://github.com/pdeljanov/Symphonia) and fed to the same
+  audio ring as the games, so the equalizer works on it. A pauses, Left and Right jump ten seconds,
+  L1 and R1 skip a song. The player keeps the handheld awake like a game, dims the screen after
+  30 seconds and puts the stick lights out.
+- **Video** is a VHS tape for each film, with a roll of tape on each reel, thick on one side and
+  thin on the other as its name says. A film plays through `System/ffmpeg`, FFmpeg built from its
+  own source (LGPL, `scripts/build-ffmpeg.sh` checks its signature): a 1080p H.264 video decodes at
+  twice its own speed on an RG40XX and uses under half of its cores. The sound is the clock, so
+  the picture never drifts. Left and Right jump ten seconds, Up and Down a minute, X picks the next
+  sound track, SELECT+Y fits or stretches the picture.
+
+<p align="center">
+<img src="screenshots/video-player.png" width="380" alt="A film playing, its panel with the name, time and state over the picture">
+<img src="screenshots/pictures-polaroid.png" width="380" alt="The Pictures shelf: a Polaroid wearing the first picture of its folder, the folder's name written on its chin">
+<br><sub>The video player, and the Pictures shelf</sub>
+</p>
+
+- **Pictures** stand as Polaroids wearing the first picture of their folder. The viewer shows them
+  fitted to the screen (SELECT+Y stretches), Left and Right turn to the next, A shows the name
+  and nothing else is ever laid over a picture. JPEGs are decoded no bigger than the screen needs
+  and turned upright by their Exif data, PNGs too.
+
+<p align="center">
+<img src="screenshots/picture-viewer.png" width="250" alt="The picture viewer: a portrait photo, fitted to the screen">
+<img src="screenshots/books-shelf.png" width="250" alt="The Books shelf: hardbacks with a round spine and a page block set back from the boards">
+<img src="screenshots/reader-light.png" width="250" alt="The reader's light page: a book's text in the guide's type">
+<br><sub>The viewer, the Books shelf and the reader</sub>
+</p>
+
+- **Books** (`.epub` and `.txt`) stand as hardbacks with their own cover, a round spine on the
+  left and a page block set back from the boards. The reader sets the text in whole lines, with
+  L2 and R2 for the text size (eight sizes, kept), Up and Down for a line, L1 and R1 for a page.
+  SELECT+Y switches a dark page on and off, and SELECT+X turns the screen a quarter, clockwise,
+  back, or upright, to read in portrait: the d-pad turns with it.
+
+<p align="center">
+<img src="screenshots/reader-dark.png" width="380" alt="The reader's dark page">
+<img src="screenshots/reader-turned.png" width="380" alt="The reader with the screen turned a quarter for reading upright">
+<br><sub>The dark page, and the screen turned for reading upright</sub>
+</p>
+
+Put the files in `Music/`, `Videos/`, `Pictures/` and `Books/` on the card, in as many folders as you
+like. A book's cover is cut from its EPUB and kept in `Labels/Books/.covers/`; a `Labels/Books/<name>.png`
+of your own takes its place.
+
 Every change is in the [changelog](CHANGELOG.md).
 
 ## Features
@@ -215,15 +288,19 @@ Every change is in the [changelog](CHANGELOG.md).
   ScreenScraper, one for each disc of a PlayStation game.
 - Bluetooth, on handhelds that have it: pair a device and connect it, or forget it. Game sound and
   gamepads over Bluetooth are still to come.
-- Music, video, pictures and books: the folders of `Music/` stand as cassette tapes, those of
-  `Videos/` as VHS tapes, those of `Pictures/` as Polaroids and the EPUBs of `Books/` as books, on
-  shelves of their own (the books are read with an optional dark page and a screen turned for
-  reading upright); A goes into a folder or plays what is in it, B comes back out. A
-  film or an album goes on where it was left; a long A starts again. Videos are decoded by
-  `System/ffmpeg`, FFmpeg built from its own source (LGPL, `scripts/build-ffmpeg.sh`).
+- Music, video, pictures and books on shelves of their own, each with its player: see
+  [Music, video, pictures and books](#music-video-pictures-and-books) above.
+- HDMI out on the handhelds with a mini HDMI port: with a cable in as Cartridge starts, the output
+  switches to the TV at 1080p60, with the picture drawn at half that size and doubled by the
+  display engine so the pixels stay sharp; the stretch hotkey fills the whole screen, and the
+  sound follows the cable. The cable can go in and out while it runs: Cartridge saves the game and
+  starts again on the right output.
+- Analog sticks, on the RG40XX and the CubeXX: they steer the menus, and a PlayStation game
+  (PCSX ReARMed or SwanStation) gets a DualShock with the real left and right sticks, and L3 and R3.
 - Theme: the background's pattern, its motion and its colour, which the menus and both bars take
   (Night is grey, Amber is Mega Man Zero's own), the bottom bar's font, Bold or Thin, and, on the
-  RG40XX and the CubeXX, how the stick lights glow: off, in the theme's colour following the display's brightness, or in a colour and brightness of their own.
+  RG40XX and the CubeXX, how the stick lights glow: off, in the theme's colour following the
+  display's brightness, or in a colour and brightness of their own.
 - On the RG SP, RG34XX SP and RG34XX, the panel runs at 120 Hz and its colours are calibrated.
 - A pixel font, a top bar with the radios, the trophy, the clock and the battery, and a bottom bar
   with the buttons.
@@ -246,6 +323,11 @@ Every change is in the [changelog](CHANGELOG.md).
 <img src="screenshots/crt-md-scanlines.png" width="250" alt="The same game with scanlines">
 <img src="screenshots/crt-md.png" width="250" alt="The same game in the CRT look: curved edges, a vignette and the glow of phosphor">
 <br><sub>SELECT+X goes round the screen looks of a television's console: none, scanlines, CRT</sub>
+</p>
+
+<p align="center">
+<img src="screenshots/theme-stick-lights.png" width="380" alt="Theme with the stick lights on a colour of their own: Stick Lights Colour, Light Colour Purple, Light Brightness 50 percent">
+<br><sub>Theme on an RG40XX: the stick lights, off, in the theme's colour or in a colour and brightness of their own</sub>
 </p>
 
 <p align="center">
@@ -272,7 +354,7 @@ for its panel.
 | RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
 | RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
 | RG40XX V | 640x480 | Tested on hardware: its one stick steers the menus and is an analog stick for a PlayStation game, the screen looks and Wi-Fi work |
-| RG40XX H | 640x480 | Untested (two sticks, same as the V's) |
+| RG40XX H | 640x480 | Tested on hardware: two analog sticks and their lights, HDMI out with sound, and the music, video, picture and book shelves |
 | RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
 | RG28XX | 480x640, turned | Experimental |
 
@@ -285,7 +367,8 @@ is the most useful thing you can send.
    microSD card, put it in **SD1** and boot once.
 2. Copy the contents of the [latest release](https://github.com/NukeBomB3000/cartridge/releases/latest)
    to the root of that card.
-3. Put your games in `Games/GBA`, `Games/GB`, `Games/GBC`, `Games/NES`, `Games/SNES`, `Games/MD`,
+3. Put your music, films, pictures and books in `Music/`, `Videos/`, `Pictures/` and `Books/` if
+   you have any, and your games in `Games/GBA`, `Games/GB`, `Games/GBC`, `Games/NES`, `Games/SNES`, `Games/MD`,
    `Games/GG`, `Games/SMS`, `Games/PCE`, `Games/PS1` and `Games/NDS` (a `.nds`). An NES game is a `.nes`, a Mega Drive
    game a `.md`, `.gen` or `.bin`, a Game Gear game a `.gg`, a Master System game a `.sms`, a PC
    Engine game a `.pce`. A
@@ -309,7 +392,13 @@ Cartridge is a fork of [omega-zero](https://github.com/oauramos/omega-zero) by *
   card, the cart pigments, the idea of Gambatte and of kinder card writes, and the
   RetroAchievements client, which began in nickclyde's slot-plus. It runs on
   [rcheevos](https://github.com/RetroAchievements/rcheevos) (MIT), shipped in `System/licenses/`.
-- [BaseOS](https://github.com/pvaibhav/BaseOS) by pvaibhav.
+- [BaseOS](https://github.com/pvaibhav/BaseOS) by pvaibhav. The way to switch an H700 to HDMI and
+  the protocol of the stick lights were found in pvaibhav's NextUI port.
+- [FFmpeg](https://ffmpeg.org) (LGPL-2.1) plays the videos, as `System/ffmpeg`, built from its own
+  source with no GPL parts; [Symphonia](https://github.com/pdeljanov/Symphonia) (MPL-2.0) decodes the
+  music; [jpeg-decoder](https://github.com/image-rs/jpeg-decoder), [zip](https://github.com/zip-rs/zip2)
+  and [roxmltree](https://github.com/RazrFalcon/roxmltree) read the pictures and the EPUBs. The
+  reader's type is DejaVu, licence in `assets/`.
 - Emulation by [mGBA](https://mgba.io) (MPL-2.0) and [gpSP](https://github.com/libretro/gpsp)
   (GPL-2.0) for the Game Boys; [FCEUmm](https://github.com/libretro/libretro-fceumm) (GPL-2.0)
   for the NES; [Snes9x](https://github.com/libretro/snes9x) (free for
