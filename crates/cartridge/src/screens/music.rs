@@ -30,12 +30,33 @@ impl App {
         let old = std::mem::replace(&mut self.shelves[at].1, shelf);
         let mut old = old;
         self.dropped_faces.extend(old.take_faces());
-        self.faces_stale = true;
+        self.music_stale = true;
         if at == self.shelf_at {
             self.shelf_platform = cartridge_ui::Printed::default();
             self.pill_letter = None;
             self.shelf_named = None;
             self.name_pending = true;
+        }
+    }
+
+    /// The tapes on the Music shelf, if its faces have to be drawn: taken once.
+    pub fn take_music_stale(&mut self) -> bool {
+        std::mem::take(&mut self.music_stale)
+    }
+
+    /// The tapes of the Music shelf now.
+    pub fn music_carts(&self) -> Vec<cartridge_store::Cart> {
+        self.shelves
+            .iter()
+            .find(|(p, _)| *p == Platform::Music)
+            .map(|(_, shelf)| shelf.carts.clone())
+            .unwrap_or_default()
+    }
+
+    /// The faces the Music shelf's tapes are drawn on, in their order.
+    pub fn set_music_faces(&mut self, faces: Vec<cartridge_ui::TexId>) {
+        if let Some((_, shelf)) = self.shelves.iter_mut().find(|(p, _)| *p == Platform::Music) {
+            shelf.set_faces(faces);
         }
     }
 

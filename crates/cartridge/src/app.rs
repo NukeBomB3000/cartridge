@@ -441,6 +441,9 @@ pub struct App {
     /// from.
     pub(crate) music_path: Vec<String>,
     pub(crate) music_back: Vec<usize>,
+    /// The Music shelf holds other tapes than the faces it was last drawn with: only they are
+    /// drawn again, not every game's.
+    pub(crate) music_stale: bool,
     hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
@@ -637,6 +640,7 @@ impl App {
             battery_at: BATTERY_POLL_MS,
             music_path: Vec::new(),
             music_back: Vec::new(),
+            music_stale: false,
             hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,

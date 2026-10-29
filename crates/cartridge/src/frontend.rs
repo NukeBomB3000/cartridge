@@ -265,12 +265,28 @@ impl Frontend {
         }
     }
 
+    /// Draws the faces of the tapes now on the Music shelf, and nothing else: going into a folder
+    /// must not draw every game's face again, which holds the handheld's memory and its CPU.
+    fn upload_music_faces(&mut self, compositor: &mut Compositor) {
+        for tex in self.session.app_mut().take_dropped_faces() {
+            compositor.update_texture(tex, 1, 1, &[0; 4]);
+        }
+        let carts = self.session.app().music_carts();
+        let refs: Vec<&Cart> = carts.iter().collect();
+        let faces = boot_faces(&refs)
+            .into_iter()
+            .map(|(f, _)| compositor.create_texture(f.w, f.h, &f.rgba))
+            .collect();
+        self.session.app_mut().set_music_faces(faces);
+    }
+
     /// Draws every cart's face. No label is decoded here, where hundreds of them would hold the
     /// boot logo up: every cart comes up in its generated face, and each one that wears a label
     /// scan is drawn in it on the label workers' threads, the carts on screen first, for compose
     /// to upload as they come back.
     pub fn upload_faces(&mut self, compositor: &mut Compositor) {
         self.session.app_mut().take_faces_stale();
+        self.session.app_mut().take_music_stale();
         for tex in self.session.app_mut().take_dropped_faces() {
             compositor.update_texture(tex, 1, 1, &[0; 4]);
         }
@@ -344,6 +360,9 @@ impl Frontend {
         // Five Games switched on or off lays the shelves out anew, every face drawn again
         if self.session.app().faces_stale {
             self.upload_faces(compositor);
+        }
+        if self.session.app_mut().take_music_stale() {
+            self.upload_music_faces(compositor);
         }
         compositor.set_blue_light(self.session.app().blue_light());
         compositor.set_shake(self.session.app().screen_shake());
