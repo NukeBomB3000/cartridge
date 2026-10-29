@@ -204,9 +204,8 @@ and holding MENU leaves a player as it ejects a game.
   sound track, SELECT+Y fits or stretches the picture.
 
 <p align="center">
-<img src="screenshots/video-player.png" width="380" alt="A film playing, its panel with the name, time and state over the picture">
 <img src="screenshots/pictures-polaroid.png" width="380" alt="The Pictures shelf: a Polaroid wearing the first picture of its folder, the folder's name written on its chin">
-<br><sub>The video player, and the Pictures shelf</sub>
+<br><sub>The Pictures shelf</sub>
 </p>
 
 - **Pictures** stand as Polaroids wearing the first picture of their folder. The viewer shows them
@@ -214,24 +213,11 @@ and holding MENU leaves a player as it ejects a game.
   and nothing else is ever laid over a picture. JPEGs are decoded no bigger than the screen needs
   and turned upright by their Exif data, PNGs too.
 
-<p align="center">
-<img src="screenshots/picture-viewer.png" width="250" alt="The picture viewer: a portrait photo, fitted to the screen">
-<img src="screenshots/books-shelf.png" width="250" alt="The Books shelf: hardbacks with a round spine and a page block set back from the boards">
-<img src="screenshots/reader-light.png" width="250" alt="The reader's light page: a book's text in the guide's type">
-<br><sub>The viewer, the Books shelf and the reader</sub>
-</p>
-
 - **Books** (`.epub` and `.txt`) stand as hardbacks with their own cover, a round spine on the
   left and a page block set back from the boards. The reader sets the text in whole lines, with
   L2 and R2 for the text size (eight sizes, kept), Up and Down for a line, L1 and R1 for a page.
   SELECT+Y switches a dark page on and off, and SELECT+X turns the screen a quarter, clockwise,
   back, or upright, to read in portrait: the d-pad turns with it.
-
-<p align="center">
-<img src="screenshots/reader-dark.png" width="380" alt="The reader's dark page">
-<img src="screenshots/reader-turned.png" width="380" alt="The reader with the screen turned a quarter for reading upright">
-<br><sub>The dark page, and the screen turned for reading upright</sub>
-</p>
 
 Put the files in `Music/`, `Videos/`, `Pictures/` and `Books/` on the card, in as many folders as you
 like. A book's cover is cut from its EPUB and kept in `Labels/Books/.covers/`; a `Labels/Books/<name>.png`

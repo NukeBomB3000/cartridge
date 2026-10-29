@@ -8,7 +8,7 @@
   half; now the page always begins on the start of a line, a line that would be cut is left for
   the next page, and every move (a line, a page, back, to the end) lands on a line. A change of
   the text size (L2 and R2, the same eight sizes as the guide, kept) shows its figure, `TEXT SIZE
-  4 / 8`, in the foot for a moment. Screenshot: `reader-turned.png`.
+  4 / 8`, in the foot for a moment.
 - The picture viewer lays nothing over a picture by itself any more: A shows the name and place,
   and A hides them again.
 - Pictures and books, on shelves of their own after the video's. A folder of pictures under
@@ -20,15 +20,14 @@
   size) and turned upright by their Exif data, PNGs too. Where the folder was left is kept; a long
   A starts again. A book (`Books/*.epub`, `.txt`) stands as a hardback with its own cover, a round
   spine on the left and a page block set back from the boards, its leaves lined across the sides.
-  Screenshots: `pictures-polaroid.png`, `picture-viewer.png`, `books-shelf.png`.
+  Screenshot: `pictures-polaroid.png`.
 - The book reader. A on a book opens it in the guide's type: Up and Down move a line (kept
   moving while held), Left, Right, L1 and R1 turn a page, L2 and R2 make the text smaller or
   larger. SELECT+Y, the picture-size hotkey, switches a dark page on or off, and SELECT+X turns the
   screen a quarter (clockwise, back, upright) to read upright: the d-pad turns with the page. The
   place, the size, the dark and the turn are kept, and a long A starts the book from its top.
   EPUB covers are cut from the book to `Labels/Books/.covers/`; a card's own
-  `Labels/Books/<name>.png` takes their place. Screenshots: `reader-light.png`,
-  `reader-dark.png`, `reader-turned.png`.
+  `Labels/Books/<name>.png` takes their place.
 - The VHS tapes show their tape: a roll round each reel, one thick and one thin, as much on a side
   as the tape's name says, and always the same for a name.
 - A video player. A on a VHS tape plays the video (a folder of videos plays from the one that was
@@ -41,7 +40,6 @@
   to the screen or stretches it, B stops. A panel with the name and place shows while paused and
   for a few seconds after a press. `System/ffmpeg` is FFmpeg 7.1.5 built from its own source,
   LGPL, no GPL parts: `scripts/build-ffmpeg.sh` checks the source's signature and builds it.
-  Screenshot: `video-player.png`.
 - Where a film or an album was left is kept (`Config/media_resume.ini`) and a short A goes on from
   there; a long A (as for a game) starts again from the beginning. A film that was all but
   watched starts again of itself. The place kept is never written over before a picture of the
