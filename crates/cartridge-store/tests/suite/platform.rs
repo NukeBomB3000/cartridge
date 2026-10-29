@@ -5,7 +5,10 @@ fn every_platform_has_a_directory() {
     let names: Vec<&str> = Platform::ALL.iter().map(|p| p.dir_name()).collect();
     assert_eq!(
         names,
-        vec!["GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD", "GG", "SMS", "NDS", "Music", "Videos"]
+        vec![
+            "GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD", "GG", "SMS", "NDS", "Music",
+            "Videos"
+        ]
     );
 }
 

@@ -126,13 +126,14 @@ pub fn folder(kind: Kind, root: &Path, path: &[String]) -> PathBuf {
         .fold(root.join(kind.dir()), |dir, name| dir.join(name))
 }
 
-/// The tapes of the folder `path` names: one for each folder in it that has files, or, where it
-/// has no folders but files, one for the folder itself, so a card with its files loose in
-/// `Music/` still has a tape.
+/// The tapes of the folder `path` names. Music: one for each folder in it that has songs, or,
+/// where it has no folders but songs, one for the folder itself, which plays its songs as an
+/// album, so a card with its songs loose in `Music/` still has a tape. Videos: one for each
+/// folder in it that has videos, and one for each video in it, a film to a tape.
 pub fn tapes(kind: Kind, root: &Path, path: &[String]) -> Vec<Cart> {
     let dir = folder(kind, root, path);
     let held = contents(kind, &dir);
-    // a tape is coloured as a game is, by Config/cart_shell.ini, under its folder's name
+    // a tape is coloured as a game is, by Config/cart_shell.ini, under its name
     let read = |file: &str| std::fs::read_to_string(root.join(file)).unwrap_or_default();
     let shells = crate::cart_shell::layered(
         &read(crate::CART_SHELL_FILE),
@@ -147,27 +148,49 @@ pub fn tapes(kind: Kind, root: &Path, path: &[String]) -> Vec<Cart> {
         title: String::new(),
         code: String::new(),
     };
-    if held.folders.is_empty() && !held.files.is_empty() {
+    if kind == Kind::Music && held.folders.is_empty() && !held.files.is_empty() {
         let stem = path
             .last()
             .cloned()
             .unwrap_or_else(|| kind.dir().to_string());
         return vec![tape(stem, dir)];
     }
-    held.folders
+    let mut out: Vec<Cart> = held
+        .folders
         .into_iter()
         .map(|(name, rom)| tape(name, rom))
-        .collect()
+        .collect();
+    if kind == Kind::Video {
+        out.extend(held.files.into_iter().map(|file| {
+            let stem = file
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or_default()
+                .to_string();
+            tape(stem, file)
+        }));
+    }
+    out
 }
 
-/// Whether a tape's folder is played, not opened: it has files and no folder to go into. The
-/// files of a folder that also has folders in it are not part of its tapes.
+/// Whether a tape is played, not opened. A video's file is, and so is the folder of just one
+/// video; a folder of songs with no folder to go into is, as an album. The files of a folder that
+/// also has folders in it are not part of its tapes.
 pub fn plays(kind: Kind, tape: &Path) -> bool {
+    if tape.is_file() {
+        return true;
+    }
     let held = contents(kind, tape);
-    held.folders.is_empty() && !held.files.is_empty()
+    match kind {
+        Kind::Music => held.folders.is_empty() && !held.files.is_empty(),
+        Kind::Video => held.folders.is_empty() && held.files.len() == 1,
+    }
 }
 
-/// The files a tape plays, in the order they are listed in: those of its folder.
+/// The files a tape plays, in the order they are listed in: a file's own, or those of its folder.
 pub fn files(kind: Kind, tape: &Path) -> Vec<PathBuf> {
+    if tape.is_file() {
+        return vec![tape.to_path_buf()];
+    }
     contents(kind, tape).files
 }

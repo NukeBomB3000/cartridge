@@ -6,8 +6,9 @@
   VHS cassettes in 3D, after a photo of a JVC tape: a black shell with the ridged lid and the
   ridged panel along its foot, the two reel windows cut right through it with the reels standing
   in them, and a black label with the folder's name in gold. A goes into a folder with folders in
-  it, B comes back out, and a folder with only videos is a tape to play (the player comes next).
-  Y colours a tape as it does a game. Screenshot: `video-vhs-shelf.png`.
+  it, B comes back out. A video is a tape of its own, the file's name on its label, and a folder
+  of just one video plays it; the player comes next. Y colours a tape as it does a game.
+  Screenshot: `video-vhs-shelf.png`.
 - Music on tapes, with a player. The folders of `Music/` stand on a new Music shelf, after the
   last system, as compact cassettes in 3D: black plastic, a white writing strip with the folder's
   name, a coloured band with the window, the hubs as real holes through the shell (as are the four

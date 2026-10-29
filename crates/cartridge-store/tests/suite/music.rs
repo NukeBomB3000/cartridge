@@ -88,19 +88,34 @@ fn a_card_with_no_music_has_no_tapes() {
 }
 
 #[test]
-fn the_folders_of_videos_are_tapes_of_their_own_and_take_only_videos() {
-    use cartridge_store::media::{plays, tapes, Kind};
+fn a_video_is_a_tape_of_its_own_and_a_folder_of_one_plays_it() {
+    use cartridge_store::media::{files, plays, tapes, Kind};
     let d = tempdir().unwrap();
     let videos = d.path().join("Videos");
     song(&videos.join("Series/Season 1"), "e01.mkv");
+    song(&videos.join("Series/Season 1"), "e02.mkv");
     song(&videos.join("Series/Season 1"), "cover.jpg");
     song(&videos.join("Film"), "film.MP4");
+    song(&videos, "Loose Film.avi");
     song(&videos.join("Songs only"), "a.mp3");
     let found = tapes(Kind::Video, d.path(), &[]);
-    assert_eq!(names(&found), ["Film", "Series"]);
+    // the folders first, then the videos lying loose
+    assert_eq!(names(&found), ["Film", "Series", "Loose Film"]);
     assert!(found.iter().all(|c| c.platform == Platform::Video));
-    assert!(plays(Kind::Video, &videos.join("Film")));
+    assert!(
+        plays(Kind::Video, &videos.join("Film")),
+        "a folder of one video plays it"
+    );
+    assert!(plays(Kind::Video, &videos.join("Loose Film.avi")));
     assert!(!plays(Kind::Video, &videos.join("Series")));
+    // a season's episodes are a tape each, and none of them is a folder to open
+    let season = tapes(
+        Kind::Video,
+        d.path(),
+        &["Series".to_string(), "Season 1".to_string()],
+    );
+    assert_eq!(names(&season), ["e01", "e02"]);
+    assert_eq!(files(Kind::Video, &videos.join("Loose Film.avi")).len(), 1);
     // the music's tapes and the videos' do not mix: a song is no video
     assert!(tapes(Kind::Music, d.path(), &[]).is_empty());
 }

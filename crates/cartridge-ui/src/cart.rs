@@ -688,7 +688,7 @@ fn generated_label(s: &Spec, title: &str) -> Vec<u8> {
     rgba
 }
 
-/// A VHS tape's label: a black panel with the tape's name set in gold on up to three lines, over
+/// A VHS tape's label: a black panel with the tape's name set in gold on up to four lines, over
 /// a thin gold rule.
 fn vhs_label(s: &Spec, title: &str) -> Vec<u8> {
     const GOLD: [u8; 3] = [0xd8, 0xb8, 0x61];
@@ -715,7 +715,7 @@ fn vhs_label(s: &Spec, title: &str) -> Vec<u8> {
             title,
             (lw - 2 * SIDE) as f32,
             (lh - 10) as f32,
-            3,
+            4,
             28.0,
             14.0,
         );
