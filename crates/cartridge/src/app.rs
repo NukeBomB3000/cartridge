@@ -1557,7 +1557,9 @@ impl App {
     /// The selected game's name as the shelf prints it under the row: its file's name without
     /// its tags.
     pub fn selected_title(&self) -> Option<String> {
-        let title = self.selected_stem().map(cartridge_store::clean_title)?;
+        let title = self
+            .selected_stem()
+            .map(cartridge_store::clean_title_full)?;
         Some(match self.selected_picked() {
             true => format!("+ {title}"),
             false => title,

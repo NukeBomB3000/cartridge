@@ -5,7 +5,9 @@
 /// How many letters the shelf has room for on one line, at 640 pixels across.
 pub const TITLE_MAX: usize = 48;
 
-pub fn clean_title(stem: &str) -> String {
+/// `stem` as a title, whole: tags and underscores gone, a trailing article moved to the front.
+/// The shelf shows it scrolled through when it is too long for its row.
+pub fn clean_title_full(stem: &str) -> String {
     let mut out = String::new();
     let mut depth = 0u32;
     for c in stem.chars() {
@@ -31,7 +33,12 @@ pub fn clean_title(stem: &str) -> String {
             }
         }
     }
-    let name = name.trim().to_string();
+    name.trim().to_string()
+}
+
+/// [`clean_title_full`], cut to [`TITLE_MAX`] letters with `...` where it is longer.
+pub fn clean_title(stem: &str) -> String {
+    let name = clean_title_full(stem);
     if name.chars().count() > TITLE_MAX {
         let cut: String = name.chars().take(TITLE_MAX - 3).collect();
         format!("{}...", cut.trim_end())
@@ -75,5 +82,19 @@ mod tests {
         let t = clean_title(&long);
         assert_eq!(t.chars().count(), TITLE_MAX);
         assert!(t.ends_with("..."));
+    }
+}
+
+#[cfg(test)]
+mod full_tests {
+    use super::*;
+
+    #[test]
+    fn the_whole_title_is_kept_for_the_shelf_to_scroll() {
+        let stem = "06 Samstag Brian - 35 min - Leg and Glute - Strength Circuit";
+        assert_eq!(clean_title_full(stem), stem);
+        // the cut one is for where there is no room to scroll
+        assert!(clean_title(stem).ends_with("..."));
+        assert!(clean_title(stem).chars().count() <= TITLE_MAX);
     }
 }

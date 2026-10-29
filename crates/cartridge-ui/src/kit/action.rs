@@ -334,6 +334,54 @@ pub fn title_face(text: &str, room: u32, pal: &Palette) -> UndoFace {
         shown = format!("{}…", shown.trim_end());
     }
     let tw = text_width(&shown);
+    title_of_rows(&letters(&shown, ADVANCE), tw, pal)
+}
+
+/// How fast a title too wide for the row scrolls, in art pixels a second, and how long it stands
+/// at either end before it moves and before it starts again, in milliseconds.
+const SCROLL_PX_PER_S: u64 = 22;
+const SCROLL_HOLD_MS: u64 = 1600;
+
+/// How far, in art pixels, a title `ms` after it was shown has scrolled along a row of `room`: 0
+/// for a title that fits. A long one waits, runs to its end, waits there and starts over, so
+/// the whole of it can be read.
+pub fn title_scroll(text: &str, room: u32, ms: u64) -> u32 {
+    let full = text_width(text);
+    if full <= room {
+        return 0;
+    }
+    let travel = u64::from(full - room);
+    let run = travel * 1000 / SCROLL_PX_PER_S;
+    let at = ms % (2 * SCROLL_HOLD_MS + run);
+    if at < SCROLL_HOLD_MS {
+        0
+    } else if at < SCROLL_HOLD_MS + run {
+        ((at - SCROLL_HOLD_MS) * SCROLL_PX_PER_S / 1000) as u32
+    } else {
+        travel as u32
+    }
+}
+
+/// The shelf's title as [`title_face`] makes it, but a title wider than `room` is not cut: the
+/// stretch of it that is `scroll` art pixels along shows, so it can be scrolled through.
+pub fn title_face_at(text: &str, room: u32, scroll: u32, pal: &Palette) -> UndoFace {
+    if text_width(text) <= room {
+        return title_face(text, room, pal);
+    }
+    let rows: Vec<String> = letters(text, ADVANCE)
+        .iter()
+        .map(|row| {
+            row.chars()
+                .skip(scroll as usize)
+                .take(room as usize)
+                .collect()
+        })
+        .collect();
+    title_of_rows(&rows, room, pal)
+}
+
+/// The title's face from the rows of its letters, `tw` art pixels wide.
+fn title_of_rows(rows: &[String], tw: u32, pal: &Palette) -> UndoFace {
     let side = TITLE_RULE + TITLE_GAP;
     let w = side * 2 + tw + 1;
     let mut face = blank(w, BAR);
@@ -341,9 +389,8 @@ pub fn title_face(text: &str, room: u32, pal: &Palette) -> UndoFace {
     let mid = (HINT_TOP + 5) as i32;
     let left = side as i32;
     // the letters, a shade of the ground under them first
-    let rows = letters(&shown, ADVANCE);
-    ink(&mut face, &rows, left + 1, HINT_TOP as i32 + 1, pal.edge);
-    ink(&mut face, &rows, left, HINT_TOP as i32, pal.cream);
+    ink(&mut face, rows, left + 1, HINT_TOP as i32 + 1, pal.edge);
+    ink(&mut face, rows, left, HINT_TOP as i32, pal.cream);
     // each rule: a line in the frame's colour, thinning to a dim one at its far end, and a
     // diamond of the lit colour at its outer tip
     for (x0, dir) in [

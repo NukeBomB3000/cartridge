@@ -20,8 +20,10 @@ pub(crate) struct Clocks {
     platform: (String, u8),
     platform_tex: Option<TexId>,
     /// The selected game's name under the row and the palette colour it was baked in.
-    title: (String, u8),
+    title: (String, u8, u32),
     title_tex: Option<TexId>,
+    /// When that name came to the shelf, for a long one to scroll by.
+    title_since: Option<std::time::Instant>,
     /// The refused cart's alert, baked again when the palette changes.
     alert: Baked<u8>,
 }
@@ -55,14 +57,22 @@ pub(crate) fn sync_clock(app: &mut App, compositor: &mut Compositor, clocks: &mu
         }
         clocks.platform = named;
     }
-    let title = (app.selected_title().unwrap_or_default(), colour);
+    let name = app.selected_title().unwrap_or_default();
+    if name != clocks.title.0 {
+        clocks.title_since = Some(std::time::Instant::now());
+    }
+    let room = cartridge_ui::shelf_title_room(cartridge_gfx::out_w() / cartridge_ui::SPRITE_PX);
+    // a name too wide for the row scrolls through it, so every bake it changes
+    let ms = clocks
+        .title_since
+        .map_or(0, |since| since.elapsed().as_millis() as u64);
+    let scroll = cartridge_ui::shelf_title_scroll(&name, room, ms);
+    let title = (name, colour, scroll);
     if title != clocks.title {
         if title.0.is_empty() {
             app.clear_shelf_title();
         } else {
-            let room =
-                cartridge_ui::shelf_title_room(cartridge_gfx::out_w() / cartridge_ui::SPRITE_PX);
-            let face = cartridge_ui::shelf_title_face(&title.0, room, app.palette());
+            let face = cartridge_ui::shelf_title_face_at(&title.0, room, scroll, app.palette());
             let id = upload_nearest(compositor, &mut clocks.title_tex, &face);
             app.set_shelf_title_face(id, face.w);
         }

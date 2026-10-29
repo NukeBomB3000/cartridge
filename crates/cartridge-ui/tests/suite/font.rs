@@ -53,6 +53,7 @@ fn a_letter_is_either_inked_or_not() {
         lines: vec!["Café Wi-Fi".into()],
         px: 27.0,
         tracking: 0.0,
+        grid: text::FONT_GRID,
     };
     let cov = text::coverage(200, 40, &layout);
     assert!(cov.contains(&255), "nothing was drawn");
@@ -75,4 +76,34 @@ fn what_the_face_lacks_is_spelled_out() {
         text::line_width(face, "(C)", 18.0, 0.0),
         "measured as one thing, drawn as another"
     );
+}
+
+#[test]
+fn a_title_too_wide_for_the_row_scrolls_through_it_and_starts_over() {
+    use cartridge_ui::shelf_title_scroll as scroll;
+    let long = "A".repeat(80);
+    let room = 100;
+    // it waits, runs, waits at the end and starts again
+    assert_eq!(scroll(&long, room, 0), 0);
+    assert_eq!(scroll(&long, room, 1500), 0);
+    let early = scroll(&long, room, 1600 + 1000);
+    assert!((15..=30).contains(&early), "{early}");
+    let later = scroll(&long, room, 1600 + 5000);
+    assert!(later > early);
+    // at the end it has travelled the whole of what did not fit, no more
+    let end = scroll(&long, room, 1600 + 17_500);
+    let farther = scroll(&long, room, 1600 + 17_500 + 1000);
+    assert_eq!(end, farther);
+    assert!(end >= 300, "{end}");
+    // and over: one whole cycle later it is back at the start
+    let cycle = 2 * 1600 + 380 * 1000 / 22;
+    assert_eq!(scroll(&long, room, cycle), 0);
+}
+
+#[test]
+fn a_title_that_fits_the_row_does_not_scroll() {
+    use cartridge_ui::shelf_title_scroll as scroll;
+    for ms in [0, 2_000, 60_000] {
+        assert_eq!(scroll("Metroid Fusion", 200, ms), 0);
+    }
 }

@@ -13,18 +13,30 @@ pub const FONT_GRID: f32 = 18.0;
 
 /// `px` moved onto the face's grid: the nearest whole multiple, and never less than one.
 pub fn on_grid(px: f32) -> f32 {
-    (px / FONT_GRID).round().max(1.0) * FONT_GRID
+    on_grid_by(px, FONT_GRID)
+}
+
+/// Half a step of the grid: a face pixel is one of the screen's, not two. The text on a label
+/// that must hold a long name is set on this finer grid, a letter still a whole number of
+/// pixels, as small as the face goes.
+pub const HALF_GRID: f32 = FONT_GRID / 2.0;
+
+/// `px` moved onto a grid of `grid`: the nearest whole multiple, and never less than one.
+fn on_grid_by(px: f32, grid: f32) -> f32 {
+    (px / grid).round().max(1.0) * grid
 }
 
 /// The largest size on the grid no larger than `px`, and never less than one step.
-fn grid_floor(px: f32) -> f32 {
-    (px / FONT_GRID).floor().max(1.0) * FONT_GRID
+fn grid_floor(px: f32, grid: f32) -> f32 {
+    (px / grid).floor().max(1.0) * grid
 }
 
 pub struct Layout {
     pub lines: Vec<String>,
     pub px: f32,
     pub tracking: f32,
+    /// The grid the size is set on: [`FONT_GRID`], or [`HALF_GRID`] for a fine layout.
+    pub grid: f32,
 }
 
 pub fn label_font() -> Option<&'static Font> {
@@ -54,34 +66,69 @@ pub fn fit_box(
     max_px: f32,
     min_px: f32,
 ) -> Layout {
+    fit_box_by(
+        font, text, max_w, max_h, max_lines, max_px, min_px, FONT_GRID,
+    )
+}
+
+/// [`fit_box`] on the finer grid, to the size of the face's pixel on the screen: for a label
+/// with a long name to hold.
+#[allow(clippy::too_many_arguments)]
+pub fn fit_box_fine(
+    font: &Font,
+    text: &str,
+    max_w: f32,
+    max_h: f32,
+    max_lines: usize,
+    max_px: f32,
+    min_px: f32,
+) -> Layout {
+    fit_box_by(
+        font, text, max_w, max_h, max_lines, max_px, min_px, HALF_GRID,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn fit_box_by(
+    font: &Font,
+    text: &str,
+    max_w: f32,
+    max_h: f32,
+    max_lines: usize,
+    max_px: f32,
+    min_px: f32,
+    grid: f32,
+) -> Layout {
     let upper = text.to_uppercase();
-    let min_px = grid_floor(min_px);
-    let mut px = grid_floor(max_px).max(min_px);
+    let min_px = grid_floor(min_px, grid);
+    let mut px = grid_floor(max_px, grid).max(min_px);
     while px > min_px {
         let tracking = tracking_for(px);
-        let lines = wrap(font, &upper, px, tracking, max_w, false);
+        let lines = wrap(font, &upper, px, tracking, max_w, false, grid);
         if lines.len() <= max_lines
             && lines
                 .iter()
-                .all(|l| line_width(font, l, px, tracking) <= max_w)
-            && block_height(font, px, lines.len()) <= max_h
+                .all(|l| line_width_by(font, l, px, tracking, grid) <= max_w)
+            && block_height_by(font, px, lines.len(), grid) <= max_h
         {
             return Layout {
                 lines,
                 px,
                 tracking,
+                grid,
             };
         }
-        px -= FONT_GRID;
+        px -= grid;
     }
     let tracking = tracking_for(min_px);
     Layout {
-        lines: wrap(font, &upper, min_px, tracking, max_w, true)
+        lines: wrap(font, &upper, min_px, tracking, max_w, true, grid)
             .into_iter()
             .take(max_lines)
             .collect(),
         px: min_px,
         tracking,
+        grid,
     }
 }
 
@@ -105,7 +152,7 @@ pub fn coverage(dst_w: u32, dst_h: u32, layout: &Layout) -> Vec<u8> {
 /// is a whole number of the screen's, and is either inked or not.
 pub fn coverage_in(font: &Font, dst_w: u32, dst_h: u32, layout: &Layout) -> Vec<u8> {
     let mut out = vec![0u8; (dst_w * dst_h) as usize];
-    let px = on_grid(layout.px);
+    let px = on_grid_by(layout.px, layout.grid);
     let Some(vm) = font.horizontal_line_metrics(px) else {
         return out;
     };
@@ -114,7 +161,9 @@ pub fn coverage_in(font: &Font, dst_w: u32, dst_h: u32, layout: &Layout) -> Vec<
     let mut baseline = ((dst_h as f32 - block_h) / 2.0 + vm.ascent).round();
 
     for line in &layout.lines {
-        let mut pen = ((dst_w as f32 - line_width(font, line, px, layout.tracking)) / 2.0).round();
+        let mut pen =
+            ((dst_w as f32 - line_width_by(font, line, px, layout.tracking, layout.grid)) / 2.0)
+                .round();
         for ch in printed(font, line).chars() {
             let (m, cov) = font.rasterize(ch, px);
             let cov: Vec<u8> = cov
@@ -154,8 +203,8 @@ pub fn cap_top(font: &Font, dst_h: u32, px: f32) -> f32 {
     baseline - (m.height as f32 + m.ymin as f32) + air as f32
 }
 
-fn block_height(font: &Font, px: f32, lines: usize) -> f32 {
-    match font.horizontal_line_metrics(on_grid(px)) {
+fn block_height_by(font: &Font, px: f32, lines: usize, grid: f32) -> f32 {
+    match font.horizontal_line_metrics(on_grid_by(px, grid)) {
         Some(vm) => vm.new_line_size.round() * lines as f32,
         None => 0.0,
     }
@@ -183,7 +232,11 @@ pub fn printed(font: &Font, line: &str) -> String {
 
 /// How wide `line` is, measured at the grid size it is drawn at.
 pub fn line_width(font: &Font, line: &str, px: f32, tracking: f32) -> f32 {
-    let px = on_grid(px);
+    line_width_by(font, line, px, tracking, FONT_GRID)
+}
+
+fn line_width_by(font: &Font, line: &str, px: f32, tracking: f32, grid: f32) -> f32 {
+    let px = on_grid_by(px, grid);
     let mut w = 0.0;
     let mut n = 0;
     for ch in printed(font, line).chars() {
@@ -206,12 +259,13 @@ fn wrap(
     tracking: f32,
     max_w: f32,
     break_words: bool,
+    grid: f32,
 ) -> Vec<String> {
     let mut lines: Vec<String> = Vec::new();
     let mut line = String::new();
     for word in text.split_whitespace() {
         let parts = if break_words {
-            break_word(font, word, px, tracking, max_w)
+            break_word(font, word, px, tracking, max_w, grid)
         } else {
             vec![word.to_string()]
         };
@@ -221,7 +275,7 @@ fn wrap(
             } else {
                 format!("{line} {part}")
             };
-            if line.is_empty() || line_width(font, &joined, px, tracking) <= max_w {
+            if line.is_empty() || line_width_by(font, &joined, px, tracking, grid) <= max_w {
                 line = joined;
             } else {
                 lines.push(std::mem::take(&mut line));
@@ -235,15 +289,22 @@ fn wrap(
     lines
 }
 
-fn break_word(font: &Font, word: &str, px: f32, tracking: f32, max_w: f32) -> Vec<String> {
-    if line_width(font, word, px, tracking) <= max_w {
+fn break_word(
+    font: &Font,
+    word: &str,
+    px: f32,
+    tracking: f32,
+    max_w: f32,
+    grid: f32,
+) -> Vec<String> {
+    if line_width_by(font, word, px, tracking, grid) <= max_w {
         return vec![word.to_string()];
     }
     let mut parts = Vec::new();
     let mut part = String::new();
     for ch in word.chars() {
         part.push(ch);
-        if line_width(font, &part, px, tracking) > max_w && part.chars().count() > 1 {
+        if line_width_by(font, &part, px, tracking, grid) > max_w && part.chars().count() > 1 {
             part.pop();
             parts.push(std::mem::take(&mut part));
             part.push(ch);

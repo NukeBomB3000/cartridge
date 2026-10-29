@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- A long name no longer gets cut. On the shelf the name under the carts scrolls through the row
+  when it is wider than it: it waits, runs to its end, waits there and starts over. The labels of
+  the tapes and the VHS cassettes set a long name on a finer grid, down to nine pixels, so the
+  whole of it stands on the label. Screenshot: `video-vhs-shelf.png`.
 - A Video shelf, after the Music shelf, with the same folders: the folders of `Videos/` stand as
   VHS cassettes in 3D, after a photo of a JVC tape: a black shell with the ridged lid and the
   ridged panel along its foot, the two reel windows cut right through it with the reels standing

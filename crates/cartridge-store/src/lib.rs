@@ -53,4 +53,4 @@ pub use stamp::{
 };
 pub use stick_lights::{light_colour_index, StickLights, LIGHT_COLOURS, LIGHT_LEVEL_MAX};
 pub use theme::{Theme, THEME_FILE};
-pub use title::{clean_title, TITLE_MAX};
+pub use title::{clean_title, clean_title_full, TITLE_MAX};

@@ -688,7 +688,7 @@ fn generated_label(s: &Spec, title: &str) -> Vec<u8> {
     rgba
 }
 
-/// A VHS tape's label: a black panel with the tape's name set in gold on up to four lines, over
+/// A VHS tape's label: a black panel with the tape's name set in gold, as big as it goes on up to five lines, over
 /// a thin gold rule.
 fn vhs_label(s: &Spec, title: &str) -> Vec<u8> {
     const GOLD: [u8; 3] = [0xd8, 0xb8, 0x61];
@@ -710,16 +710,20 @@ fn vhs_label(s: &Spec, title: &str) -> Vec<u8> {
         }
     }
     if let Some(font) = text::label_font() {
-        let layout = text::fit_box(
+        let layout = text::fit_box_fine(
             font,
             title,
             (lw - 2 * SIDE) as f32,
             (lh - 10) as f32,
-            4,
-            28.0,
-            14.0,
+            5,
+            27.0,
+            9.0,
         );
-        let cover = embolden(&text::coverage(lw, lh, &layout), lw as usize);
+        let cover = embolden_by(
+            &text::coverage(lw, lh, &layout),
+            lw as usize,
+            if layout.px <= text::HALF_GRID { 0 } else { 1 },
+        );
         for (px, a) in rgba.chunks_exact_mut(4).zip(cover) {
             let a = a as u32;
             for c in 0..3 {
@@ -731,7 +735,7 @@ fn vhs_label(s: &Spec, title: &str) -> Vec<u8> {
 }
 
 /// A cassette's writing strip: white paper with the folder's name written across it, in as big
-/// a hand as the strip holds, on up to two lines, over two faint rules.
+/// a hand as the strip holds, on up to three lines, over two faint rules.
 fn tape_label(s: &Spec, title: &str) -> Vec<u8> {
     const PAPER: [u8; 3] = [0xf3, 0xf1, 0xea];
     const INK: [u8; 3] = [0x1c, 0x1a, 0x22];
@@ -756,16 +760,20 @@ fn tape_label(s: &Spec, title: &str) -> Vec<u8> {
         }
     }
     if let Some(font) = text::label_font() {
-        let layout = text::fit_box(
+        let layout = text::fit_box_fine(
             font,
             title,
             (lw - 2 * SIDE) as f32,
             (lh - 6) as f32,
-            2,
-            32.0,
-            14.0,
+            3,
+            27.0,
+            9.0,
         );
-        let cover = embolden(&text::coverage(lw, lh, &layout), lw as usize);
+        let cover = embolden_by(
+            &text::coverage(lw, lh, &layout),
+            lw as usize,
+            if layout.px <= text::HALF_GRID { 0 } else { 1 },
+        );
         for (px, a) in rgba.chunks_exact_mut(4).zip(cover) {
             let a = a as u32;
             for c in 0..3 {
@@ -779,10 +787,16 @@ fn tape_label(s: &Spec, title: &str) -> Vec<u8> {
 /// `cover`, lettering `w` wide, with each stroke one art pixel thicker to the right: a pixel
 /// face set bold, so a name reads from across a room.
 fn embolden(cover: &[u8], w: usize) -> Vec<u8> {
+    embolden_by(cover, w, BOLD)
+}
+
+/// [`embolden`] by `bold` pixels: a name set on the fine grid, whose strokes are a pixel, is
+/// kept as it is.
+fn embolden_by(cover: &[u8], w: usize, bold: u32) -> Vec<u8> {
     (0..cover.len())
         .map(|i| {
             let col = i % w;
-            (0..=BOLD as usize)
+            (0..=bold as usize)
                 .filter(|k| col >= *k)
                 .map(|k| cover[i - k])
                 .max()
