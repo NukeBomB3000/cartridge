@@ -4,6 +4,7 @@ mod draw;
 mod fbdev;
 mod fbo;
 mod gl;
+mod hdmi_layer;
 mod grade;
 #[cfg(target_os = "macos")]
 mod headless;

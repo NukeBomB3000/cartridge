@@ -132,6 +132,7 @@ impl Egl {
 
 impl FbdevSurface {
     pub fn new() -> Result<Self, GfxError> {
+        crate::hdmi_layer::settle();
         let attr = |name: &str| std::fs::read_to_string(format!("{FB0}/{name}")).ok();
         let hint = attr("mode")
             .as_deref()
@@ -139,7 +140,13 @@ impl FbdevSurface {
             .or_else(|| attr("modes").as_deref().and_then(panel_mode))
             .or_else(|| attr("virtual_size").as_deref().and_then(panel_size))
             .unwrap_or(FALLBACK_PANEL);
-        FbdevSurface::open(hint)
+        let surface = FbdevSurface::open(hint);
+        if surface.is_ok() {
+            // the driver may restore the LCD's layer as the surface comes up: write it again
+            // once it has
+            crate::hdmi_layer::settle_later();
+        }
+        surface
     }
 
     fn open(hint: (u32, u32)) -> Result<Self, GfxError> {

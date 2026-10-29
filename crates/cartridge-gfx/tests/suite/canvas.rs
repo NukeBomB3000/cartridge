@@ -23,7 +23,8 @@ fn every_panel_cartridge_runs_on_gets_its_own_canvas() {
 
 #[test]
 fn a_panel_of_another_size_gets_the_canvas_closest_to_its_shape() {
-    assert_eq!(Canvas::for_panel(1280, 720), Canvas::WIDE);
+    assert_eq!(Canvas::for_panel(1280, 720), Canvas::MONITOR);
+    assert_eq!(Canvas::for_panel(1500, 1000), Canvas::WIDE);
     assert_eq!(Canvas::for_panel(1024, 768), Canvas::FOUR_THREE);
     assert_eq!(Canvas::for_panel(800, 800), Canvas::SQUARE);
     assert_eq!(Canvas::for_panel(0, 0), Canvas::SQUARE);

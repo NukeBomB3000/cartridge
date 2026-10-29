@@ -41,6 +41,18 @@ out="$SD/cartridge.log"
 if ! (: > "$out") 2>/dev/null; then
 	out="$TMPDIR_RO/cartridge.log"
 fi
+# the output follows the cable, HDMI with one in and the LCD without; it is switched here, with
+# no EGL surface up, as the GPU driver latches the framebuffer's size as cartridge starts
+if [ -f "$SYS/hdmi.sh" ]; then
+	sh "$SYS/hdmi.sh" sync > /dev/null 2>&1
+	if sh "$SYS/hdmi.sh" active; then
+		log "output hdmi"
+		# a 16:9 canvas, drawn 1:1 into the 960x540 framebuffer the engine doubles
+		export CARTRIDGE_CANVAS=960x540
+	else
+		log "output lcd"
+	fi
+fi
 log "exec $SYS/cartridge"
 
 exec "$LOADER" "$SYS/cartridge" > "$out" 2>&1

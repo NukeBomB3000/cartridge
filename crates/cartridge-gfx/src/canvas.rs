@@ -15,7 +15,14 @@ impl Canvas {
     pub const FOUR_THREE: Canvas = Canvas { w: 640, h: 480 };
     /// The RG CubeXX.
     pub const SQUARE: Canvas = Canvas { w: 720, h: 720 };
-    pub const ALL: [Canvas; 3] = [Canvas::WIDE, Canvas::FOUR_THREE, Canvas::SQUARE];
+    /// A 16:9 monitor on HDMI: half of 1080p, which the display engine doubles exactly.
+    pub const MONITOR: Canvas = Canvas { w: 960, h: 540 };
+    pub const ALL: [Canvas; 4] = [
+        Canvas::WIDE,
+        Canvas::FOUR_THREE,
+        Canvas::SQUARE,
+        Canvas::MONITOR,
+    ];
 
     /// One of the canvases from `WxH`, such as `640x480`.
     pub fn parse(s: &str) -> Option<Canvas> {
@@ -34,7 +41,9 @@ impl Canvas {
             return *c;
         }
         let aspect = w as f32 / h.max(1) as f32;
-        if aspect >= 1.45 {
+        if aspect >= 1.7 {
+            Canvas::MONITOR
+        } else if aspect >= 1.45 {
             Canvas::WIDE
         } else if aspect >= 1.2 {
             Canvas::FOUR_THREE
