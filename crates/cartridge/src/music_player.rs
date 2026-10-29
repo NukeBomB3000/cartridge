@@ -397,7 +397,8 @@ mod tests {
         let frames = (rate as f32 * secs) as usize;
         let mut data = Vec::new();
         for i in 0..frames {
-            let s = ((i as f32 * 440.0 * std::f32::consts::TAU / rate as f32).sin() * 12000.0) as i16;
+            let s =
+                ((i as f32 * 440.0 * std::f32::consts::TAU / rate as f32).sin() * 12000.0) as i16;
             for _ in 0..channels {
                 data.extend_from_slice(&s.to_le_bytes());
             }
@@ -481,7 +482,10 @@ mod tests {
             }
             panic!("timed out waiting for {what}");
         };
-        wait("sound in the ring", Box::new(|| ring.queued_frames() > 1000));
+        wait(
+            "sound in the ring",
+            Box::new(|| ring.queued_frames() > 1000),
+        );
         assert_eq!(player.status().count, 2);
         // a second press of play is a pause, and the third plays on
         player.send(Cmd::Toggle);

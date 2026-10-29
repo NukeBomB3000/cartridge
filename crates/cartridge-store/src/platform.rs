@@ -18,10 +18,13 @@ pub enum Platform {
     /// Music, on tapes: not games, so no core runs them; the folders of `Music/` stand on this
     /// shelf and its player plays what is in them.
     Music,
+    /// Videos, on VHS tapes: the folders of `Videos/` stand on this shelf and its player plays
+    /// what is in them.
+    Video,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 12] = [
+    pub const ALL: [Platform; 13] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -34,6 +37,7 @@ impl Platform {
         Platform::Sms,
         Platform::Nds,
         Platform::Music,
+        Platform::Video,
     ];
 
     pub fn name(self) -> &'static str {
@@ -50,6 +54,7 @@ impl Platform {
             Platform::Sms => "Master System",
             Platform::Nds => "Nintendo DS",
             Platform::Music => "Music",
+            Platform::Video => "Video",
         }
     }
 
@@ -67,6 +72,7 @@ impl Platform {
             Platform::Sms => "SMS",
             Platform::Nds => "NDS",
             Platform::Music => "Music",
+            Platform::Video => "Videos",
         }
     }
 
@@ -83,6 +89,7 @@ impl Platform {
             Platform::Sms => &["sms"],
             Platform::Nds => &["nds"],
             Platform::Music => crate::music::EXTENSIONS,
+            Platform::Video => crate::media::Kind::Video.extensions(),
         }
     }
 
@@ -101,6 +108,7 @@ impl Platform {
             Platform::Nds => (384, 480),
             // no picture: the player draws its own screen
             Platform::Music => (320, 240),
+            Platform::Video => (320, 240),
         }
     }
 
@@ -150,6 +158,8 @@ impl Platform {
             Platform::Snes | Platform::Ps1 | Platform::Nds => None,
             // decoding a song takes a fraction of a core
             Platform::Music => Some(720_000),
+            // video decoding takes every core it can have
+            Platform::Video => None,
         }
     }
 

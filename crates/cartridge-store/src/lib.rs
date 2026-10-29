@@ -11,6 +11,7 @@ mod gb_palette;
 mod gba;
 pub mod ini;
 pub mod md;
+pub mod media;
 pub mod music;
 pub mod nds;
 mod platform;
@@ -23,6 +24,7 @@ mod stamp;
 mod stick_lights;
 mod theme;
 mod title;
+pub mod video;
 
 pub use app_state::{
     read_app_state, write_app_state, AppState, BLUE_LIGHT_MAX, BRIGHTNESS_MAX, EQ_BANDS, EQ_DB_MAX,

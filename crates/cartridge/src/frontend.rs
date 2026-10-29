@@ -39,12 +39,12 @@ mod sync_info;
 mod sync_keyboard;
 mod sync_labels;
 mod sync_link;
+mod sync_music;
 mod sync_network;
 mod sync_opening;
 mod sync_power;
 mod sync_settings;
 mod sync_shell;
-mod sync_music;
 mod sync_sleep;
 mod sync_start_notice;
 mod sync_switcher;
@@ -67,12 +67,12 @@ use sync_info::{sync_info, InfoTexes};
 use sync_keyboard::{sync_keyboard, KeyboardTexes};
 use sync_labels::sync_labels;
 use sync_link::{sync_link, LinkTexes};
+use sync_music::sync_music;
 use sync_network::{sync_network, NetworkTexes};
 use sync_opening::{sync_opening, TerminalRows};
 use sync_power::{sync_power, PowerPanels};
 use sync_settings::{sync_settings, SettingsTexes};
 use sync_shell::sync_shell;
-use sync_music::sync_music;
 use sync_sleep::sync_sleep;
 use sync_start_notice::sync_start_notice;
 use sync_switcher::{sync_switcher, Switcher};
@@ -269,19 +269,25 @@ impl Frontend {
         }
     }
 
-    /// Draws the faces of the tapes now on the Music shelf, and nothing else: going into a folder
+    /// Draws the faces of the tapes now on a tape shelf, and nothing else: going into a folder
     /// must not draw every game's face again, which holds the handheld's memory and its CPU.
-    fn upload_music_faces(&mut self, compositor: &mut Compositor) {
+    fn upload_media_faces(
+        &mut self,
+        platforms: Vec<cartridge_store::Platform>,
+        compositor: &mut Compositor,
+    ) {
         for tex in self.session.app_mut().take_dropped_faces() {
             compositor.update_texture(tex, 1, 1, &[0; 4]);
         }
-        let carts = self.session.app().music_carts();
-        let refs: Vec<&Cart> = carts.iter().collect();
-        let faces = boot_faces(&refs)
-            .into_iter()
-            .map(|(f, _)| compositor.create_texture(f.w, f.h, &f.rgba))
-            .collect();
-        self.session.app_mut().set_music_faces(faces);
+        for platform in platforms {
+            let carts = self.session.app().media_carts(platform);
+            let refs: Vec<&Cart> = carts.iter().collect();
+            let faces = boot_faces(&refs)
+                .into_iter()
+                .map(|(f, _)| compositor.create_texture(f.w, f.h, &f.rgba))
+                .collect();
+            self.session.app_mut().set_media_faces(platform, faces);
+        }
     }
 
     /// Draws every cart's face. No label is decoded here, where hundreds of them would hold the
@@ -290,7 +296,7 @@ impl Frontend {
     /// to upload as they come back.
     pub fn upload_faces(&mut self, compositor: &mut Compositor) {
         self.session.app_mut().take_faces_stale();
-        self.session.app_mut().take_music_stale();
+        self.session.app_mut().take_media_stale();
         for tex in self.session.app_mut().take_dropped_faces() {
             compositor.update_texture(tex, 1, 1, &[0; 4]);
         }
@@ -365,8 +371,9 @@ impl Frontend {
         if self.session.app().faces_stale {
             self.upload_faces(compositor);
         }
-        if self.session.app_mut().take_music_stale() {
-            self.upload_music_faces(compositor);
+        let stale = self.session.app_mut().take_media_stale();
+        if !stale.is_empty() {
+            self.upload_media_faces(stale, compositor);
         }
         compositor.set_blue_light(self.session.app().blue_light());
         compositor.set_shake(self.session.app().screen_shake());

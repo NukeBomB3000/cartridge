@@ -4,7 +4,7 @@ use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape};
+use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape, vhs};
 use crate::silhouette::GbShell;
 
 /// How thick a cart is, as a share of its width: a Game Pak is about 8 mm thick and 57 wide.
@@ -68,10 +68,12 @@ pub enum CartModel {
     Nds,
     /// A compact cassette: a folder of music.
     Tape,
+    /// A VHS cassette: a folder of videos.
+    Vhs,
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 16] = [
+    pub const ALL: [CartModel; 17] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -88,6 +90,7 @@ impl CartModel {
         CartModel::Sega8(Sega8Shell::MarkIii),
         CartModel::Nds,
         CartModel::Tape,
+        CartModel::Vhs,
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -109,6 +112,7 @@ impl CartModel {
             CartModel::Sega8(Sega8Shell::MarkIii) => 13,
             CartModel::Nds => 14,
             CartModel::Tape => 15,
+            CartModel::Vhs => 16,
         }
     }
 
@@ -121,6 +125,7 @@ impl CartModel {
             CartModel::HuCard => hucard::THICK,
             CartModel::Nds => nds::THICK,
             CartModel::Tape => tape::THICK,
+            CartModel::Vhs => vhs::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
             CartModel::Sega8(shell) => sega8::thick(shell),
@@ -255,6 +260,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::HuCard => hucard::outline(),
         CartModel::Nds => nds::outline(),
         CartModel::Tape => tape::outline(),
+        CartModel::Vhs => vhs::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
         CartModel::Sega8(shell) => sega8::outline(shell),
@@ -266,6 +272,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
 pub fn holes(model: CartModel) -> Vec<Vec<(f32, f32)>> {
     match model {
         CartModel::Tape => tape::holes(),
+        CartModel::Vhs => vhs::holes(),
         _ => Vec::new(),
     }
 }

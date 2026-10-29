@@ -9,3 +9,4 @@ pub mod nes;
 pub mod sega8;
 pub mod snes;
 pub mod tape;
+pub mod vhs;

@@ -86,3 +86,21 @@ fn a_card_with_no_music_has_no_tapes() {
     let d = tempdir().unwrap();
     assert!(tapes(d.path(), &[]).is_empty());
 }
+
+#[test]
+fn the_folders_of_videos_are_tapes_of_their_own_and_take_only_videos() {
+    use cartridge_store::media::{plays, tapes, Kind};
+    let d = tempdir().unwrap();
+    let videos = d.path().join("Videos");
+    song(&videos.join("Series/Season 1"), "e01.mkv");
+    song(&videos.join("Series/Season 1"), "cover.jpg");
+    song(&videos.join("Film"), "film.MP4");
+    song(&videos.join("Songs only"), "a.mp3");
+    let found = tapes(Kind::Video, d.path(), &[]);
+    assert_eq!(names(&found), ["Film", "Series"]);
+    assert!(found.iter().all(|c| c.platform == Platform::Video));
+    assert!(plays(Kind::Video, &videos.join("Film")));
+    assert!(!plays(Kind::Video, &videos.join("Series")));
+    // the music's tapes and the videos' do not mix: a song is no video
+    assert!(tapes(Kind::Music, d.path(), &[]).is_empty());
+}

@@ -140,7 +140,7 @@ impl Core {
             Platform::Md | Platform::Gg | Platform::Sms => &[Core::GenesisPlusGx],
             Platform::Nds => &[Core::Dsperate],
             // songs are decoded by the player, not by a core
-            Platform::Music => &[],
+            Platform::Music | Platform::Video => &[],
         }
     }
 

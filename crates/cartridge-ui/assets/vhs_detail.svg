@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 368 196">
+  <defs>
+    <pattern id="ridge" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+      <rect width="5" height="1.4" fill="#fff" fill-opacity="0.2"/>
+      <rect y="2.2" width="5" height="1.6" fill="#000" fill-opacity="0.34"/>
+    </pattern>
+  </defs>
+  <!-- the shell's edge: lit on its left and top, turned away on its right and foot -->
+  <rect x="3" y="0" width="2" height="50" fill="#fff" fill-opacity="0.3"/>
+  <rect x="7" y="0" width="354" height="1.6" fill="#fff" fill-opacity="0.3"/>
+  <rect x="0" y="53" width="2" height="136" fill="#fff" fill-opacity="0.3"/>
+  <rect x="366" y="6" width="2" height="183" fill="#000" fill-opacity="0.4"/>
+  <rect x="7" y="194.4" width="354" height="1.6" fill="#000" fill-opacity="0.4"/>
+  <!-- the lid, a step above the body, with its ridged panel -->
+  <rect x="6" y="19" width="356" height="29" fill="url(#ridge)"/>
+  <rect x="6" y="17" width="356" height="1.6" fill="#000" fill-opacity="0.4"/>
+  <rect x="6" y="48.4" width="356" height="1.6" fill="#fff" fill-opacity="0.22"/>
+  <rect x="0" y="50.4" width="368" height="2.4" fill="#000" fill-opacity="0.5"/>
+  <rect x="0" y="52.8" width="368" height="1.2" fill="#fff" fill-opacity="0.2"/>
+  <!-- the ridged panel along the foot -->
+  <rect x="6" y="157" width="356" height="33" fill="url(#ridge)"/>
+  <rect x="6" y="154.4" width="356" height="1.6" fill="#000" fill-opacity="0.4"/>
+  <rect x="6" y="156" width="356" height="1.2" fill="#fff" fill-opacity="0.22"/>
+  <!-- the bezels of the windows: a dark lip inside, a lit one under -->
+  <path d="M27.0,58.5 H78.0 A17.5,17.5 0 0 1 95.5,76.0 V134.0 A17.5,17.5 0 0 1 78.0,151.5 H27.0 A17.5,17.5 0 0 1 9.5,134.0 V76.0 A17.5,17.5 0 0 1 27.0,58.5 Z" fill="none" stroke="#fff" stroke-opacity="0.25" stroke-width="1.4"/><path d="M291.0,57.5 H342.0 A17.5,17.5 0 0 1 359.5,75.0 V134.0 A17.5,17.5 0 0 1 342.0,151.5 H291.0 A17.5,17.5 0 0 1 273.5,134.0 V75.0 A17.5,17.5 0 0 1 291.0,57.5 Z" fill="none" stroke="#fff" stroke-opacity="0.25" stroke-width="1.4"/>
+  <!-- the label's recess between the windows, and the posts either side of it -->
+  <rect x="105" y="58" width="159" height="1.6" fill="#000" fill-opacity="0.5"/>
+  <rect x="105" y="58" width="1.6" height="92" fill="#000" fill-opacity="0.4"/>
+  <rect x="105" y="148.4" width="159" height="1.6" fill="#fff" fill-opacity="0.3"/>
+  <rect x="262.4" y="58" width="1.6" height="92" fill="#fff" fill-opacity="0.28"/>
+  <rect x="96" y="60" width="8" height="88" fill="#000" fill-opacity="0.22"/>
+  <rect x="264" y="60" width="8" height="88" fill="#000" fill-opacity="0.22"/>
+</svg>

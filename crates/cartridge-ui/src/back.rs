@@ -118,6 +118,14 @@ fn shapes(model: CartModel) -> Vec<Shape> {
             all.extend(screw(0.03, 0.93, 0.018));
             all.extend(screw(0.97, 0.93, 0.018));
         }
+        CartModel::Vhs => {
+            // clear of the windows, which go through to the back
+            all.push(Rect([0.3, 0.34, 0.7, 0.76], RECESS, 1));
+            all.extend(print(0.36, 0.42, 0.08, &[0.28, 0.2, 0.24]));
+            all.extend(ridges(0.1, 0.9, 0.82, 0.035, 3));
+            all.extend(screw(0.06, 0.12, 0.014));
+            all.extend(screw(0.94, 0.12, 0.014));
+        }
         CartModel::Disc => {}
     }
     all

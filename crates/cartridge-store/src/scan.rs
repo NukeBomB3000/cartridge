@@ -45,7 +45,7 @@ pub fn scan(root: &Path) -> Result<Vec<Cart>, StoreError> {
     let mut carts = Vec::new();
     for platform in Platform::ALL {
         // the music's shelf is filled from the folders of Music/, as they are opened
-        if platform == Platform::Music {
+        if matches!(platform, Platform::Music | Platform::Video) {
             continue;
         }
         let dir = root.join("Games").join(platform.dir_name());
@@ -89,7 +89,7 @@ pub fn scan(root: &Path) -> Result<Vec<Cart>, StoreError> {
                     String::new(),
                 ),
                 Platform::Nds => crate::nds::header(&rom).unwrap_or_default(),
-                Platform::Music => (String::new(), String::new()),
+                Platform::Music | Platform::Video => (String::new(), String::new()),
             };
             carts.push(Cart {
                 platform,
