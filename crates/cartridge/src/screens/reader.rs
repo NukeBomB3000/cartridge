@@ -391,7 +391,9 @@ impl App {
             return self.close_reader();
         };
         match action {
-            Action::GbaDown(Btn::B) | Action::QuickMenu => return self.close_reader(),
+            Action::GbaDown(Btn::B) | Action::QuickMenu | Action::Eject => {
+                return self.close_reader()
+            }
             Action::PictureToggle => {
                 screen.dark = !screen.dark;
                 screen.stale = true;

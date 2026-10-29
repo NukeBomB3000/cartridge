@@ -178,7 +178,7 @@ impl App {
             return self.stop_video();
         };
         match action {
-            Action::GbaDown(Btn::B) | Action::QuickMenu => self.stop_video(),
+            Action::GbaDown(Btn::B) | Action::QuickMenu | Action::Eject => self.stop_video(),
             Action::GbaDown(Btn::A) => player.send(Cmd::Toggle),
             Action::GbaDown(Btn::L1) => player.send(Cmd::Prev),
             Action::GbaDown(Btn::R1) => player.send(Cmd::Next),

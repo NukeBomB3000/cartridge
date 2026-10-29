@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Holding MENU leaves the book reader, the picture viewer, the video player and the music player,
+  as holding it ejects a game; a short MENU press and B still do too.
 - The reader sets the page in whole lines. The line at the top and the foot of a page was drawn
   half; now the page always begins on the start of a line, a line that would be cut is left for
   the next page, and every move (a line, a page, back, to the end) lands on a line. A change of

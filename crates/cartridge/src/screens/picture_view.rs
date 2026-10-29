@@ -131,7 +131,9 @@ impl App {
 
     pub(crate) fn pictures_input(&mut self, action: Action) {
         let step = match action {
-            Action::GbaDown(Btn::B) | Action::QuickMenu => return self.close_pictures(),
+            Action::GbaDown(Btn::B) | Action::QuickMenu | Action::Eject => {
+                return self.close_pictures()
+            }
             Action::GbaDown(Btn::A) => {
                 if let Phase::Pictures(screen) = &mut self.phase {
                     screen.info = !screen.info;
