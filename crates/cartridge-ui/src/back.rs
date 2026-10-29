@@ -126,6 +126,7 @@ fn shapes(model: CartModel) -> Vec<Shape> {
             all.extend(screw(0.06, 0.12, 0.014));
             all.extend(screw(0.94, 0.12, 0.014));
         }
+        CartModel::Polaroid | CartModel::Book => {}
         CartModel::Disc => {}
     }
     all

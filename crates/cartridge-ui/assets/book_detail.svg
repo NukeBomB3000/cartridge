@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 292">
+  <!-- the board's edge: lit on its left and top, turned away on its right and foot -->
+  <rect x="0" y="4" width="2" height="284" fill="#fff" fill-opacity="0.3"/>
+  <rect x="4" y="0" width="182" height="2" fill="#fff" fill-opacity="0.35"/>
+  <rect x="188" y="4" width="2" height="284" fill="#000" fill-opacity="0.35"/>
+  <rect x="4" y="290" width="182" height="2" fill="#000" fill-opacity="0.35"/>
+  <!-- the hinge: a groove down the cover beside the spine, a lit lip after it -->
+  <rect x="9" y="3" width="1.8" height="286" fill="#000" fill-opacity="0.38"/>
+  <rect x="10.8" y="3" width="1.2" height="286" fill="#fff" fill-opacity="0.22"/>
+</svg>

@@ -1,4 +1,5 @@
 mod art;
+pub use art::decode_for as decode_picture;
 mod back;
 mod backdrop;
 mod battery;

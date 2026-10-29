@@ -7,7 +7,7 @@ use crate::label_cut::label_art;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape, vhs};
+use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, vhs};
 use crate::shell::{shell_for, Finish, Shell};
 use crate::silhouette::{
     cart_depth, cart_mask, detail_mask, gb_cart_depth, gb_cart_mask, gb_detail_mask, Detail,
@@ -118,7 +118,9 @@ pub fn gb_shell_of(cart: &Cart) -> Option<GbShell> {
         | Platform::Sms
         | Platform::Nds
         | Platform::Music
-        | Platform::Video => None,
+        | Platform::Video
+        | Platform::Pictures
+        | Platform::Books => None,
         Platform::Gb | Platform::Gbc => Some(match cart.shell.map(|c| c.outline) {
             Some(Outline::Notched) => GbShell::Notched,
             Some(Outline::Rounded) => GbShell::Rounded,
@@ -147,6 +149,8 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Nds => CartModel::Nds,
         Platform::Music => CartModel::Tape,
         Platform::Video => CartModel::Vhs,
+        Platform::Pictures => CartModel::Polaroid,
+        Platform::Books => CartModel::Book,
     }
 }
 
@@ -170,6 +174,8 @@ pub(crate) fn spec(model: CartModel) -> Spec {
         CartModel::Nds => nds::spec(),
         CartModel::Tape => tape::spec(),
         CartModel::Vhs => vhs::spec(),
+        CartModel::Polaroid => polaroid::spec(),
+        CartModel::Book => book::spec(),
         CartModel::Nes(shell) => nes::spec(shell),
         CartModel::Md(shell) => md::spec(shell),
         CartModel::Sega8(shell) => sega8::spec(shell),
@@ -224,6 +230,8 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
         Platform::Nds => (nds::W, nds::H),
         Platform::Music => (tape::W, tape::H),
         Platform::Video => (vhs::W, vhs::H),
+        Platform::Pictures => (polaroid::W, polaroid::H),
+        Platform::Books => (book::W, book::H),
         Platform::Sms => sega8::face_box(Sega8Shell::MasterSystem),
         Platform::Nes => nes::face_box(NesShell::Nes),
         Platform::Pce => (hucard::W, hucard::H),
@@ -248,6 +256,8 @@ pub fn cart_box(platform: Platform) -> (u32, u32) {
         Platform::Nds => CartModel::Nds,
         Platform::Music => CartModel::Tape,
         Platform::Video => CartModel::Vhs,
+        Platform::Pictures => CartModel::Polaroid,
+        Platform::Books => CartModel::Book,
         Platform::Sms => CartModel::Sega8(Sega8Shell::MasterSystem),
         Platform::Pce => CartModel::HuCard,
         Platform::Nes => CartModel::Nes(NesShell::Nes),
@@ -300,6 +310,8 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
             CartModel::Nds => platform == Platform::Nds,
             CartModel::Tape => platform == Platform::Music,
             CartModel::Vhs => platform == Platform::Video,
+            CartModel::Polaroid => platform == Platform::Pictures,
+            CartModel::Book => platform == Platform::Books,
             CartModel::Gb(_) => matches!(platform, Platform::Gb | Platform::Gbc),
             CartModel::Snes(_) => platform == Platform::Snes,
             CartModel::Disc => platform == Platform::Ps1,
@@ -352,7 +364,13 @@ fn face_of(cart: &Cart, scans: bool) -> CartFace {
         tape::paint(&mut face, label_colour(&label_text(cart)));
     }
     if model == CartModel::Vhs {
-        vhs::paint(&mut face);
+        vhs::paint(&mut face, &label_text(cart));
+    }
+    if model == CartModel::Polaroid {
+        polaroid_chin(&mut face, &label_text(cart));
+    }
+    if model == CartModel::Book {
+        book::paint(&mut face, shell.colour);
     }
     clip_to_silhouette(&s, &mut face);
     face
@@ -687,6 +705,31 @@ fn generated_label(s: &Spec, title: &str) -> Vec<u8> {
         paint(ink, (0, 0), 255);
     }
     rgba
+}
+
+/// Writes the folder's name on the Polaroid's chin in dark ink, as big as it goes on up to two
+/// lines.
+fn polaroid_chin(face: &mut CartFace, title: &str) {
+    const INK: [u8; 3] = [0x2b, 0x2a, 0x30];
+    let (x0, y0, cw, ch) = polaroid::CHIN;
+    let Some(font) = text::label_font() else {
+        return;
+    };
+    let layout = text::fit_box_fine(font, title, cw as f32, ch as f32, 2, 27.0, 9.0);
+    let cover = text::coverage(cw, ch, &layout);
+    for y in 0..ch {
+        for x in 0..cw {
+            let a = cover[(y * cw + x) as usize] as u32;
+            if a == 0 {
+                continue;
+            }
+            let i = (((y0 + y) * face.w + x0 + x) * 4) as usize;
+            for c in 0..3 {
+                face.rgba[i + c] =
+                    ((INK[c] as u32 * a + face.rgba[i + c] as u32 * (255 - a)) / 255) as u8;
+            }
+        }
+    }
 }
 
 /// A VHS tape's label: a black panel with the tape's name set in gold, as big as it goes on up to five lines, over

@@ -652,7 +652,9 @@ pub fn sockets_for(platform: Platform) -> Sockets {
         | Platform::Sms
         | Platform::Nds
         | Platform::Music
-        | Platform::Video => GBA_SOCKETS,
+        | Platform::Video
+        | Platform::Pictures
+        | Platform::Books => GBA_SOCKETS,
     }
 }
 

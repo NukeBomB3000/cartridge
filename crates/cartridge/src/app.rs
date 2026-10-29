@@ -443,8 +443,8 @@ pub struct App {
     pub(crate) battery_at: Millis,
     /// The folders open on the Music shelf, from `Music/` down, and the tape each was entered
     /// from.
-    pub(crate) media_path: [Vec<String>; 2],
-    pub(crate) media_back: [Vec<usize>; 2],
+    pub(crate) media_path: [Vec<String>; 4],
+    pub(crate) media_back: [Vec<usize>; 4],
     /// The Music shelf holds other tapes than the faces it was last drawn with: only they are
     /// drawn again, not every game's.
     pub(crate) media_stale: Vec<Platform>,
@@ -654,8 +654,8 @@ impl App {
             state_autosave_at: STATE_AUTOSAVE_MS,
             pending_save: None,
             battery_at: BATTERY_POLL_MS,
-            media_path: [Vec::new(), Vec::new()],
-            media_back: [Vec::new(), Vec::new()],
+            media_path: Default::default(),
+            media_back: Default::default(),
             media_stale: Vec::new(),
             music: None,
             audio_ring: None,

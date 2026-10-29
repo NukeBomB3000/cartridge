@@ -21,10 +21,14 @@ pub enum Platform {
     /// Videos, on VHS tapes: the folders of `Videos/` stand on this shelf and its player plays
     /// what is in them.
     Video,
+    /// Pictures, as Polaroids: the folders of `Pictures/`, whose viewer shows what is in them.
+    Pictures,
+    /// Books, as books: the EPUBs of `Books/`, which the reader opens.
+    Books,
 }
 
 impl Platform {
-    pub const ALL: [Platform; 13] = [
+    pub const ALL: [Platform; 15] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -38,6 +42,8 @@ impl Platform {
         Platform::Nds,
         Platform::Music,
         Platform::Video,
+        Platform::Pictures,
+        Platform::Books,
     ];
 
     pub fn name(self) -> &'static str {
@@ -55,6 +61,8 @@ impl Platform {
             Platform::Nds => "Nintendo DS",
             Platform::Music => "Music",
             Platform::Video => "Video",
+            Platform::Pictures => "Pictures",
+            Platform::Books => "Books",
         }
     }
 
@@ -73,6 +81,8 @@ impl Platform {
             Platform::Nds => "NDS",
             Platform::Music => "Music",
             Platform::Video => "Videos",
+            Platform::Pictures => "Pictures",
+            Platform::Books => "Books",
         }
     }
 
@@ -90,6 +100,8 @@ impl Platform {
             Platform::Nds => &["nds"],
             Platform::Music => crate::music::EXTENSIONS,
             Platform::Video => crate::media::Kind::Video.extensions(),
+            Platform::Pictures => crate::media::Kind::Pictures.extensions(),
+            Platform::Books => crate::media::Kind::Books.extensions(),
         }
     }
 
@@ -109,6 +121,7 @@ impl Platform {
             // no picture: the player draws its own screen
             Platform::Music => (320, 240),
             Platform::Video => (320, 240),
+            Platform::Pictures | Platform::Books => (320, 240),
         }
     }
 
@@ -160,6 +173,7 @@ impl Platform {
             Platform::Music => Some(720_000),
             // video decoding takes every core it can have
             Platform::Video => None,
+            Platform::Pictures | Platform::Books => Some(720_000),
         }
     }
 

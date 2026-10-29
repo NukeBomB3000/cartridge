@@ -13,6 +13,7 @@ usvg = { workspace = true }
 cartridge-gfx = { path = "../cartridge-gfx", default-features = false }
 cartridge-power = { path = "../cartridge-power" }
 cartridge-store = { path = "../cartridge-store" }
+jpeg-decoder = { version = "0.3", default-features = false }
 
 [dev-dependencies]
 cartridge-gfx = { path = "../cartridge-gfx", features = ["test-support"] }

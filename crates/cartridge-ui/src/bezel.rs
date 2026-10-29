@@ -46,7 +46,9 @@ pub fn bezel_mark_face(platform: Platform, height: u32) -> Option<UndoFace> {
         | Platform::Sms
         | Platform::Nds
         | Platform::Music
-        | Platform::Video => return None,
+        | Platform::Video
+        | Platform::Pictures
+        | Platform::Books => return None,
     };
     let mark = decode(png)?;
     let (sw, sh) = (mark.w, mark.h);

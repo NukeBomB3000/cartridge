@@ -71,6 +71,10 @@ pub const MASTER_SYSTEM_SHELL: Shell = shell([0x1e, 0x1e, 0x21], Finish::Solid);
 pub const TAPE_SHELL: Shell = shell([0x1e, 0x1f, 0x23], Finish::Solid);
 /// A VHS cassette's plastic: black.
 pub const VHS_SHELL: Shell = shell([0x1b, 0x1b, 0x1e], Finish::Solid);
+/// A Polaroid's paper: warm white.
+pub const POLAROID_SHELL: Shell = shell([0xf3, 0xf0, 0xe6], Finish::Solid);
+/// A book's cloth: a dark red.
+pub const BOOK_SHELL: Shell = shell([0x6b, 0x24, 0x2a], Finish::Solid);
 pub const NDS_SHELL: Shell = shell([0x3a, 0x3b, 0x40], Finish::Solid);
 
 /// The NES Game Pak, in its grey.
@@ -145,6 +149,8 @@ pub fn shell_for(cart: &Cart) -> Shell {
         Platform::Nds => NDS_SHELL,
         Platform::Music => TAPE_SHELL,
         Platform::Video => VHS_SHELL,
+        Platform::Pictures => POLAROID_SHELL,
+        Platform::Books => BOOK_SHELL,
         Platform::Sms => MASTER_SYSTEM_SHELL,
         Platform::Nes => match crate::models::nes::shell_of(cart) {
             NesShell::Nes => NES_SHELL,

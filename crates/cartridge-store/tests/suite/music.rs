@@ -119,3 +119,40 @@ fn a_video_is_a_tape_of_its_own_and_a_folder_of_one_plays_it() {
     // the music's tapes and the videos' do not mix: a song is no video
     assert!(tapes(Kind::Music, d.path(), &[]).is_empty());
 }
+
+#[test]
+fn pictures_loose_in_their_folder_are_one_polaroid_wearing_the_first() {
+    use cartridge_store::media::{plays, tapes, Kind};
+    let d = tempdir().unwrap();
+    let pictures = d.path().join("Pictures");
+    for name in [
+        "Birne.jpg",
+        "Makro-4190.jpg",
+        "Norman Avatar-7.jpg",
+        "notes.txt",
+    ] {
+        song(&pictures, name);
+    }
+    let found = tapes(Kind::Pictures, d.path(), &[]);
+    assert_eq!(names(&found), ["Pictures"]);
+    assert_eq!(found[0].platform, Platform::Pictures);
+    assert!(found[0]
+        .label
+        .as_ref()
+        .is_some_and(|l| l.ends_with("Birne.jpg")));
+    assert!(plays(Kind::Pictures, &pictures));
+}
+
+#[test]
+fn a_folder_of_folders_of_pictures_has_a_polaroid_for_each_wearing_its_first() {
+    use cartridge_store::media::{tapes, Kind};
+    let d = tempdir().unwrap();
+    song(&d.path().join("Pictures/Holiday/Day 1"), "a.png");
+    song(&d.path().join("Pictures/Family"), "b.JPEG");
+    let found = tapes(Kind::Pictures, d.path(), &[]);
+    assert_eq!(names(&found), ["Family", "Holiday"]);
+    assert!(found[1]
+        .label
+        .as_ref()
+        .is_some_and(|l| l.ends_with("a.png")));
+}

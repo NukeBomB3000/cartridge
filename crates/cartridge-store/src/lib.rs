@@ -4,6 +4,7 @@ mod backdrop;
 pub mod cart_shell;
 mod config;
 mod core;
+pub mod epub;
 mod focus;
 mod font;
 pub mod gb;

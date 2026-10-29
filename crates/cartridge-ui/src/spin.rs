@@ -4,7 +4,7 @@ use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{disc, hucard, nds, snes, snes::SnesShell, tape, vhs};
+use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, vhs};
 use crate::silhouette::GbShell;
 
 /// How thick a cart is, as a share of its width: a Game Pak is about 8 mm thick and 57 wide.
@@ -70,10 +70,14 @@ pub enum CartModel {
     Tape,
     /// A VHS cassette: a folder of videos.
     Vhs,
+    /// A Polaroid: a folder of pictures.
+    Polaroid,
+    /// A hardback book: an EPUB.
+    Book,
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 17] = [
+    pub const ALL: [CartModel; 19] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -91,6 +95,8 @@ impl CartModel {
         CartModel::Nds,
         CartModel::Tape,
         CartModel::Vhs,
+        CartModel::Polaroid,
+        CartModel::Book,
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -113,6 +119,8 @@ impl CartModel {
             CartModel::Nds => 14,
             CartModel::Tape => 15,
             CartModel::Vhs => 16,
+            CartModel::Polaroid => 17,
+            CartModel::Book => 18,
         }
     }
 
@@ -126,6 +134,8 @@ impl CartModel {
             CartModel::Nds => nds::THICK,
             CartModel::Tape => tape::THICK,
             CartModel::Vhs => vhs::THICK,
+            CartModel::Polaroid => polaroid::THICK,
+            CartModel::Book => book::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
             CartModel::Sega8(shell) => sega8::thick(shell),
@@ -261,6 +271,8 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::Nds => nds::outline(),
         CartModel::Tape => tape::outline(),
         CartModel::Vhs => vhs::outline(),
+        CartModel::Polaroid => polaroid::outline(),
+        CartModel::Book => book::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
         CartModel::Sega8(shell) => sega8::outline(shell),
@@ -281,6 +293,7 @@ pub fn holes(model: CartModel) -> Vec<Vec<(f32, f32)>> {
 pub fn cart_mesh(model: CartModel) -> Vec<MeshVertex> {
     match model {
         CartModel::Disc => disc::mesh(),
+        CartModel::Book => book::mesh(),
         _ => {
             let (points, units) = outline(model);
             extruded(model, &points, units, model.thick())
@@ -433,10 +446,20 @@ fn triangulate(points: &[(f32, f32)]) -> Vec<[usize; 3]> {
     out
 }
 
+/// How far in from its outline, in drawing units, a model's sides take their colour from its face.
+fn side_sample(_model: CartModel) -> f32 {
+    SIDE_SAMPLE
+}
+
 /// The sides round one contour of a cart, `points` in drawing units (the drawing `uw` by `uh`):
 /// a flat polygon for each cut of it, from the face back to `thick`, each taking its colour
 /// from the face just inside its edge, which is on the far side of the wall from where it faces.
-fn walls(points: &[(f32, f32)], (uw, uh): (f32, f32), thick: f32) -> Vec<MeshVertex> {
+fn walls(
+    points: &[(f32, f32)],
+    (uw, uh): (f32, f32),
+    thick: f32,
+    sample_in: f32,
+) -> Vec<MeshVertex> {
     let mut out = Vec::new();
     for (i, &a) in points.iter().enumerate() {
         let b = points[(i + 1) % points.len()];
@@ -448,8 +471,8 @@ fn walls(points: &[(f32, f32)], (uw, uh): (f32, f32), thick: f32) -> Vec<MeshVer
         let normal = [dy / len, -dx / len, 0.0];
         let sample = |p: (f32, f32)| {
             [
-                (p.0 - normal[0] * SIDE_SAMPLE) / uw,
-                (p.1 - normal[1] * SIDE_SAMPLE) / uh,
+                (p.0 - normal[0] * sample_in) / uw,
+                (p.1 - normal[1] * sample_in) / uh,
             ]
         };
         let corner = |p: (f32, f32), z: f32, shade: f32| MeshVertex {
@@ -481,7 +504,7 @@ pub(crate) fn extruded(
     let mut out = Vec::new();
     let holes = holes(model);
     for contour in std::iter::once(points).chain(holes.iter().map(Vec::as_slice)) {
-        out.extend(walls(contour, (uw, uh), thick));
+        out.extend(walls(contour, (uw, uh), thick, side_sample(model)));
     }
     out.extend(back(model, points, &holes, (uw, uh), thick));
     let (cols, rows) = FACE_CELLS;

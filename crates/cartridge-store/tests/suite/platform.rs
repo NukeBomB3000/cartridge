@@ -7,7 +7,7 @@ fn every_platform_has_a_directory() {
         names,
         vec![
             "GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD", "GG", "SMS", "NDS", "Music",
-            "Videos"
+            "Videos", "Pictures", "Books"
         ]
     );
 }
@@ -29,7 +29,9 @@ fn every_platform_is_a_shelf_of_its_own() {
             Platform::Sms,
             Platform::Nds,
             Platform::Music,
-            Platform::Video
+            Platform::Video,
+            Platform::Pictures,
+            Platform::Books
         ]
     );
     for (i, p) in Platform::ALL.iter().enumerate() {

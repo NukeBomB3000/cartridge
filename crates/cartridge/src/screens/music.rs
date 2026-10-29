@@ -12,6 +12,8 @@ pub(crate) fn slot(kind: Kind) -> usize {
     match kind {
         Kind::Music => 0,
         Kind::Video => 1,
+        Kind::Pictures => 2,
+        Kind::Books => 3,
     }
 }
 
@@ -101,6 +103,8 @@ impl App {
             match kind {
                 Kind::Music => self.play_tape(&cart.stem, &cart.rom, clean),
                 Kind::Video => self.play_video(&cart.stem, &cart.rom, clean),
+                Kind::Pictures => self.show_pictures(&cart.stem, &cart.rom, clean),
+                Kind::Books => self.open_book(&cart.stem, &cart.rom, clean),
             }
             return;
         }
@@ -122,4 +126,12 @@ impl App {
         let at = self.media_back[n].pop().unwrap_or(0);
         self.fill_media(kind, at);
     }
+}
+
+impl App {
+    /// A on a folder of pictures: the viewer comes next.
+    fn show_pictures(&mut self, _name: &str, _folder: &std::path::Path, _clean: bool) {}
+
+    /// A on a book: the reader comes next.
+    fn open_book(&mut self, _name: &str, _book: &std::path::Path, _clean: bool) {}
 }

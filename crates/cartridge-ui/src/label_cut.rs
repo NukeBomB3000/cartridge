@@ -112,6 +112,10 @@ pub fn keep_size(platform: Platform, sw: u32, sh: u32) -> Option<(u32, u32)> {
 /// A PlayStation game's own label, a copy of its first disc's that no face is drawn from when
 /// that disc has its own, is shrunk with them.
 pub fn shrink_label(cart: &Cart) {
+    // the pictures and books on the card are the player's own files, which are never rewritten
+    if matches!(cart.platform, Platform::Pictures | Platform::Books) {
+        return;
+    }
     let mut scans: Vec<PathBuf> = label_scans(cart).into_iter().map(|(s, _, _)| s).collect();
     if let Some(own) = cart.label.as_ref().filter(|l| !scans.contains(l)) {
         scans.push(own.clone());

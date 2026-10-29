@@ -13,16 +13,22 @@ use crate::scan::{is_hidden, sort_key, Cart};
 pub enum Kind {
     Music,
     Video,
+    /// Pictures: a folder of them is a Polaroid, which the viewer opens.
+    Pictures,
+    /// Books: each EPUB is a book, which the reader opens.
+    Books,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 2] = [Kind::Music, Kind::Video];
+    pub const ALL: [Kind; 4] = [Kind::Music, Kind::Video, Kind::Pictures, Kind::Books];
 
     /// The folder it is kept in, under the card's root.
     pub fn dir(self) -> &'static str {
         match self {
             Kind::Music => "Music",
             Kind::Video => "Videos",
+            Kind::Pictures => "Pictures",
+            Kind::Books => "Books",
         }
     }
 
@@ -33,6 +39,8 @@ impl Kind {
             Kind::Video => &[
                 "mp4", "m4v", "mkv", "avi", "mov", "webm", "ts", "mpg", "mpeg", "wmv", "flv",
             ],
+            Kind::Pictures => &["jpg", "jpeg", "png"],
+            Kind::Books => &["epub", "txt"],
         }
     }
 
@@ -41,6 +49,8 @@ impl Kind {
         match self {
             Kind::Music => Platform::Music,
             Kind::Video => Platform::Video,
+            Kind::Pictures => Platform::Pictures,
+            Kind::Books => Platform::Books,
         }
     }
 
@@ -126,6 +136,40 @@ pub fn folder(kind: Kind, root: &Path, path: &[String]) -> PathBuf {
         .fold(root.join(kind.dir()), |dir, name| dir.join(name))
 }
 
+/// The picture a tape wears on its face: a folder of pictures wears its first one, a book its
+/// cover (cut from the EPUB, or the card's own `Labels/Books/<name>.png`).
+fn cover(kind: Kind, root: &Path, stem: &str, rom: &Path) -> Option<PathBuf> {
+    match kind {
+        Kind::Pictures => first_file(kind, rom, 4),
+        Kind::Books => {
+            let own = root
+                .join("Labels")
+                .join(kind.dir())
+                .join(format!("{stem}.png"));
+            if own.is_file() {
+                return Some(own);
+            }
+            crate::epub::cached_cover(root, rom)
+        }
+        _ => None,
+    }
+}
+
+/// The first file of `kind` in `dir`, or in the first folder in it that has one, as deep as
+/// `depth`.
+pub fn first_file(kind: Kind, dir: &Path, depth: u32) -> Option<PathBuf> {
+    let held = contents(kind, dir);
+    if let Some(file) = held.files.into_iter().next() {
+        return Some(file);
+    }
+    if depth == 0 {
+        return None;
+    }
+    held.folders
+        .into_iter()
+        .find_map(|(_, folder)| first_file(kind, &folder, depth - 1))
+}
+
 /// The tapes of the folder `path` names. Music: one for each folder in it that has songs, or,
 /// where it has no folders but songs, one for the folder itself, which plays its songs as an
 /// album, so a card with its songs loose in `Music/` still has a tape. Videos: one for each
@@ -142,13 +186,16 @@ pub fn tapes(kind: Kind, root: &Path, path: &[String]) -> Vec<Cart> {
     let tape = |stem: String, rom: PathBuf| Cart {
         platform: kind.platform(),
         shell: shells.get(&crate::cart_shell::key(&stem)).copied(),
+        label: cover(kind, root, &stem, &rom),
         stem,
         rom,
-        label: None,
         title: String::new(),
         code: String::new(),
     };
-    if kind == Kind::Music && held.folders.is_empty() && !held.files.is_empty() {
+    if matches!(kind, Kind::Music | Kind::Pictures)
+        && held.folders.is_empty()
+        && !held.files.is_empty()
+    {
         let stem = path
             .last()
             .cloned()
@@ -160,7 +207,7 @@ pub fn tapes(kind: Kind, root: &Path, path: &[String]) -> Vec<Cart> {
         .into_iter()
         .map(|(name, rom)| tape(name, rom))
         .collect();
-    if kind == Kind::Video {
+    if matches!(kind, Kind::Video | Kind::Books) {
         out.extend(held.files.into_iter().map(|file| {
             let stem = file
                 .file_stem()
@@ -182,8 +229,8 @@ pub fn plays(kind: Kind, tape: &Path) -> bool {
     }
     let held = contents(kind, tape);
     match kind {
-        Kind::Music => held.folders.is_empty() && !held.files.is_empty(),
-        Kind::Video => held.folders.is_empty() && held.files.len() == 1,
+        Kind::Music | Kind::Pictures => held.folders.is_empty() && !held.files.is_empty(),
+        Kind::Video | Kind::Books => held.folders.is_empty() && held.files.len() == 1,
     }
 }
 
