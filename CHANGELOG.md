@@ -7,9 +7,11 @@
   transmitter (1080p60) before the frontend comes up, and cartridge then draws a 960x540 canvas
   1:1 that the engine doubles exactly, so the pixels stay sharp. SELECT+Y's stretch fills the whole
   16:9 screen. Sound goes to the monitor (ALSA's default is routed to the HDMI codec while it has
-  the output) and the volume keys work. No reboot is needed. Unplugging and plugging while
-  cartridge runs does not switch yet, and the monitor's own modes are not read: the handheld's
-  EDID read comes back empty, so the signal is always 1080p60.
+  the output) and the volume keys work. No reboot is needed. The cable can go in and out while
+  cartridge runs: it looks once a second, saves the game where it stands and starts again (never
+  more than once in half a minute), and the launcher puts the output where the cable is, the LCD
+  with none. The monitor's own modes are not read: the handheld's EDID read comes back empty, so
+  the signal is always 1080p60.
 - The stick lights of the RG40XX V and H and the RG CubeXX, dark under BaseOS, can be switched on:
   Settings > Theme > Stick Lights is Off, Theme (the theme's colour, as bright as the display, so
   they dim with it) or Colour, which opens Light Colour (nine colours) and Light Brightness (10 to

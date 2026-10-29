@@ -437,6 +437,7 @@ pub struct App {
     pub(crate) state_autosave_at: Millis,
     pub(crate) pending_save: Option<std::thread::JoinHandle<()>>,
     pub(crate) battery_at: Millis,
+    hotplug: crate::hdmi_watch::Hotplug,
     /// The card was found mounted read-only at the last look: nothing saves, and SELECT+START
     /// offers to repair it.
     card_read_only: bool,
@@ -630,6 +631,7 @@ impl App {
             state_autosave_at: STATE_AUTOSAVE_MS,
             pending_save: None,
             battery_at: BATTERY_POLL_MS,
+            hotplug: crate::hdmi_watch::Hotplug::default(),
             card_read_only: false,
             repairing: false,
             charge_at: CHARGE_POLL_MS,
@@ -1380,6 +1382,28 @@ impl App {
 
     pub fn restarting(&self) -> bool {
         self.restarting
+    }
+
+    /// A cable went into the HDMI port or out of it: the game is saved where it stands and
+    /// cartridge ends, and BaseOS starts it again, whose launcher puts the output where the
+    /// cable is, and the game comes back as after any restart.
+    fn restart_for_cable(&mut self) {
+        // an output hdmi.sh could not switch would have this loop: once in half a minute at most
+        let marker = std::path::Path::new("/run/cartridge-hotplug");
+        let recent = std::fs::metadata(marker)
+            .and_then(|m| m.modified())
+            .ok()
+            .and_then(|at| at.elapsed().ok())
+            .is_some_and(|ago| ago < std::time::Duration::from_secs(30));
+        if recent {
+            return;
+        }
+        let _ = std::fs::write(marker, "");
+        eprintln!("cartridge: hdmi: the cable changed, starting again");
+        self.close_game_menu();
+        self.flush_resume();
+        self.persist();
+        std::process::exit(0);
     }
 
     pub fn restart(&mut self) {
@@ -2269,6 +2293,9 @@ impl App {
         }
         if self.now() >= self.autosave_at.min(self.state_autosave_at) {
             self.autosave();
+        }
+        if !self.shutting_down() && self.hotplug.poll(self.now()) {
+            self.restart_for_cable();
         }
         if self.now() >= self.battery_at {
             self.battery_at = self.now() + BATTERY_POLL_MS;

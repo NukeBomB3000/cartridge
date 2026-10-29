@@ -20,6 +20,7 @@ pub mod face_builder;
 pub mod frames;
 pub mod frontend;
 pub mod guide_screen;
+pub mod hdmi_watch;
 pub mod input;
 pub mod json;
 pub mod label_cutter;
