@@ -336,13 +336,14 @@ for its panel.
 | Device | Panel | Status |
 |---|---|---|
 | RG35XX SP | 640x480 | Main target, in daily use |
-| RG SP | 720x480 | Tested on hardware |
+| RG SP | 720x480 | Tested on hardware, HDMI out included |
 | RG34XX SP, RG34XX | 720x480 | RG34XX in use on hardware |
-| RG35XX Plus / 2024, H, Pro | 640x480 | Untested |
+| RG35XX Plus / 2024 | 640x480 | Tested on hardware |
+| RG35XX H, Pro | 640x480 | Untested |
 | RG40XX V | 640x480 | Tested on hardware: its one stick steers the menus and is an analog stick for a PlayStation game, the screen looks and Wi-Fi work |
 | RG40XX H | 640x480 | Tested on hardware: two analog sticks and their lights, HDMI out with sound, and the music, video, picture and book shelves |
 | RG CubeXX | 720x720 | Tested on hardware: sticks as d-pad, centred layout |
-| RG28XX | 480x640, turned | Experimental |
+| RG28XX | 480x640, turned | Tested on hardware |
 
 Own an untested one? A [device report](https://github.com/oauramos/omega-zero/wiki/Device-Reports)
 is the most useful thing you can send.
