@@ -26,6 +26,15 @@ if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
 	echo $! > "$RUN/cartridge-lid.pid"
 fi
 
+# where the sound goes follows Bluetooth headphones and the HDMI cable; the file it writes is there
+# before cartridge starts, as ALSA only watches the files it found
+sh "$SYS/audioroute.sh" sync
+pid="$(cat "$RUN/cartridge-audioroute.pid" 2>/dev/null)"
+if [ -z "$pid" ] || [ ! -d "/proc/$pid" ]; then
+	sh "$SYS/audioroute.sh" loop > /dev/null 2>&1 &
+	echo $! > "$RUN/cartridge-audioroute.pid"
+fi
+
 (echo "|/bin/sh $SYS/coresave.sh %p %s %e %t" > /proc/sys/kernel/core_pattern) 2>/dev/null
 
 if [ -f "$SD/RUN_PROBE" ]; then

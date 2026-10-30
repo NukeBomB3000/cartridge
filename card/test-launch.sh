@@ -10,7 +10,7 @@ setup() {
 	chmod -R u+w "$TMP" 2>/dev/null || true
 	rm -rf "$TMP/card" "$TMP/run" "$TMP/tmp"
 	mkdir -p "$TMP/card/System" "$TMP/run" "$TMP/tmp"
-	for s in led.sh lid.sh coresave.sh; do
+	for s in led.sh lid.sh coresave.sh audioroute.sh; do
 		printf '#!/bin/sh\nexit 0\n' > "$TMP/card/System/$s"
 	done
 	printf '#!/bin/sh\necho "cartridge ran"\n' > "$TMP/card/System/cartridge"

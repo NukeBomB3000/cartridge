@@ -2,7 +2,7 @@ use std::ffi::{c_char, c_int, c_uint, c_void, CStr, CString};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread::JoinHandle;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use libloading::Library;
 
@@ -21,6 +21,12 @@ const LATENCY_US: c_uint = 40_000;
 const PERIOD_FRAMES: usize = 512;
 
 const RELEASE_AFTER: Duration = Duration::from_secs(3);
+
+/// How many periods pass between looks at `~/.asoundrc`, about 0.7 s.
+const ROUTE_LOOK_EVERY: u32 = 64;
+
+/// How long a device that would not open is left alone before the next try.
+const RETRY_AFTER: Duration = Duration::from_millis(500);
 
 const DEVICES: [&str; 4] = ["plug:default", "default", "plughw:0,0", "hw:0,0"];
 
@@ -197,6 +203,18 @@ struct Playback {
     pcm: Option<*mut c_void>,
     rate: u32,
     failing: bool,
+    /// `~/.asoundrc` as the open device was found: audioroute.sh rewrites it as headphones or an
+    /// HDMI cable come and go, and the output follows once the file changes.
+    route: Option<SystemTime>,
+    retry_at: Instant,
+}
+
+/// When `~/.asoundrc` was last written, if there is one.
+fn route_stamp() -> Option<SystemTime> {
+    let home = std::env::var_os("HOME").unwrap_or_else(|| "/root".into());
+    std::fs::metadata(std::path::Path::new(&home).join(".asoundrc"))
+        .and_then(|m| m.modified())
+        .ok()
 }
 
 fn play(ring: &Arc<Ring>, sample_rate: u32) -> Result<Playback, AudioError> {
@@ -214,6 +232,8 @@ fn play(ring: &Arc<Ring>, sample_rate: u32) -> Result<Playback, AudioError> {
         pcm,
         rate: sample_rate,
         failing: pcm.is_none(),
+        route: route_stamp(),
+        retry_at: Instant::now(),
     })
 }
 
@@ -223,9 +243,24 @@ impl Playback {
         let span = Duration::from_secs_f64(PERIOD_FRAMES as f64 / self.rate as f64);
         let mut silence = Silence::new(RELEASE_AFTER);
         let mut pace = Pacer::new(span);
+        let mut periods = 0u32;
         while !stop.load(Ordering::Relaxed) {
             ring.fill(&mut buf);
             let hold = silence.hear(&buf, span);
+            periods = periods.wrapping_add(1);
+            if periods % ROUTE_LOOK_EVERY == 0 {
+                let now = route_stamp();
+                if now != self.route {
+                    self.route = now;
+                    if self.pcm.is_some() {
+                        // the next period opens the device again, where the file now points
+                        ring.pause_consuming();
+                        self.release();
+                        self.retry_at = Instant::now();
+                        eprintln!("cartridge: audio output changed");
+                    }
+                }
+            }
             match (self.pcm, hold) {
                 (Some(_), false) => {
                     // closing the device can take longer than the ring holds
@@ -233,7 +268,7 @@ impl Playback {
                     self.release();
                     eprintln!("cartridge: audio released after silence");
                 }
-                (None, true) => match {
+                (None, true) if Instant::now() >= self.retry_at => match {
                     // as can opening it: the emulator is not made to wait for either, which
                     // showed as the picture standing still each time sound came back
                     ring.pause_consuming();
@@ -245,6 +280,7 @@ impl Playback {
                         self.failing = false;
                     }
                     Err(e) => {
+                        self.retry_at = Instant::now() + RETRY_AFTER;
                         if !self.failing {
                             eprintln!("cartridge: audio: {e}, retrying");
                             self.failing = true;
@@ -257,7 +293,11 @@ impl Playback {
                 Some(pcm) => {
                     pace.reset();
                     if !self.write(pcm, &buf) {
-                        return;
+                        // headphones that went out of range took the device with them: let go
+                        // of it and open again, here or where the route now points
+                        self.release();
+                        self.failing = true;
+                        self.retry_at = Instant::now() + RETRY_AFTER;
                     }
                 }
                 None => std::thread::sleep(pace.wait(Instant::now())),

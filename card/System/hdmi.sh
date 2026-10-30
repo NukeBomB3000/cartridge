@@ -23,8 +23,6 @@ FB=/sys/class/graphics/fb0
 HDMI_PARAM="4 10 0 0 0x4 0x101 0 0 0 8"
 LCD_PARAM="1 0"
 LCD_SIZE=/run/cartridge-lcd-size
-ASOUNDRC="${HOME:-/root}/.asoundrc"
-MARK="# cartridge-hdmi"
 
 target="$(sed -n 's/^BASEOS_TARGET=//p' /etc/baseos-release 2>/dev/null)"
 
@@ -71,28 +69,9 @@ wait_for() {
 }
 
 audio() {
-	# ALSA's default to the HDMI transmitter while it has the output; only a file we wrote
-	if [ "$1" = on ]; then
-		if [ -f "$ASOUNDRC" ] && ! head -n1 "$ASOUNDRC" | grep -q "$MARK"; then
-			return
-		fi
-		cat > "$ASOUNDRC" <<EOF
-$MARK
-pcm.!default {
-    type plug
-    slave.pcm {
-        type hw
-        card ahubhdmi
-    }
-}
-ctl.!default {
-    type hw
-    card ahubhdmi
-}
-EOF
-	elif [ -f "$ASOUNDRC" ] && head -n1 "$ASOUNDRC" | grep -q "$MARK"; then
-		rm -f "$ASOUNDRC"
-	fi
+	# audioroute.sh points ALSA's default at the HDMI transmitter while it has the output, or at
+	# Bluetooth headphones that are connected, which win
+	sh "$(dirname "$0")/audioroute.sh" sync
 }
 
 switch() {

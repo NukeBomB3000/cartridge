@@ -36,6 +36,7 @@ PIDOF="${AGS_PIDOF:-pidof}"
 
 HCI=hci0
 UP_MARK="$RUN/cartridge-bt.up"
+BLUEALSA="${AGS_BLUEALSA:-bluealsa}"
 ATTACH_PID="$RUN/cartridge-bt-attach.pid"
 SCAN_PID="$RUN/cartridge-bt-scan.pid"
 PAIR_FIFO="$RUN/cartridge-bt-pair.fifo"
@@ -144,6 +145,11 @@ bt_up() {
 	fi
 	$HCICONFIG "$HCI" up >/dev/null 2>&1 || return 1
 	$SYSTEMCTL start bluetooth >/dev/null 2>&1 || return 1
+	# before any headphones connect: a device only gets an A2DP stream if bluealsa has offered one
+	# by then (audioroute.sh points the sound at it)
+	if ! $PIDOF "$BLUEALSA" >/dev/null 2>&1; then
+		$BLUEALSA -p a2dp-source </dev/null >/dev/null 2>&1 &
+	fi
 	# main.conf's AutoEnable powers the controller once bluetoothd finds it; ask, if it has not
 	wait_powered 2 && return 0
 	ctl power on >/dev/null
@@ -153,6 +159,10 @@ bt_up() {
 bt_down() {
 	/bin/rm -f "$UP_MARK"
 	stop_pid "$SCAN_PID"
+	pids="$($PIDOF "$BLUEALSA" 2>/dev/null)"
+	if [ -n "$pids" ]; then
+		kill $pids 2>/dev/null
+	fi
 	$SYSTEMCTL stop bluetooth >/dev/null 2>&1
 	if [ -d "$BT_SYS/$HCI" ]; then
 		$HCICONFIG "$HCI" down >/dev/null 2>&1
