@@ -370,3 +370,128 @@ fn a_hat_axis_is_traced_as_the_axis_it_is() {
     assert!(line.contains("hat0y"), "{line}");
     assert!(!line.contains("ignored"), "{line}");
 }
+
+mod pads {
+    use cartridge::input::evdev::{
+        layout_of, to_raw_for, Ev, Hat, Layout, PadAxes, Range, ABS_RX, ABS_RZ, ABS_X, ABS_Y,
+        ABS_Z, EV_ABS, EV_KEY,
+    };
+    use cartridge_input::{Btn, RawEvent};
+
+    fn key(code: u16, value: i32) -> Ev {
+        Ev {
+            kind: EV_KEY,
+            code,
+            value,
+        }
+    }
+
+    fn axis(code: u16, value: i32) -> Ev {
+        Ev {
+            kind: EV_ABS,
+            code,
+            value,
+        }
+    }
+
+    fn axes() -> PadAxes {
+        PadAxes::new([Range::STICK; 4], [Range::TRIGGER; 2])
+    }
+
+    #[test]
+    fn a_pad_has_its_east_button_as_a_and_its_south_one_as_b() {
+        let east = to_raw_for(Layout::Pad, key(0x131, 1));
+        assert_eq!(east, Some(RawEvent::Down(Btn::A)));
+        let south = to_raw_for(Layout::Pad, key(0x130, 0));
+        assert_eq!(south, Some(RawEvent::Up(Btn::B)));
+        // the handheld's own code 0x130 is its A
+        let own = to_raw_for(Layout::Handheld, key(0x130, 1));
+        assert_eq!(own, Some(RawEvent::Down(Btn::A)));
+    }
+
+    #[test]
+    fn a_pads_shoulders_select_start_and_mode_are_the_handhelds() {
+        let codes = [
+            (0x136, Btn::L1),
+            (0x137, Btn::R1),
+            (0x138, Btn::L2),
+            (0x139, Btn::R2),
+            (0x13a, Btn::Select),
+            (0x13b, Btn::Start),
+            (0x13c, Btn::Menu),
+            (0x13d, Btn::L3),
+            (0x13e, Btn::R3),
+        ];
+        for (code, btn) in codes {
+            assert_eq!(
+                to_raw_for(Layout::Pad, key(code, 1)),
+                Some(RawEvent::Down(btn))
+            );
+        }
+    }
+
+    #[test]
+    fn a_stick_is_scaled_to_the_handhelds_range_whatever_the_pads() {
+        assert_eq!(Range::STICK.stick(0), 0);
+        assert_eq!(Range::STICK.stick(32767), 4095);
+        assert_eq!(Range::STICK.stick(-32768), -4096);
+        // a pad whose sticks go 0 to 255 rests at the middle
+        let byte = Range { min: 0, max: 255 };
+        assert_eq!(byte.stick(127).abs() <= 32, true);
+        assert!(byte.stick(255) >= 4064);
+        assert!(byte.stick(0) <= -4064);
+    }
+
+    #[test]
+    fn a_pushed_stick_presses_the_d_pad_and_lets_go() {
+        let mut hat = Hat::default();
+        let mut axes = axes();
+        let right = axes.feed(&mut hat, axis(ABS_X, 30000));
+        assert_eq!(right, vec![RawEvent::Down(Btn::Right)]);
+        let back = axes.feed(&mut hat, axis(ABS_X, 0));
+        assert_eq!(back, vec![RawEvent::Up(Btn::Right)]);
+        let down = axes.feed(&mut hat, axis(ABS_Y, 30000));
+        assert_eq!(down, vec![RawEvent::Down(Btn::Down)]);
+    }
+
+    #[test]
+    fn a_trigger_presses_l2_past_half_its_way() {
+        let mut hat = Hat::default();
+        let mut axes = axes();
+        assert!(axes.feed(&mut hat, axis(ABS_Z, 60)).is_empty());
+        assert_eq!(
+            axes.feed(&mut hat, axis(ABS_Z, 200)),
+            vec![RawEvent::Down(Btn::L2)]
+        );
+        assert!(axes.feed(&mut hat, axis(ABS_Z, 220)).is_empty());
+        assert_eq!(
+            axes.feed(&mut hat, axis(ABS_Z, 10)),
+            vec![RawEvent::Up(Btn::L2)]
+        );
+        assert_eq!(
+            axes.feed(&mut hat, axis(ABS_RZ, 255)),
+            vec![RawEvent::Down(Btn::R2)]
+        );
+    }
+
+    #[test]
+    fn the_right_stick_does_not_press_the_d_pad_as_a_trigger() {
+        let mut hat = Hat::default();
+        let mut axes = axes();
+        let out = axes.feed(&mut hat, axis(ABS_RX, 30000));
+        assert_eq!(out, vec![RawEvent::Down(Btn::Right)]);
+    }
+
+    #[test]
+    fn a_node_on_the_bluetooth_bus_is_a_pad_and_a_builtin_one_is_not() {
+        let d = tempfile::tempdir().unwrap();
+        let sys = d.path();
+        for (event, bus) in [("event3", "0005"), ("event1", "0019")] {
+            let dir = sys.join(event).join("device/id");
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(dir.join("bustype"), format!("{bus}\n")).unwrap();
+        }
+        assert_eq!(layout_of(sys, &sys.join("event3")), Layout::Pad);
+        assert_eq!(layout_of(sys, &sys.join("event1")), Layout::Handheld);
+    }
+}

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Home Wi-Fi is no longer dropped each time a game ends. `link.sh link down`, which cartridge asks
+  for when a game ends whether it used a link or not, paused home Wi-Fi and resumed it, so the
+  connection went and came back several seconds later; with no link up it now does nothing.
+- Bluetooth audio. Headphones or a speaker that connect take the sound from the handheld's own
+  speaker, in a game, in a film or in music, and give it back as they go. `System/audioroute.sh`
+  writes `~/.asoundrc` for bluealsa (started with the radio) or the HDMI transmitter, the audio
+  output opens again where it now points, and one that was lost is opened again, not left silent.
 - Holding MENU leaves the book reader, the picture viewer, the video player and the music player,
   as holding it ejects a game; a short MENU press and B still do too.
 - The reader sets the page in whole lines. The line at the top and the foot of a page was drawn

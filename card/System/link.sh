@@ -199,7 +199,16 @@ link_join() {
 	return 3
 }
 
+# A link has begun and not ended: it left a mark or a run folder of its own.
+link_active() {
+	[ -f "$LINK_MARK" ] || [ -f "$AP_MARK" ] || [ -d "$RUN/wpa_ap" ] \
+		|| [ -f "$RUN/cartridge-link-ap.conf" ] || [ -f "$RUN/cartridge-link-sta.conf" ]
+}
+
 link_down() {
+	# cartridge asks for this whenever a game ends, link or none: with no link, home Wi-Fi is
+	# left as it is, as pausing it and resuming it dropped the connection for several seconds
+	link_active || { trace "down: no link"; return 0; }
 	trace "down"
 	ap="$(ap_if)"
 	link_clear

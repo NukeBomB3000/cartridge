@@ -122,6 +122,13 @@ grep -qx pause "$TMP/wifi.log" || fail "join did not pause home Wi-Fi"
 run absent link down >/dev/null
 [ "$(tail -n 1 "$TMP/wifi.log")" = resume ] || fail "down did not hand home Wi-Fi back last"
 
+# a game that ends with no link up leaves home Wi-Fi alone: it is not paused and resumed, which
+# dropped the connection for several seconds each time
+reset yes
+run absent link down >/dev/null
+[ -s "$TMP/wifi.log" ] && fail "down with no link touched home Wi-Fi"
+[ -s "$TMP/cli.log" ] && fail "down with no link asked wpa_supplicant"
+
 reset yes
 run absent link cool && rc=0 || rc=$?
 [ "$rc" = 0 ] || fail "cool exited $rc"
