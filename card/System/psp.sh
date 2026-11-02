@@ -277,17 +277,24 @@ every_run() {
 	user=""
 	token=""
 	if [ "$(level cheevos)" != 0 ] && [ -f "$creds" ]; then
-		user="$(sed -n 's/^username=//p' "$creds" | head -n 1 | tr -d '\r')"
-		token="$(sed -n 's/^token=//p' "$creds" | head -n 1 | tr -d '\r')"
+		# cartridge writes `username = name`; a file written by hand may not have the spaces
+		user="$(sed -n 's/^username *= *//p' "$creds" | head -n 1 | tr -d '\r')"
+		token="$(sed -n 's/^token *= *//p' "$creds" | head -n 1 | tr -d '\r')"
 	fi
+	# PPSSPP keeps the token apart from its settings, in a file of its own that it reads at
+	# the start (the settings only name the player); it is the card's own token, kept
+	# where only this user reads it
+	secret="$PSP/.config/ppsspp/PSP/SYSTEM/ppsspp_retroachievements.dat"
+	sed -i '/^AchievementsToken = /d' "$INI" 2>/dev/null
 	if [ -n "$user" ] && [ -n "$token" ]; then
 		set_key "$INI" AchievementsEnable True '\[Achievements\]'
 		set_key "$INI" AchievementsChallengeMode False '\[Achievements\]'
 		set_key "$INI" AchievementsUserName "$user" '\[Achievements\]'
-		set_key "$INI" AchievementsToken "$token" '\[Achievements\]'
+		rm -f "$secret"
+		(umask 077; printf '%s' "$token" > "$secret")
 	else
 		set_key "$INI" AchievementsEnable False '\[Achievements\]'
-		set_key "$INI" AchievementsToken "" '\[Achievements\]'
+		rm -f "$secret"
 	fi
 }
 

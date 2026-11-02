@@ -21,7 +21,7 @@ setup() {
 	mkdir -p "$CARD/Config" "$CARD/Games/PSP" "$PSPDIR/.config/ppsspp/PSP/SYSTEM" "$TMP/run" "$TMP/bin" \
 		"$TMP/battery/BAT0"
 	printf 'cart=Racing Game\ncart_platform=psp\nvolume=15\nvolume_hp=60\ncheevos=1\n' > "$CARD/Config/cartridge.state"
-	printf 'username=tester\ntoken=sekrit-token\n' > "$CARD/Config/retroachievements.txt"
+	printf 'username = tester\ntoken = sekrit-token\n' > "$CARD/Config/retroachievements.txt"
 	: > "$TMP/gpio"
 	: > "$CARD/Games/PSP/Racing Game.cso"
 	printf '[General]\nStateSlot = 0\nAutoLoadSaveState = 0\n[Graphics]\nDisplayAspectRatio = 0.848000\nUIScaleFactor = 0\niShowStatusFlags = 3\nOther = 1\n[Achievements]\nAchievementsEnable = True\nAchievementsChallengeMode = True\nAchievementsUserName = \n' > "$INI"
@@ -155,7 +155,15 @@ grep -q '^Up = 10-19$' "$CONTROLS" || fail "a mapping that was not ours changed"
 grep -q '^AchievementsEnable = True$' "$INI" || fail "the achievements were not turned on"
 grep -q '^AchievementsChallengeMode = False$' "$INI" || fail "hardcore was left on"
 grep -q '^AchievementsUserName = tester$' "$INI" || fail "the player's name was not set"
-grep -q '^AchievementsToken = sekrit-token$' "$INI" || fail "the player's token was not given"
+SECRET="$PSPDIR/.config/ppsspp/PSP/SYSTEM/ppsspp_retroachievements.dat"
+[ "$(cat "$SECRET")" = "sekrit-token" ] || fail "the player's token was not given: $(cat "$SECRET" 2>/dev/null)"
+grep -q 'AchievementsToken' "$INI" && fail "the token was left in the settings"
+
+# a sign-in written without the spaces is read as well
+printf 'username=handmade\ntoken=other-token\n' > "$CARD/Config/retroachievements.txt"
+emu
+grep -q '^AchievementsUserName = handmade$' "$INI" || fail "a sign-in with no spaces was not read"
+[ "$(cat "$SECRET")" = "other-token" ] || fail "its token was not read"
 
 # settings made by hand are kept: the second run does not set them again
 sed -i 's/^UIScaleFactor = -4$/UIScaleFactor = -2/' "$INI"
@@ -166,11 +174,12 @@ setup
 sed -i 's/^cheevos=1$/cheevos=0/' "$CARD/Config/cartridge.state"
 emu
 grep -q '^AchievementsEnable = False$' "$INI" || fail "the achievements stayed on with cartridge's off"
-grep -q '^AchievementsToken = $' "$INI" || fail "the token stayed in the settings"
+[ ! -e "$SECRET" ] || fail "the token stayed on the card with cartridge's off"
 setup
 rm "$CARD/Config/retroachievements.txt"
 emu
 grep -q '^AchievementsEnable = False$' "$INI" || fail "the achievements were on with no sign-in"
+[ ! -e "$SECRET" ] || fail "a token was left with no sign-in"
 
 # a tap of MENU opens the pause menu
 setup
