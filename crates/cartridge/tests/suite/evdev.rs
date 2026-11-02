@@ -494,4 +494,58 @@ mod pads {
         assert_eq!(layout_of(sys, &sys.join("event3")), Layout::Pad);
         assert_eq!(layout_of(sys, &sys.join("event1")), Layout::Handheld);
     }
+
+    #[test]
+    fn a_lone_pad_is_the_second_player_and_the_handheld_the_first() {
+        use cartridge::input::evdev::Ports;
+        use std::path::Path;
+        let ports = Ports::default();
+        let (a, b, c) = (Path::new("/e3"), Path::new("/e4"), Path::new("/e5"));
+        ports.add(a);
+        assert!(ports.second(a));
+        // a second pad makes the first the first player, who plays as the handheld does
+        ports.add(b);
+        assert!(!ports.second(a));
+        assert!(ports.second(b));
+        ports.add(c);
+        assert!(ports.second(c));
+        // the first goes: the next in line is the lone one's second player again only when alone
+        ports.remove(a);
+        assert!(!ports.second(b));
+        ports.remove(c);
+        assert!(ports.second(b));
+        assert!(!ports.second(Path::new("/headphones")));
+    }
+
+    #[test]
+    fn the_second_players_game_buttons_are_a_port_of_their_own() {
+        use cartridge::input::evdev::as_second;
+        assert_eq!(
+            as_second(RawEvent::Down(Btn::A)),
+            RawEvent::SecondDown(Btn::A)
+        );
+        assert_eq!(
+            as_second(RawEvent::Up(Btn::Start)),
+            RawEvent::SecondUp(Btn::Start)
+        );
+        // the system's own buttons are anyone's
+        assert_eq!(
+            as_second(RawEvent::Down(Btn::Menu)),
+            RawEvent::Down(Btn::Menu)
+        );
+        assert_eq!(
+            as_second(RawEvent::Down(Btn::VolUp)),
+            RawEvent::Down(Btn::VolUp)
+        );
+    }
+
+    #[test]
+    fn a_second_pads_stick_leaves_the_first_players_axes_alone() {
+        let mut hat = Hat::default();
+        hat.second = true;
+        let mut axes = axes();
+        // pushed right, it still presses the d-pad of its own
+        let out = axes.feed(&mut hat, axis(ABS_X, 30000));
+        assert_eq!(out, vec![RawEvent::Down(Btn::Right)]);
+    }
 }

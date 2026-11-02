@@ -78,6 +78,8 @@ impl ControlsView {
             | Platform::Gg
             | Platform::Sms => {}
             Platform::Nds => game.extend([("L2", "SWAP SCREENS"), ("SELECT+MENU", "PAUSE MENU")]),
+            // PPSSPP has its own menu; the shelf never lists the cartridge's gestures for it
+            Platform::Psp => {}
             Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => {}
         }
         game.extend([

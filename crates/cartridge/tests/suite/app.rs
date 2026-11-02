@@ -2457,3 +2457,18 @@ fn r2_still_fast_forwards_in_a_game_boy_advance_game() {
     a.apply(Action::FfStart);
     assert_eq!(a.take_core_option(), None);
 }
+
+#[test]
+fn the_second_pad_steers_the_shelf_like_any_button_when_no_game_plays() {
+    let d = common::tmp_root_with_real_carts(&["Emerald", "Fusion"]);
+    common::clocked(d.path());
+    let mut s = Session::boot(d.path().to_path_buf());
+    let before = s.app().selected_stem().map(str::to_string);
+    s.feed([RawEvent::SecondDown(Btn::Right)], 16);
+    s.feed([RawEvent::SecondUp(Btn::Right)], 60);
+    assert_ne!(
+        s.app().selected_stem().map(str::to_string),
+        before,
+        "the second pad did not move the shelf"
+    );
+}

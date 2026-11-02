@@ -210,6 +210,7 @@ pub fn system_id(platform: Platform) -> u32 {
         Platform::Gg => 21,
         Platform::Sms => 2,
         Platform::Nds => 15,
+        Platform::Psp => 61,
         // music has no scraped label: the tape's is its folder's name
         Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => 0,
     }
@@ -349,6 +350,8 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
             }
         }
         Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => {}
+        // a UMD's label by the game's own region, then the world's and the big three
+        Platform::Psp => out.extend(["wor", "us", "eu", "jp"]),
         Platform::Ps1 => {
             let region = ps1::serial_region(&want.code);
             out.extend(region.and_then(region_code));

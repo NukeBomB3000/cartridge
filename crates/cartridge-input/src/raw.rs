@@ -28,6 +28,10 @@ pub enum Btn {
 pub enum RawEvent {
     Down(Btn),
     Up(Btn),
+    /// A button of the second player's pad: the game's second port, or, where no game is
+    /// running, the same button as anyone's.
+    SecondDown(Btn),
+    SecondUp(Btn),
 }
 
 pub type Millis = u64;

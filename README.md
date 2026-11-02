@@ -72,6 +72,13 @@ over on first boot.
   fast-forwards and L2 swaps the screens, and there is no stylus. SELECT+MENU opens a pause menu
   after DSperate's own, with save and load state, the save states, a short list of options,
   resume and quit.
+- **PSP** from `Games/PSP` (`.iso`, `.cso`, `.pbp`), run by [PPSSPP](https://www.ppsspp.org/), a
+  program of its own that takes the screen: A on a UMD seats it, the frontend steps aside, and
+  leaving PPSSPP through its pause menu (MENU, then Exit) brings the shelf back at the same UMD.
+  The volume keys move the volume and show the same gauge as everywhere else. PPSSPP is GPL and
+  is not part of this repository: `scripts/build-psp.sh` builds the SDL it needs and puts it,
+  PPSSPP from the PSP pak for NextUI and a tool that maps the buttons into `System/psp/` of the
+  card. Its saves and save states are the card's `Saves/PSP` and `States/PSP`.
 - **A choice of core, on a board of its own.** X on the shelf opens the core picker on a drawing
   of the console's mainboard: a Game Boy board (DMG-BEAN-02's look) to pick between Gambatte and
   mGBA, PlayStation's PU-18 to pick between PCSX ReARMed and SwanStation.
@@ -157,6 +164,7 @@ over on first boot.
 <br><img src="screenshots/shelf-ps1.png" width="250" alt="The PlayStation shelf: discs, a game of two discs as a stack">
 <img src="screenshots/shelf-pce.png" width="250" alt="The PC Engine shelf">
 <img src="screenshots/shelf-md.png" width="250" alt="The Mega Drive shelf">
+<br><img src="screenshots/shelf-psp.png" width="250" alt="The PSP shelf: UMDs in their pale shells, each with its mini disc in the round window">
 <br><sub>A shelf for each system</sub>
 </p>
 

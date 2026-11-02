@@ -64,4 +64,26 @@ if [ -f "$SYS/hdmi.sh" ]; then
 fi
 log "exec $SYS/cartridge"
 
-exec "$LOADER" "$SYS/cartridge" > "$out" 2>&1
+# cartridge ends when a game is run by a program of its own (PSP, by PPSSPP), leaving the
+# program's name and then the game's in $RUN/cartridge-handoff, one to a line; the program runs
+# on the game and cartridge starts again, on the shelf where it left off. Ending otherwise ends
+# the session, which init starts afresh.
+request="$RUN/cartridge-handoff"
+rm -f "$request"
+"$LOADER" "$SYS/cartridge" > "$out" 2>&1
+while [ -f "$request" ]; do
+	{
+		read -r program
+		read -r game
+	} < "$request"
+	rm -f "$request"
+	case "$program" in
+	psp)
+		log "psp $game"
+		sh "$SYS/psp.sh" run "$game" > "$SD/psp.log" 2>&1
+		log "psp ended: $?"
+		;;
+	*) log "handoff to $program: no such program" ;;
+	esac
+	"$LOADER" "$SYS/cartridge" >> "$out" 2>&1
+done

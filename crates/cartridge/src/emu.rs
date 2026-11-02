@@ -187,6 +187,8 @@ enum Cmd {
 
 struct Shared {
     input: AtomicU16,
+    /// The second player's pad: the game's second port.
+    input2: AtomicU16,
     speed: AtomicU8,
     observed: AtomicU8,
     state: AtomicU8,
@@ -280,6 +282,7 @@ impl EmuHandle {
         let frames = Frames::new((GBA_W * GBA_H * 4) as usize);
         let shared = Arc::new(Shared {
             input: AtomicU16::new(0),
+            input2: AtomicU16::new(0),
             speed: AtomicU8::new(Speed::Paused as u8),
             observed: AtomicU8::new(Speed::Paused as u8),
             state: AtomicU8::new(CoreState::Loading as u8),
@@ -464,6 +467,10 @@ impl EmuHandle {
     pub fn set_input(&self, mask: ButtonMask) {
         let before = self.shared.input.swap(mask.0, Ordering::Relaxed);
         crate::latency::applied(before, mask.0);
+    }
+
+    pub fn set_input2(&self, mask: ButtonMask) {
+        self.shared.input2.store(mask.0, Ordering::Relaxed);
     }
 
     pub fn input(&self) -> ButtonMask {
@@ -844,10 +851,11 @@ impl Worker {
                 loop {
                     ran += 1;
                     let last = ran >= ceiling || cost.last(began.elapsed(), budget);
-                    let input = if self.rules.turbo {
-                        input.turbo(turbo_frame)
+                    let second = ButtonMask(self.shared.input2.load(Ordering::Relaxed));
+                    let (input, second) = if self.rules.turbo {
+                        (input.turbo(turbo_frame), second.turbo(turbo_frame))
                     } else {
-                        input
+                        (input, second)
                     };
                     turbo_frame = turbo_frame.wrapping_add(1);
                     core.set_frame_skip(!last);
@@ -890,7 +898,7 @@ impl Worker {
                                 }
                             }
                         }
-                        None => core.run_frame(input),
+                        None => core.run_frame_linked(input, second),
                     }
                     crate::cheevos::frame(core.as_ref());
                     let took = frame_began.elapsed();

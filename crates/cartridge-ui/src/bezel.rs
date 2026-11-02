@@ -45,6 +45,7 @@ pub fn bezel_mark_face(platform: Platform, height: u32) -> Option<UndoFace> {
         | Platform::Gg
         | Platform::Sms
         | Platform::Nds
+        | Platform::Psp
         | Platform::Music
         | Platform::Video
         | Platform::Pictures

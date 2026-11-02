@@ -246,6 +246,7 @@ dependencies = [
  "cartridge-ui",
  "cpal",
  "gilrs",
+ "libc",
  "libloading",
  "lz4_flex",
  "png 0.17.16",

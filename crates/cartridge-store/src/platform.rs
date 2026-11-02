@@ -15,6 +15,8 @@ pub enum Platform {
     Sms,
     /// The Nintendo DS, on DSperate: both its screens laid out in one picture by the core.
     Nds,
+    /// The PlayStation Portable, as UMDs: run by PPSSPP, a program of its own, so no core.
+    Psp,
     /// Music, on tapes: not games, so no core runs them; the folders of `Music/` stand on this
     /// shelf and its player plays what is in them.
     Music,
@@ -28,7 +30,7 @@ pub enum Platform {
 }
 
 impl Platform {
-    pub const ALL: [Platform; 15] = [
+    pub const ALL: [Platform; 16] = [
         Platform::Gba,
         Platform::Gb,
         Platform::Gbc,
@@ -40,6 +42,7 @@ impl Platform {
         Platform::Gg,
         Platform::Sms,
         Platform::Nds,
+        Platform::Psp,
         Platform::Music,
         Platform::Video,
         Platform::Pictures,
@@ -59,6 +62,7 @@ impl Platform {
             Platform::Gg => "Game Gear",
             Platform::Sms => "Master System",
             Platform::Nds => "Nintendo DS",
+            Platform::Psp => "PlayStation Portable",
             Platform::Music => "Music",
             Platform::Video => "Video",
             Platform::Pictures => "Pictures",
@@ -79,6 +83,7 @@ impl Platform {
             Platform::Gg => "GG",
             Platform::Sms => "SMS",
             Platform::Nds => "NDS",
+            Platform::Psp => "PSP",
             Platform::Music => "Music",
             Platform::Video => "Videos",
             Platform::Pictures => "Pictures",
@@ -98,6 +103,7 @@ impl Platform {
             Platform::Gg => &["gg"],
             Platform::Sms => &["sms"],
             Platform::Nds => &["nds"],
+            Platform::Psp => &["iso", "cso", "pbp"],
             Platform::Music => crate::music::EXTENSIONS,
             Platform::Video => crate::media::Kind::Video.extensions(),
             Platform::Pictures => crate::media::Kind::Pictures.extensions(),
@@ -118,6 +124,8 @@ impl Platform {
             Platform::Sms => (256, 192),
             // the top screen half again as big over the bottom one, as DSperate lays them out
             Platform::Nds => (384, 480),
+            // PPSSPP draws the screen itself, at 480 by 272
+            Platform::Psp => (480, 272),
             // no picture: the player draws its own screen
             Platform::Music => (320, 240),
             Platform::Video => (320, 240),
@@ -169,6 +177,8 @@ impl Platform {
             Platform::Gba => Some(1_200_000),
             // DSperate barely keeps up at the top clock: 54 to 60 fps in NSMB and Mario Kart
             Platform::Snes | Platform::Ps1 | Platform::Nds => None,
+            // PPSSPP sets its own clock: it wants every core it can have
+            Platform::Psp => None,
             // decoding a song takes a fraction of a core
             Platform::Music => Some(720_000),
             // video decoding takes every core it can have

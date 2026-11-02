@@ -4,7 +4,7 @@ use crate::models::disc::StackMeshes;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, vhs};
+use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, umd, vhs};
 use crate::silhouette::GbShell;
 
 /// How thick a cart is, as a share of its width: a Game Pak is about 8 mm thick and 57 wide.
@@ -74,10 +74,12 @@ pub enum CartModel {
     Polaroid,
     /// A hardback book: an EPUB.
     Book,
+    /// The PSP's UMD.
+    Umd,
 }
 
 impl CartModel {
-    pub const ALL: [CartModel; 19] = [
+    pub const ALL: [CartModel; 20] = [
         CartModel::Gba,
         CartModel::Gb(GbShell::Notched),
         CartModel::Gb(GbShell::Rounded),
@@ -97,6 +99,7 @@ impl CartModel {
         CartModel::Vhs,
         CartModel::Polaroid,
         CartModel::Book,
+        CartModel::Umd,
     ];
 
     /// Its place in [`CartModel::ALL`].
@@ -121,6 +124,7 @@ impl CartModel {
             CartModel::Vhs => 16,
             CartModel::Polaroid => 17,
             CartModel::Book => 18,
+            CartModel::Umd => 19,
         }
     }
 
@@ -136,6 +140,7 @@ impl CartModel {
             CartModel::Vhs => vhs::THICK,
             CartModel::Polaroid => polaroid::THICK,
             CartModel::Book => book::THICK,
+            CartModel::Umd => umd::THICK,
             CartModel::Nes(shell) => nes::thick(shell),
             CartModel::Md(shell) => md::thick(shell),
             CartModel::Sega8(shell) => sega8::thick(shell),
@@ -273,6 +278,7 @@ pub fn outline(model: CartModel) -> (Vec<(f32, f32)>, (f32, f32)) {
         CartModel::Vhs => vhs::outline(),
         CartModel::Polaroid => polaroid::outline(),
         CartModel::Book => book::outline(),
+        CartModel::Umd => umd::outline(),
         CartModel::Nes(shell) => nes::outline(shell),
         CartModel::Md(shell) => md::outline(shell),
         CartModel::Sega8(shell) => sega8::outline(shell),
@@ -717,8 +723,16 @@ mod tests {
             let (lx, ly, lw, lh) = spec.label;
             for v in cart_mesh(model).iter().filter(|v| v.normal[2] == 0.0) {
                 let (x, y) = (v.uv[0] * spec.w as f32, v.uv[1] * spec.h as f32);
-                let inside =
-                    x > lx as f32 && x < (lx + lw) as f32 && y > ly as f32 && y < (ly + lh) as f32;
+                // a round label (the UMD's is a circle) leaves plastic in the corners of its box
+                let inside = match spec.label_round {
+                    0 => {
+                        x > lx as f32
+                            && x < (lx + lw) as f32
+                            && y > ly as f32
+                            && y < (ly + lh) as f32
+                    }
+                    r => crate::cart::in_round_rect(x as u32, y as u32, spec.label, r),
+                };
                 assert!(
                     !inside,
                     "{model:?} samples its side at {x:.0},{y:.0}, in its label"
@@ -727,16 +741,17 @@ mod tests {
         }
     }
 
-    /// Only the Super Famicom, HuCard, DS card, Famicom and Mega Drive labels are round at their
+    /// Only the Super Famicom, HuCard, DS card, UMD, Famicom and Mega Drive labels are round at their
     /// corners: every other shape's goes through the square label's drawing untouched.
     #[test]
-    fn only_the_super_famicom_hucard_ds_famicom_and_mega_drive_labels_are_round() {
+    fn only_the_super_famicom_hucard_ds_umd_famicom_and_mega_drive_labels_are_round() {
         for model in CartModel::ALL {
             let round = crate::cart::spec(model).label_round;
             match model {
                 CartModel::Snes(SnesShell::Famicom)
                 | CartModel::HuCard
                 | CartModel::Nds
+                | CartModel::Umd
                 | CartModel::Nes(NesShell::Famicom)
                 | CartModel::Md(MdShell::MegaDrive) => assert!(round > 0),
                 _ => assert_eq!(round, 0, "the {model:?} label is round"),

@@ -140,6 +140,8 @@ impl Core {
             Platform::Md | Platform::Gg | Platform::Sms => &[Core::GenesisPlusGx],
             Platform::Nds => &[Core::Dsperate],
             // songs are decoded by the player, not by a core
+            // PPSSPP is a program of its own, which System/psp.sh runs
+            Platform::Psp => &[],
             Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => &[],
         }
     }

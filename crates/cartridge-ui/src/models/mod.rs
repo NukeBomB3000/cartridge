@@ -11,6 +11,7 @@ pub mod polaroid;
 pub mod sega8;
 pub mod snes;
 pub mod tape;
+pub mod umd;
 pub mod vhs;
 
 /// A rectangle `w` by `h` with its corners rounded `r`, in drawing units, all the way round

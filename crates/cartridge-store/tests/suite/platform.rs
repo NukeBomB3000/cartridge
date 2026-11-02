@@ -6,8 +6,8 @@ fn every_platform_has_a_directory() {
     assert_eq!(
         names,
         vec![
-            "GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD", "GG", "SMS", "NDS", "Music",
-            "Videos", "Pictures", "Books"
+            "GBA", "GB", "GBC", "SNES", "PS1", "PCE", "NES", "MD", "GG", "SMS", "NDS", "PSP",
+            "Music", "Videos", "Pictures", "Books"
         ]
     );
 }
@@ -28,6 +28,7 @@ fn every_platform_is_a_shelf_of_its_own() {
             Platform::Gg,
             Platform::Sms,
             Platform::Nds,
+            Platform::Psp,
             Platform::Music,
             Platform::Video,
             Platform::Pictures,

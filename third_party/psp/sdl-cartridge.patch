@@ -1,0 +1,323 @@
+--- a/src/video/mali-fbdev/SDL_maliopengles.c	2026-11-02 06:58:08.478660953 +0100
++++ b/src/video/mali-fbdev/SDL_maliopengles.c	2026-10-31 13:11:17.055245649 +0100
+@@ -43,6 +43,243 @@
+    return 0;
+ }
+ 
++/* cartridge: the volume gauge over the frame, drawn as the frontend draws it. Two files are read:
++ * /run/cartridge-hud-faces (cartridge --hud-faces) holds every face of the gauge as RGBA, and
++ * /run/cartridge-hud, written as the volume keys are pressed, says which to show: the level
++ * 0..100 and an icon, "volume", "headphones" or "muted". For a moment after it was written the
++ * face is drawn with one scissored clear to each rectangle of equal colour in it, just before
++ * the frame is handed on, so the program needs no help and no state of its own is touched but
++ * what is put back. */
++#include <math.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include "SDL_opengles2.h"
++
++#define HUD_FILE "/run/cartridge-hud"
++#define HUD_FACES "/run/cartridge-hud-faces"
++#define HUD_MS 1500
++#define HUD_HEADER 28
++#define HUD_RECTS 2048
++
++typedef struct {
++   int x, y, w, h;
++   unsigned char r, g, b;
++} MaliHudRect;
++
++static unsigned char *hud_faces;      /* the file, or NULL */
++static unsigned int hud_head[6];      /* w, h, scale, margin, cells, faces */
++static MaliHudRect hud_rects[HUD_RECTS];
++static int hud_rect_count;
++
++static unsigned int mali_hud_word(const unsigned char *p)
++{
++   return p[0] | (p[1] << 8) | (p[2] << 16) | ((unsigned int)p[3] << 24);
++}
++
++static void mali_hud_load(void)
++{
++   struct stat st;
++   int fd, i;
++   unsigned char head[HUD_HEADER];
++   size_t size, got = 0;
++
++   if (hud_faces) {
++      return;
++   }
++   fd = open(HUD_FACES, O_RDONLY | O_CLOEXEC);
++   if (fd < 0) {
++      return;
++   }
++   if (fstat(fd, &st) == 0 && st.st_size > HUD_HEADER && read(fd, head, HUD_HEADER) == HUD_HEADER &&
++       SDL_memcmp(head, "CHUD", 4) == 0) {
++      for (i = 0; i < 6; i++) {
++         hud_head[i] = mali_hud_word(head + 4 + 4 * i);
++      }
++      size = (size_t)hud_head[0] * hud_head[1] * 4 * hud_head[5];
++      if (hud_head[0] > 0 && hud_head[1] > 0 && size > 0 && size == (size_t)st.st_size - HUD_HEADER) {
++         hud_faces = SDL_malloc(size);
++         while (hud_faces && got < size) {
++            ssize_t n = read(fd, hud_faces + got, size - got);
++            if (n <= 0) {
++               break;
++            }
++            got += (size_t)n;
++         }
++         if (hud_faces && got < size) {
++            SDL_free(hud_faces);
++            hud_faces = NULL;
++         }
++      }
++   }
++   close(fd);
++}
++
++/* The rectangles of one colour the face is made of: each row's runs, joined to the run above
++ * that has the same place and colour. Pixels that are not opaque are left out. */
++static void mali_hud_build(int face)
++{
++   const int w = (int)hud_head[0], h = (int)hud_head[1];
++   const unsigned char *px = hud_faces + (size_t)face * w * h * 4;
++   int y, x, first_open = 0;
++
++   hud_rect_count = 0;
++   for (y = 0; y < h; y++) {
++      const int prev_end = hud_rect_count;
++      x = 0;
++      while (x < w) {
++         const unsigned char *a = px + ((size_t)y * w + x) * 4;
++         int run = 1, i, joined = 0;
++         if (a[3] < 128) {
++            x++;
++            continue;
++         }
++         while (x + run < w) {
++            const unsigned char *b = a + 4 * run;
++            if (b[3] < 128 || b[0] != a[0] || b[1] != a[1] || b[2] != a[2]) {
++               break;
++            }
++            run++;
++         }
++         for (i = first_open; i < prev_end; i++) {
++            MaliHudRect *r = &hud_rects[i];
++            if (r->y + r->h == y && r->x == x && r->w == run && r->r == a[0] && r->g == a[1] && r->b == a[2]) {
++               r->h++;
++               joined = 1;
++               break;
++            }
++         }
++         if (!joined && hud_rect_count < HUD_RECTS) {
++            MaliHudRect *r = &hud_rects[hud_rect_count++];
++            r->x = x;
++            r->y = y;
++            r->w = run;
++            r->h = 1;
++            r->r = a[0];
++            r->g = a[1];
++            r->b = a[2];
++         }
++         x += run;
++      }
++      /* what stopped growing above this row is not looked at again */
++      while (first_open < prev_end && hud_rects[first_open].y + hud_rects[first_open].h <= y) {
++         first_open++;
++      }
++   }
++}
++
++static void mali_hud(SDL_Window *window)
++{
++   static PFNGLSCISSORPROC scissor;
++   static PFNGLCLEARPROC clear;
++   static PFNGLCLEARCOLORPROC clear_color;
++   static PFNGLENABLEPROC enable;
++   static PFNGLDISABLEPROC disable;
++   static PFNGLISENABLEDPROC is_enabled;
++   static PFNGLGETINTEGERVPROC get_integer;
++   static PFNGLGETFLOATVPROC get_float;
++   static PFNGLGETBOOLEANVPROC get_boolean;
++   static PFNGLCOLORMASKPROC color_mask;
++   static PFNGLBINDFRAMEBUFFERPROC bind_framebuffer;
++   static int tick, ready, face = -1, shown;
++   static long long until_ms;
++   struct stat st;
++   struct timespec now;
++   long long now_ms;
++   int w, h, i, scale, x0, fb;
++   GLint box[4];
++   GLfloat cc[4];
++   GLboolean cm[4];
++   GLboolean was_scissor;
++
++   clock_gettime(CLOCK_REALTIME, &now);
++   now_ms = (long long)now.tv_sec * 1000 + now.tv_nsec / 1000000;
++   if ((tick++ & 3) == 0 && stat(HUD_FILE, &st) == 0) {
++      const long long written = (long long)st.st_mtim.tv_sec * 1000 + st.st_mtim.tv_nsec / 1000000;
++      if (written + HUD_MS > now_ms && written != until_ms - HUD_MS) {
++         char text[32] = { 0 };
++         int fd = open(HUD_FILE, O_RDONLY | O_CLOEXEC);
++         int level = 0, icon = 0;
++         if (fd >= 0) {
++            if (read(fd, text, sizeof(text) - 1) > 0) {
++               const char *word = SDL_strchr(text, ' ');
++               level = SDL_atoi(text);
++               icon = word && word[1] == 'h' ? 1 : word && word[1] == 'm' ? 2 : 0;
++            }
++            close(fd);
++         }
++         mali_hud_load();
++         if (hud_faces) {
++            const int cells = (int)hud_head[4];
++            int lit;
++            level = level < 0 ? 0 : level > 100 ? 100 : level;
++            lit = (int)floor(level / 100.0 * cells + 0.5);
++            face = icon * (cells + 1) + lit;
++            if (face >= (int)hud_head[5]) {
++               face = -1;
++            } else {
++               mali_hud_build(face);
++            }
++         }
++         until_ms = written + HUD_MS;
++         shown = 1;
++      }
++   }
++   if (!shown || now_ms >= until_ms) {
++      shown = 0;
++      return;
++   }
++   if (face < 0) {
++      return;
++   }
++   if (!ready) {
++      scissor = (PFNGLSCISSORPROC)SDL_GL_GetProcAddress("glScissor");
++      clear = (PFNGLCLEARPROC)SDL_GL_GetProcAddress("glClear");
++      clear_color = (PFNGLCLEARCOLORPROC)SDL_GL_GetProcAddress("glClearColor");
++      enable = (PFNGLENABLEPROC)SDL_GL_GetProcAddress("glEnable");
++      disable = (PFNGLDISABLEPROC)SDL_GL_GetProcAddress("glDisable");
++      is_enabled = (PFNGLISENABLEDPROC)SDL_GL_GetProcAddress("glIsEnabled");
++      get_integer = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
++      get_float = (PFNGLGETFLOATVPROC)SDL_GL_GetProcAddress("glGetFloatv");
++      get_boolean = (PFNGLGETBOOLEANVPROC)SDL_GL_GetProcAddress("glGetBooleanv");
++      color_mask = (PFNGLCOLORMASKPROC)SDL_GL_GetProcAddress("glColorMask");
++      bind_framebuffer = (PFNGLBINDFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBindFramebuffer");
++      ready = scissor && clear && clear_color && enable && disable && is_enabled && get_integer &&
++              get_float && get_boolean && color_mask && bind_framebuffer ? 1 : -1;
++   }
++   if (ready < 0) {
++      return;
++   }
++   SDL_GetWindowSize(window, &w, &h);
++   scale = (int)hud_head[2];
++   x0 = (w - (int)hud_head[0] * scale) / 2;
++
++   was_scissor = is_enabled(GL_SCISSOR_TEST);
++   get_integer(GL_SCISSOR_BOX, box);
++   get_float(GL_COLOR_CLEAR_VALUE, cc);
++   get_boolean(GL_COLOR_WRITEMASK, cm);
++   get_integer(GL_FRAMEBUFFER_BINDING, &fb);
++
++   bind_framebuffer(GL_FRAMEBUFFER, 0);
++   color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
++   enable(GL_SCISSOR_TEST);
++   for (i = 0; i < hud_rect_count; i++) {
++      const MaliHudRect *r = &hud_rects[i];
++      clear_color(r->r / 255.0f, r->g / 255.0f, r->b / 255.0f, 1.0f);
++      scissor(x0 + r->x * scale, h - ((int)hud_head[3] + (r->y + r->h) * scale), r->w * scale, r->h * scale);
++      clear(GL_COLOR_BUFFER_BIT);
++   }
++
++   clear_color(cc[0], cc[1], cc[2], cc[3]);
++   color_mask(cm[0], cm[1], cm[2], cm[3]);
++   scissor(box[0], box[1], box[2], box[3]);
++   if (!was_scissor) {
++      disable(GL_SCISSOR_TEST);
++   }
++   bind_framebuffer(GL_FRAMEBUFFER, (GLuint)fb);
++}
++
+ int MALI_GLES_SwapWindow(_THIS, SDL_Window * window)
+ {
+    int r;
+@@ -52,6 +289,8 @@
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(0);
+    MALI_Blitter *blitter = displaydata->blitter;
+ 
++   mali_hud(window);
++
+    if (blitter == NULL)
+       return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *)window->driverdata)->egl_surface);
+ 
+--- a/src/audio/SDL_audio.c	2026-11-02 06:58:08.361289420 +0100
++++ b/src/audio/SDL_audio.c	2026-10-31 12:03:07.291754700 +0100
+@@ -669,6 +669,57 @@
+ #endif
+ 
+ /* The general mixing thread function */
++/* cartridge: the volume of the handheld. A script keeps the level (0..100) in /run/cartridge-volume;
++ * what a program plays is scaled by its square, as cartridge does with its own sound. */
++#include <fcntl.h>
++#include <unistd.h>
++
++static float cartridge_gain(void)
++{
++    static int tick;
++    static float gain = 1.0f;
++    if ((tick++ & 7) == 0) {
++        char text[16] = { 0 };
++        int fd = open("/run/cartridge-volume", O_RDONLY | O_CLOEXEC);
++        if (fd >= 0) {
++            if (read(fd, text, sizeof(text) - 1) > 0) {
++                int v = SDL_atoi(text);
++                v = v < 0 ? 0 : v > 100 ? 100 : v;
++                gain = (float)(v * v) / 10000.0f;
++            }
++            close(fd);
++        } else {
++            gain = 1.0f;
++        }
++    }
++    return gain;
++}
++
++static void cartridge_scale(Uint8 *data, int len, SDL_AudioFormat format)
++{
++    const float gain = cartridge_gain();
++    int i;
++    if (gain >= 1.0f) {
++        return;
++    }
++    if (format == AUDIO_S16SYS) {
++        Sint16 *s = (Sint16 *)data;
++        for (i = 0; i < len / 2; i++) {
++            s[i] = (Sint16)((float)s[i] * gain);
++        }
++    } else if (format == AUDIO_F32SYS) {
++        float *f = (float *)data;
++        for (i = 0; i < len / 4; i++) {
++            f[i] *= gain;
++        }
++    } else if (format == AUDIO_S32SYS) {
++        Sint32 *s = (Sint32 *)data;
++        for (i = 0; i < len / 4; i++) {
++            s[i] = (Sint32)((double)s[i] * gain);
++        }
++    }
++}
++
+ static int SDLCALL SDL_RunAudio(void *userdata)
+ {
+     const AudioThreadStartupData *startup_data = (const AudioThreadStartupData *) userdata;
+@@ -734,6 +785,7 @@
+             SDL_memset(data, device->callbackspec.silence, data_len);
+         } else {
+             callback(udata, data, data_len);
++            cartridge_scale(data, data_len, device->callbackspec.format);
+         }
+         SDL_UnlockMutex(device->mixer_lock);
+ 

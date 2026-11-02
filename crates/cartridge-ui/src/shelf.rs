@@ -27,6 +27,7 @@ pub fn shelf_scale(platform: Platform) -> f32 {
         Platform::Md => md::SHELF_SCALE,
         Platform::Gg | Platform::Sms => crate::models::sega8::SHELF_SCALE,
         Platform::Nds => crate::models::nds::SHELF_SCALE,
+        Platform::Psp => crate::models::umd::SHELF_SCALE,
         Platform::Music => crate::models::tape::SHELF_SCALE,
         Platform::Video => crate::models::vhs::SHELF_SCALE,
         Platform::Pictures => crate::models::polaroid::SHELF_SCALE,
@@ -48,6 +49,7 @@ pub fn model_scale(model: CartModel) -> f32 {
         CartModel::Disc => disc::SHELF_SCALE,
         CartModel::HuCard => hucard::SHELF_SCALE,
         CartModel::Nds => crate::models::nds::SHELF_SCALE,
+        CartModel::Umd => crate::models::umd::SHELF_SCALE,
         CartModel::Tape => crate::models::tape::SHELF_SCALE,
         CartModel::Vhs => crate::models::vhs::SHELF_SCALE,
         CartModel::Polaroid => crate::models::polaroid::SHELF_SCALE,
@@ -71,6 +73,7 @@ pub fn model_pitch(model: CartModel) -> f32 {
     match model {
         CartModel::HuCard => hucard::PITCH,
         CartModel::Nds => crate::models::nds::PITCH,
+        CartModel::Umd => crate::models::umd::PITCH,
         CartModel::Book => crate::models::book::PITCH,
         _ => model_shelf_box(model).0,
     }

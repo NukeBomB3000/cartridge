@@ -92,9 +92,11 @@ pub fn scan(root: &Path) -> Result<Vec<Cart>, StoreError> {
                     String::new(),
                 ),
                 Platform::Nds => crate::nds::header(&rom).unwrap_or_default(),
-                Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => {
-                    (String::new(), String::new())
-                }
+                Platform::Psp
+                | Platform::Music
+                | Platform::Video
+                | Platform::Pictures
+                | Platform::Books => (String::new(), String::new()),
             };
             carts.push(Cart {
                 platform,

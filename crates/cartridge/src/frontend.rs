@@ -709,6 +709,17 @@ impl Frontend {
         self.session.app().ready_to_power_off()
     }
 
+    /// The game of a system a program of its own runs, once its cart is seated: the frontend
+    /// ends, and `launch_frontend.sh` starts that program on it.
+    pub fn handoff(&self) -> Option<&std::path::Path> {
+        self.session.handoff()
+    }
+
+    /// Leaves the cart out of the slot, as a handed-over game's is.
+    pub fn forget_seated(&mut self) {
+        self.session.app_mut().forget_seated();
+    }
+
     pub fn restarting(&self) -> bool {
         self.session.app().ready_to_restart()
     }

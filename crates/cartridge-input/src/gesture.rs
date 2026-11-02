@@ -190,8 +190,8 @@ impl Gestures {
 
     pub fn feed(&mut self, ev: RawEvent, now: Millis) -> Vec<Action> {
         match ev {
-            RawEvent::Down(b) => self.down(b, now),
-            RawEvent::Up(b) => self.up(b, now),
+            RawEvent::Down(b) | RawEvent::SecondDown(b) => self.down(b, now),
+            RawEvent::Up(b) | RawEvent::SecondUp(b) => self.up(b, now),
         }
     }
 

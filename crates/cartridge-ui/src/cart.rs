@@ -7,7 +7,7 @@ use crate::label_cut::label_art;
 use crate::models::md::{self, MdShell};
 use crate::models::nes::{self, NesShell};
 use crate::models::sega8::{self, Sega8Shell};
-use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, vhs};
+use crate::models::{book, disc, hucard, nds, polaroid, snes, snes::SnesShell, tape, umd, vhs};
 use crate::shell::{shell_for, Finish, Shell};
 use crate::silhouette::{
     cart_depth, cart_mask, detail_mask, gb_cart_depth, gb_cart_mask, gb_detail_mask, Detail,
@@ -117,6 +117,7 @@ pub fn gb_shell_of(cart: &Cart) -> Option<GbShell> {
         | Platform::Gg
         | Platform::Sms
         | Platform::Nds
+        | Platform::Psp
         | Platform::Music
         | Platform::Video
         | Platform::Pictures
@@ -147,6 +148,7 @@ pub fn model_of(cart: &Cart) -> CartModel {
         Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
         Platform::Sms => CartModel::Sega8(sega8::master_system_shell_of(cart)),
         Platform::Nds => CartModel::Nds,
+        Platform::Psp => CartModel::Umd,
         Platform::Music => CartModel::Tape,
         Platform::Video => CartModel::Vhs,
         Platform::Pictures => CartModel::Polaroid,
@@ -172,6 +174,7 @@ pub(crate) fn spec(model: CartModel) -> Spec {
         CartModel::Disc => disc::spec(),
         CartModel::HuCard => hucard::spec(),
         CartModel::Nds => nds::spec(),
+        CartModel::Umd => umd::spec(),
         CartModel::Tape => tape::spec(),
         CartModel::Vhs => vhs::spec(),
         CartModel::Polaroid => polaroid::spec(),
@@ -228,6 +231,7 @@ pub fn seated_box(platform: Platform) -> (u32, u32) {
         Platform::Md => md::face_box(MdShell::MegaDrive),
         Platform::Gg => sega8::face_box(Sega8Shell::GameGear),
         Platform::Nds => (nds::W, nds::H),
+        Platform::Psp => (umd::W, umd::H),
         Platform::Music => (tape::W, tape::H),
         Platform::Video => (vhs::W, vhs::H),
         Platform::Pictures => (polaroid::W, polaroid::H),
@@ -254,6 +258,7 @@ pub fn cart_box(platform: Platform) -> (u32, u32) {
         Platform::Md => CartModel::Md(MdShell::MegaDrive),
         Platform::Gg => CartModel::Sega8(Sega8Shell::GameGear),
         Platform::Nds => CartModel::Nds,
+        Platform::Psp => CartModel::Umd,
         Platform::Music => CartModel::Tape,
         Platform::Video => CartModel::Vhs,
         Platform::Pictures => CartModel::Polaroid,
@@ -308,6 +313,7 @@ pub fn face_labels(platform: Platform) -> Vec<(u32, u32)> {
             CartModel::Nes(_) => platform == Platform::Nes,
             CartModel::HuCard => platform == Platform::Pce,
             CartModel::Nds => platform == Platform::Nds,
+            CartModel::Umd => platform == Platform::Psp,
             CartModel::Tape => platform == Platform::Music,
             CartModel::Vhs => platform == Platform::Video,
             CartModel::Polaroid => platform == Platform::Pictures,
@@ -354,6 +360,7 @@ fn face_of(cart: &Cart, scans: bool) -> CartFace {
         Some(rgba) => rgba,
         None if model == CartModel::Tape => tape_label(&s, &label_text(cart)),
         None if model == CartModel::Vhs => vhs_label(&s, &label_text(cart)),
+        None if model == CartModel::Umd => umd_label(&s, &label_text(cart)),
         None if model == CartModel::Tape => tape_label(&s, &label_text(cart)),
         None => generated_label(&s, &label_text(cart)),
     };
@@ -626,7 +633,12 @@ fn recess_label(s: &Spec, face: &mut CartFace, shell: &Shell) {
 /// Whether the face's pixel `x, y` is inside the rect `rx, ry, rw, rh` with its corners
 /// rounded `r` pixels: decided for each two-pixel cell of the face as a whole, so a round
 /// corner steps on the art grid as everything else does.
-fn in_round_rect(x: u32, y: u32, (rx, ry, rw, rh): (u32, u32, u32, u32), r: u32) -> bool {
+pub(crate) fn in_round_rect(
+    x: u32,
+    y: u32,
+    (rx, ry, rw, rh): (u32, u32, u32, u32),
+    r: u32,
+) -> bool {
     if !(rx..rx + rw).contains(&x) || !(ry..ry + rh).contains(&y) {
         return false;
     }
@@ -730,6 +742,79 @@ fn polaroid_chin(face: &mut CartFace, title: &str) {
             }
         }
     }
+}
+
+/// A UMD's label when there is no scan: the disc in its window, a mini disc. Its rim is silver,
+/// the print on it the colour the name gives it, lit from above as the other labels are, with a
+/// ring of print inside the rim, the pale sticker round the spindle hole, and the name on the
+/// lower half of the disc, under the sticker.
+fn umd_label(s: &Spec, title: &str) -> Vec<u8> {
+    const RIM: [u8; 3] = [0xc6, 0xc9, 0xd0];
+    const STICKER: [u8; 3] = [0xee, 0xee, 0xf1];
+    const HOLE: [u8; 3] = [0x1c, 0x1d, 0x22];
+    let (_, _, lw, lh) = s.label;
+    let bg = label_colour(title);
+    let ink = ink(bg);
+    let (cx, cy) = (lw as f32 / 2.0, lh as f32 / 2.0);
+    let r = cx.min(cy);
+    let mut rgba = vec![0u8; (lw * lh * 4) as usize];
+    for y in 0..lh {
+        // lit from above: the colour lightens towards the top and darkens towards the foot
+        let k = y as i32 * 255 / lh.max(1) as i32;
+        let shift = SHEEN.0 + (SHEEN.1 - SHEEN.0) * k / 255;
+        let print = bg.map(|c| (c as i32 + shift).clamp(0, 255) as u8);
+        let lit = |c: [u8; 3]| c.map(|v| (v as i32 + shift / 2).clamp(0, 255) as u8);
+        for x in 0..lw {
+            let (dx, dy) = (x as f32 + 0.5 - cx, y as f32 + 0.5 - cy);
+            let d = (dx * dx + dy * dy).sqrt() / r;
+            let c = if d > 1.0 {
+                continue;
+            } else if d > 0.955 {
+                lit(RIM)
+            } else if d < 0.075 {
+                HOLE
+            } else if d < 0.30 {
+                lit(STICKER)
+            } else if d < 0.335 {
+                lit(RIM)
+            } else if (0.86..0.875).contains(&d) {
+                // the ring of print inside the rim
+                print.map(|v| (v as u32 * 3 / 4) as u8)
+            } else {
+                print
+            };
+            let i = ((y * lw + x) * 4) as usize;
+            rgba[i..i + 4].copy_from_slice(&[c[0], c[1], c[2], 255]);
+        }
+    }
+    if let Some(font) = text::label_font() {
+        // the name's box, under the sticker and inside the rim where the disc is still wide
+        let (bw, bh) = ((r * 1.0) as u32, (r * 0.46) as u32);
+        let (ox, oy) = (((lw - bw) / 2), (cy + r * 0.36) as u32);
+        let layout = text::fit_box(font, title, bw as f32, bh as f32, 2, MAX_PX, 12.0);
+        let cover = embolden(&text::coverage(bw, bh, &layout), bw as usize);
+        let shadow = bg.map(|c| c / 3);
+        let mut paint = |colour: [u8; 3], (dx, dy): (u32, u32), share: u32| {
+            for y in dy..bh {
+                for x in dx..bw {
+                    let a = cover[((y - dy) * bw + x - dx) as usize] as u32 * share / 255;
+                    if a > 0 {
+                        let i = ((((oy + y) * lw) + ox + x) * 4) as usize;
+                        if i + 3 < rgba.len() && rgba[i + 3] > 0 {
+                            for c in 0..3 {
+                                rgba[i + c] = ((colour[c] as u32 * a
+                                    + rgba[i + c] as u32 * (255 - a))
+                                    / 255) as u8;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        paint(shadow, (SHADOW, SHADOW), 153);
+        paint(ink, (0, 0), 255);
+    }
+    rgba
 }
 
 /// A VHS tape's label: a black panel with the tape's name set in gold, as big as it goes on up to five lines, over

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use cartridge_input::{Action, Gestures, Millis, RawEvent};
+use cartridge_input::{Action, Btn, Gestures, Millis, RawEvent};
 use cartridge_retro::Rumble;
 use cartridge_store::Platform;
 use cartridge_ui::FfState;
@@ -30,6 +30,9 @@ pub struct Session {
     sink: Box<dyn AudioSink>,
     gestures: Gestures,
     pad: Pad,
+    /// The second player's pad, and the buttons of it that went to the menus instead of the game.
+    pad2: Pad,
+    second_in_menu: Vec<Btn>,
     rewinding: bool,
     fast: bool,
     motor: u16,
@@ -45,6 +48,9 @@ pub struct Session {
     starting: bool,
     /// The cart the shelf rests on, read ahead.
     prefetch: Prefetch,
+    /// The game of a system no core runs, once its cart is seated: the frontend ends and a
+    /// program of its own takes the screen (see [`crate::handoff`]).
+    handoff: Option<std::path::PathBuf>,
     /// The equalizer's test sound while it plays, and how far into it the ring has been fed.
     test_sound: Option<(Vec<i16>, usize)>,
 }
@@ -76,6 +82,8 @@ impl Session {
             sink,
             gestures: Gestures::new(),
             pad: Pad::default(),
+            pad2: Pad::default(),
+            second_in_menu: Vec::new(),
             rewinding: false,
             fast: false,
             motor: 0,
@@ -86,6 +94,7 @@ impl Session {
             running: None,
             starting: false,
             prefetch: Prefetch::default(),
+            handoff: None,
             test_sound: None,
         }
     }
@@ -230,9 +239,14 @@ impl Session {
     pub fn feed(&mut self, events: impl IntoIterator<Item = RawEvent>, now: Millis) {
         let keys = self.app.keys();
         self.pad.set_keys(keys);
+        self.pad2.set_keys(keys);
         let mut actions = self.gestures.set_keys(keys);
         for ev in events {
-            actions.extend(self.gestures.feed(ev, now));
+            match ev {
+                RawEvent::SecondDown(b) => actions.extend(self.second_down(b, now)),
+                RawEvent::SecondUp(b) => actions.extend(self.second_up(b, now)),
+                ev => actions.extend(self.gestures.feed(ev, now)),
+            }
         }
         actions.extend(self.gestures.tick(now));
         for action in actions {
@@ -241,9 +255,35 @@ impl Session {
         self.sync_pad();
     }
 
+    /// The second pad's button goes to the game's second port while a game is playing, and is
+    /// anyone's button otherwise, so it steers the menus too.
+    fn second_down(&mut self, b: Btn, now: Millis) -> Vec<Action> {
+        if self.playing() && !self.overlaid() {
+            self.pad2.apply(Action::GbaDown(b));
+            return Vec::new();
+        }
+        self.second_in_menu.push(b);
+        self.gestures.feed(RawEvent::Down(b), now)
+    }
+
+    fn second_up(&mut self, b: Btn, now: Millis) -> Vec<Action> {
+        self.pad2.apply(Action::GbaUp(b));
+        match self.second_in_menu.iter().position(|&held| held == b) {
+            Some(at) => {
+                self.second_in_menu.remove(at);
+                self.gestures.feed(RawEvent::Up(b), now)
+            }
+            None => Vec::new(),
+        }
+    }
+
     fn sync_pad(&mut self) {
+        if !self.playing() || self.overlaid() {
+            self.pad2.clear();
+        }
         if let Some(emu) = &self.emu {
             emu.set_input(self.pad.mask());
+            emu.set_input2(self.pad2.mask());
         }
         self.sync_sticks();
     }
@@ -544,8 +584,18 @@ impl Session {
                 return;
             }
             Phase::Inserting { cart, .. } => cart.clone(),
+            Phase::Playing { cart } => {
+                let cart = cart.clone();
+                self.hand_off(&cart);
+                return;
+            }
             _ => return,
         };
+        // a game no core runs is seated as any other, and then handed over
+        if self.external(&stem).is_some() {
+            self.app.on_core_ready();
+            return;
+        }
         if self.emu.is_none() {
             let (_, serial) = self.app.link_mode(&stem);
             self.spawn_core(&stem, serial);
@@ -558,6 +608,25 @@ impl Session {
                 self.app.on_core_failed();
             }
         }
+    }
+
+    /// The file of `stem`'s game when a program of its own runs it, not a core.
+    fn external(&self, stem: &str) -> Option<std::path::PathBuf> {
+        self.app
+            .seated_cart()
+            .filter(|c| c.stem == stem && c.platform == Platform::Psp)
+            .map(|c| c.rom.clone())
+    }
+
+    fn hand_off(&mut self, stem: &str) {
+        if self.handoff.is_none() {
+            self.handoff = self.external(stem);
+        }
+    }
+
+    /// The game to hand the screen over for, once its cart is seated.
+    pub fn handoff(&self) -> Option<&std::path::Path> {
+        self.handoff.as_deref()
     }
 
     fn spawn_core(&mut self, stem: &str, serial: &'static str) {
@@ -591,6 +660,7 @@ impl Session {
             | Platform::Md
             | Platform::Sms
             | Platform::Nds
+            | Platform::Psp
             // never started as a game: the music has a player of its own
             | Platform::Music
             | Platform::Video

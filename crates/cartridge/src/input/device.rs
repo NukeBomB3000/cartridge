@@ -9,8 +9,9 @@ use std::time::{Duration, Instant};
 use cartridge_input::{Btn, InputSource, Millis, RawEvent};
 
 use super::evdev::{
-    decode, device_name, layout_of, pick_devices, to_raw_for, Ev, Hat, Layout, PadAxes, Range,
-    ABS_RX, ABS_RY, ABS_RZ, ABS_X, ABS_Y, ABS_Z, EVENT_BYTES, EV_ABS, EV_KEY, EV_SYN,
+    as_second, decode, device_name, is_gamepad, layout_of, pick_devices, to_raw_for, Ev, Hat,
+    Layout, PadAxes, Ports, Range, ABS_RX, ABS_RY, ABS_RZ, ABS_X, ABS_Y, ABS_Z, EVENT_BYTES,
+    EV_ABS, EV_KEY, EV_SYN,
 };
 use super::trace;
 
@@ -45,6 +46,7 @@ impl DeviceInput {
             sys: sys.to_path_buf(),
             pending: pending.clone(),
             opened,
+            ports: Arc::new(Ports::default()),
             trace,
         };
         nodes.open_new();
@@ -75,6 +77,7 @@ struct Nodes {
     sys: PathBuf,
     pending: Arc<Mutex<Vec<RawEvent>>>,
     opened: Arc<Mutex<HashSet<PathBuf>>>,
+    ports: Arc<Ports>,
     trace: Option<Arc<Trace>>,
 }
 
@@ -107,10 +110,19 @@ impl Nodes {
             let trace = self.trace.clone();
             let opened = self.opened.clone();
             let at = node.clone();
+            // a game pad has a port of its own, by when it came
+            let ports = (layout == Layout::Pad && is_gamepad(&self.sys, &node)).then(|| {
+                self.ports.add(&node);
+                self.ports.clone()
+            });
+            let left = ports.clone();
             let spawned = std::thread::Builder::new()
                 .name(format!("cartridge-input-{name}"))
                 .spawn(move || {
-                    read_node(&node, layout, &queue, trace.as_deref());
+                    read_node(&node, layout, ports.as_deref(), &queue, trace.as_deref());
+                    if let Some(ports) = left {
+                        ports.remove(&at);
+                    }
                     // gone, or never opened: a node of the same name later is a new device
                     opened.lock().unwrap_or_else(|e| e.into_inner()).remove(&at);
                 });
@@ -161,7 +173,13 @@ fn axis_range(file: &File, code: u16, default: Range) -> Range {
     }
 }
 
-fn read_node(node: &Path, layout: Layout, queue: &Mutex<Vec<RawEvent>>, trace: Option<&Trace>) {
+fn read_node(
+    node: &Path,
+    layout: Layout,
+    ports: Option<&Ports>,
+    queue: &Mutex<Vec<RawEvent>>,
+    trace: Option<&Trace>,
+) {
     let label = node
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -190,6 +208,9 @@ fn read_node(node: &Path, layout: Layout, queue: &Mutex<Vec<RawEvent>>, trace: O
             }
         };
         let mut events = Vec::new();
+        // which player this pad is, as the pads connected now say
+        let second = ports.is_some_and(|p| p.second(node));
+        hat.second = second;
         for ev in buf[..read].chunks_exact(EVENT_BYTES).filter_map(decode) {
             if let Some(trace) = trace {
                 trace.event(&label, ev);
@@ -214,6 +235,9 @@ fn read_node(node: &Path, layout: Layout, queue: &Mutex<Vec<RawEvent>>, trace: O
         }
         if events.is_empty() {
             continue;
+        }
+        if second {
+            events = events.into_iter().map(as_second).collect();
         }
         queue
             .lock()

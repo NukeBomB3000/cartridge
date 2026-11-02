@@ -198,6 +198,15 @@ pub fn run() {
             frontend.poweroff();
             return;
         }
+        if let Some(game) = frontend.handoff() {
+            match cartridge::handoff::request(&cartridge::handoff::request_file(), "psp", game) {
+                Ok(()) => {
+                    frontend.forget_seated();
+                    return;
+                }
+                Err(e) => eprintln!("cartridge: handing {} over: {e}", game.display()),
+            }
+        }
         if high {
             let due = clocked.due(frontend.frame_clock(), Instant::now());
             for step in 0..due {

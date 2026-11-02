@@ -104,6 +104,13 @@ fn shapes(model: CartModel) -> Vec<Shape> {
             all.extend(print(0.2, 0.2, 0.08, &[0.5, 0.3, 0.42]));
             all.extend(ridges(0.2, 0.8, 0.84, 0.04, 3));
         }
+        CartModel::Umd => {
+            // the disc's reading side: the shutter's track across the lower half, its grip
+            // ridges at one end, and the small print above it
+            all.push(Rect([0.12, 0.58, 0.88, 0.88], RECESS, 1));
+            all.extend(grooves(0.74, 0.62, 0.84, 0.035, 3));
+            all.extend(print(0.2, 0.2, 0.075, &[0.5, 0.38, 0.44]));
+        }
         CartModel::HuCard | CartModel::Md(_) | CartModel::Sega8(_) => {
             all.push(Rect([0.12, 0.2, 0.88, 0.7], RECESS, 1));
             all.extend(print(0.19, 0.3, 0.08, &[0.5, 0.34, 0.42]));
@@ -163,13 +170,14 @@ pub(crate) fn relief(
                 out.extend([a, b, c, a, c, d]);
             }
             Round([x, y], r, k, layer) => {
-                const CUTS: usize = 10;
+                // a screw well is round enough in ten cuts; a window across the back is not
+                let cuts: usize = if r > 0.1 { 36 } else { 10 };
                 let at = |i: usize| {
-                    let t = i as f32 / CUTS as f32 * std::f32::consts::TAU;
+                    let t = i as f32 / cuts as f32 * std::f32::consts::TAU;
                     vertex(x + r * t.cos(), y + r * aspect * t.sin(), layer, k)
                 };
                 let middle = vertex(x, y, layer, k);
-                for i in 0..CUTS {
+                for i in 0..cuts {
                     out.extend([middle, at(i), at(i + 1)]);
                 }
             }

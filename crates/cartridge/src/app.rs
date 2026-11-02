@@ -2438,6 +2438,14 @@ impl App {
         }
     }
 
+    /// The cart is not left in the slot: a game another program ran is not resumed when cartridge
+    /// starts again, which comes back to the shelf at the cart it left.
+    pub fn forget_seated(&mut self) {
+        self.state.cart = None;
+        self.state.cart_platform = None;
+        self.persist();
+    }
+
     fn record_cart(&mut self, cart: Option<String>) {
         let platform = self.seated_cart().map(|c| c.platform);
         if self.state.cart == cart && self.state.cart_platform == platform {

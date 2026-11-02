@@ -32,6 +32,9 @@ pub struct Hat {
     x: i32,
     y: i32,
     sticks: [i32; 4],
+    /// The pad is the second player's: its sticks are the game's first port's no more, and a game
+    /// that reads sticks does not take them from its d-pad.
+    pub second: bool,
 }
 
 impl Hat {
@@ -44,7 +47,9 @@ impl Hat {
             ABS_Z | ABS_RX | ABS_RY | ABS_RZ => {
                 let i = usize::from(ev.code - ABS_Z);
                 // the cores that read an analog pad get the axis as it is
-                cartridge_retro::analog::set_axis(i, ev.value);
+                if !self.second {
+                    cartridge_retro::analog::set_axis(i, ev.value);
+                }
                 let held = &mut self.sticks[i];
                 let reach = if *held == 0 {
                     STICK_PRESS
@@ -66,7 +71,7 @@ impl Hat {
         }
         *held = now;
         // a game that reads the sticks has them to itself: they do not also press the d-pad
-        if stick && cartridge_retro::analog::game_owns_sticks() {
+        if stick && !self.second && cartridge_retro::analog::game_owns_sticks() {
             return Vec::new();
         }
         let btn = |v: i32| ends[usize::from(v > 0)];
@@ -313,5 +318,65 @@ impl PadAxes {
         } else {
             RawEvent::Up(btn)
         }]
+    }
+}
+
+/// A button of a pad, which is the game's: the system's own (MENU, the volume, power and the
+/// lid) are anyone's.
+pub fn is_game_button(btn: Btn) -> bool {
+    !matches!(
+        btn,
+        Btn::Menu | Btn::VolUp | Btn::VolDown | Btn::Power | Btn::Lid
+    )
+}
+
+/// The same events as the second player's.
+pub fn as_second(event: RawEvent) -> RawEvent {
+    match event {
+        RawEvent::Down(b) if is_game_button(b) => RawEvent::SecondDown(b),
+        RawEvent::Up(b) if is_game_button(b) => RawEvent::SecondUp(b),
+        other => other,
+    }
+}
+
+/// Whether the node is a game pad, and not the keys of a pair of headphones: it has the south
+/// button.
+pub fn is_gamepad(sys: &Path, node: &Path) -> bool {
+    let Some(name) = node.file_name() else {
+        return false;
+    };
+    std::fs::read_to_string(sys.join(name).join("device/capabilities/key"))
+        .is_ok_and(|keys| has_bit(&keys, 0x130))
+}
+
+/// The pads connected, in the order they came. With one it is the second player, the handheld
+/// being the first; with two or more the first to connect is the first player, who plays on
+/// the handheld's buttons alike, and the rest are the second.
+#[derive(Default)]
+pub struct Ports {
+    order: std::sync::Mutex<Vec<PathBuf>>,
+}
+
+impl Ports {
+    pub fn add(&self, node: &Path) {
+        let mut order = self.order.lock().unwrap_or_else(|e| e.into_inner());
+        if !order.iter().any(|n| n == node) {
+            order.push(node.to_path_buf());
+        }
+    }
+
+    pub fn remove(&self, node: &Path) {
+        self.order
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .retain(|n| n != node);
+    }
+
+    pub fn second(&self, node: &Path) -> bool {
+        let order = self.order.lock().unwrap_or_else(|e| e.into_inner());
+        match order.iter().position(|n| n == node) {
+            Some(rank) => order.len() == 1 || rank >= 1,
+            None => false,
+        }
     }
 }

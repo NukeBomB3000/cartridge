@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- PSP games run. A on a UMD seats it; the frontend writes the game down in `$RUN/cartridge-handoff`
+  and ends, `launch_frontend.sh` runs `System/psp.sh` on it, and starts the frontend again when
+  PPSSPP ends (Exit in its pause menu), on the shelf at the same UMD, the screen cleared. PPSSPP
+  runs from `System/psp/` on an SDL 2.30.6 built for it by `scripts/build-psp.sh`: Knulli's Mali
+  video driver for the H700, with the volume gauge drawn by that driver as cartridge draws it
+  (`cartridge --hud-faces` draws every face of it) and the audio thread scaling the sound by the
+  volume's square as cartridge does, so the volume keys work in PPSSPP, kept in
+  `Config/cartridge.state` as ever, one level for the speaker and one for the headphones' jack.
+  `padmap` reads the handheld's buttons from its driver, so the buttons and the sticks of every
+  handheld are a pad's. The picture is the PSP's shape across the panel, its menus smaller, and
+  its saves and save states are in the card's `Saves/PSP` and `States/PSP`.
+- Bluetooth pads. A pad that connects stands as an input node of its own and its buttons act as
+  the handheld's: Linux's button layout (south, east, shoulders, triggers) is read as such, the
+  sticks and triggers as the handheld's sticks and L2/R2, and a pad that goes away, or comes
+  again, is dropped and found again within a second. A pair of Bluetooth headphones' volume keys
+  turn the volume too.
+- Two players. A second pad plays as player two in any game that has two: with one Bluetooth pad
+  the handheld is player one and the pad player two; with two pads the first to connect is player
+  one, as the handheld is, and the second player two. The menus take any of them.
+- A shelf for the PSP. A game under `Games/PSP/` (`.iso`, `.cso`, `.pbp`) stands as a UMD in the
+  real shell's shape, traced from a photograph: 64 by 63 mm and 4.2 mm thick, a half circle across
+  the top, straight sides and a gently curved foot, the shell pale grey. The big round window
+  shows the disc: ScreenScraper's scan of it (system 61) fills the window as a circle, and a game
+  without one gets a mini disc of its own, its print in a colour taken from its name, a silver
+  rim, the pale sticker round the spindle hole and the name under it. Running them follows.
+  Screenshot: `shelf-psp.png`.
 - Home Wi-Fi is no longer dropped each time a game ends. `link.sh link down`, which cartridge asks
   for when a game ends whether it used a link or not, paused home Wi-Fi and resumed it, so the
   connection went and came back several seconds later; with no link up it now does nothing.
