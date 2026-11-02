@@ -179,18 +179,19 @@ EMULATOR_SECONDS=2 emu
 grep -qx pause "$TMP/hotkeys.log" || fail "a tap of MENU did not open the pause menu: $(words)"
 grep -qx save "$TMP/hotkeys.log" && fail "a tap of MENU saved"
 
-# a hold of MENU saves, then leaves; the state is on the card by then, and the game is out of
+# a hold of MENU saves, then leaves, though the key is let go while the save is still under way; the state is on the card by then, and the game is out of
 # the slot, and the pause menu stays shut
 setup
-evtest_for keys-node "0.3 312 BTN_TL2 1" "3 312 BTN_TL2 0"
+evtest_for keys-node "0.3 312 BTN_TL2 1" "1.5 312 BTN_TL2 0"
 EMULATOR_SECONDS=30 emu
 [ "$(words)" = "save exit " ] || fail "a hold of MENU typed: $(words)"
 [ -f "$CARD/States/PSP/ULUS10311_1.00_4.ppst" ] || fail "no state was saved"
 grep -q '^cart=$' "$CARD/Config/cartridge.state" || fail "the game was left in the slot after leaving"
 
-# the power button, held, saves and leaves with a note to power off; the game stays in the slot
+# the power button, held, saves and leaves with a note to power off, though it is let go while
+# the save is still under way; the game stays in the slot
 setup
-evtest_for power-node "0.3 116 KEY_POWER 1" "3 116 KEY_POWER 0"
+evtest_for power-node "0.3 116 KEY_POWER 1" "1.5 116 KEY_POWER 0"
 EMULATOR_SECONDS=30 emu
 [ "$(words)" = "save exit " ] || fail "the power button typed: $(words)"
 [ -f "$TMP/run/cartridge-poweroff" ] || fail "no note to power off was left"

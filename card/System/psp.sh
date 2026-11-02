@@ -128,6 +128,7 @@ autosave() {
 # Leaves the game: saved first, with `save`, and with `poweroff` leaving a note for cartridge to
 # power the handheld off once it is back. PPSSPP is asked to leave, and ended when it does not.
 leave() {
+	echo "psp.sh: leaving${1:+, $1}${2:+, $2}" >&2
 	[ "${1:-}" = save ] && autosave
 	[ "${2:-}" = poweroff ] && : > "$POWEROFF"
 	hotkey exit
@@ -196,14 +197,23 @@ power_loop() {
 	if [ -n "$node" ]; then
 		(
 			timer=""
+			held="$HELD.power"
+			rm -f "$held"
 			$EVTEST "$node" 2>/dev/null | while read -r line; do
 				case "$line" in
 				*"code 116 "*"value 1")
-					( sleep "$HOLD_S"; leave save poweroff ) &
+					rm -f "$held"
+					( sleep "$HOLD_S"; : > "$held"; leave save poweroff ) &
 					timer=$!
 					;;
 				*"code 116 "*"value 0")
-					[ -n "$timer" ] && kill "$timer" 2>/dev/null
+					# let go after the hold: it is under way and is not to be ended with the key; let go
+					# sooner, it was a tap
+					if [ -f "$held" ]; then
+						rm -f "$held"
+					else
+						[ -n "$timer" ] && kill "$timer" 2>/dev/null
+					fi
 					timer=""
 					;;
 				esac
@@ -361,7 +371,11 @@ run_game() {
 	rm -f "$FIFO" "$HELD"
 	unbind_saves
 	rm -f "$HUD" "$VOLUME" "$FACES"
-	[ -f "$POWEROFF" ] || eject
+	if [ -f "$POWEROFF" ]; then
+		echo "psp.sh: left for a power-off, the game stays in the slot" >&2
+	else
+		eject
+	fi
 	# what the emulator last drew would stay on the screen until cartridge's first frame
 	head -c 33554432 /dev/zero > "$FB" 2>/dev/null
 	return $status
