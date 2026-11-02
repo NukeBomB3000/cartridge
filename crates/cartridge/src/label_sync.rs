@@ -351,7 +351,19 @@ pub fn label_regions(want: &Want) -> Vec<&'static str> {
         }
         Platform::Music | Platform::Video | Platform::Pictures | Platform::Books => {}
         // a UMD's label by the game's own region, then the world's and the big three
-        Platform::Psp => out.extend(["wor", "us", "eu", "jp"]),
+        Platform::Psp => {
+            let serial = Some(want.code.clone())
+                .filter(|c| !c.is_empty())
+                .or_else(|| cartridge_store::psp::serial(&want.rom));
+            let region = serial
+                .as_deref()
+                .and_then(cartridge_store::psp::serial_region);
+            out.extend(region.and_then(region_code));
+            if region == Some(Region::Europe) {
+                out.extend(EUROPE);
+            }
+            out.extend(["wor", "us", "eu", "jp"]);
+        }
         Platform::Ps1 => {
             let region = ps1::serial_region(&want.code);
             out.extend(region.and_then(region_code));
@@ -486,7 +498,7 @@ pub fn lookups(want: &Want) -> Vec<Lookup> {
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
     let system = system_id(want.platform);
-    if want.platform != Platform::Ps1 {
+    if !matches!(want.platform, Platform::Ps1 | Platform::Psp) {
         let Ok(bytes) = std::fs::read(&want.rom) else {
             return Vec::new();
         };
@@ -543,7 +555,10 @@ pub fn lookups(want: &Want) -> Vec<Lookup> {
     }
     let serial = Some(want.code.clone())
         .filter(|c| !c.is_empty())
-        .or_else(|| ps1::serial(&want.rom));
+        .or_else(|| match want.platform {
+            Platform::Psp => cartridge_store::psp::serial(&want.rom),
+            _ => ps1::serial(&want.rom),
+        });
     if serial.is_some() {
         out.push(Lookup {
             serial,
@@ -730,7 +745,7 @@ fn pick<'a>(
 /// is: not its label, but its own art rather than its name.
 pub fn label_kinds(platform: Platform) -> &'static [&'static str] {
     match platform {
-        Platform::Ps1 => &["support-texture", "support-2D", BOX],
+        Platform::Ps1 | Platform::Psp => &["support-texture", "support-2D", BOX],
         // a Mega Cartridge's label is a strip, which a box's front would be cut to a sliver of
         Platform::Sms => &["support-texture"],
         _ => &["support-texture", BOX],

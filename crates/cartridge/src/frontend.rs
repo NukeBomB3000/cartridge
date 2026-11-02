@@ -715,9 +715,14 @@ impl Frontend {
         self.session.handoff()
     }
 
-    /// Leaves the cart out of the slot, as a handed-over game's is.
-    pub fn forget_seated(&mut self) {
-        self.session.app_mut().forget_seated();
+    /// Whether the handheld is going down: it is not handed over to a program then.
+    pub fn shutting_down(&self) -> bool {
+        self.session.app().shutting_down()
+    }
+
+    /// Starts powering off, as holding the power button and choosing it does.
+    pub fn begin_power_off(&mut self) {
+        self.session.app_mut().begin_power_off();
     }
 
     pub fn restarting(&self) -> bool {

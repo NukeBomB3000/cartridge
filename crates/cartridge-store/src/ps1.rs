@@ -271,7 +271,7 @@ pub fn serial(path: &Path) -> Option<String> {
             .filter(|d| !has_ext(d, "m3u"))
             .and_then(|d| serial(&d)),
         "cue" => cue_serial(path),
-        "pbp" => pbp_serial(path),
+        "pbp" => serial_of_pbp(path),
         _ => None,
     }
 }
@@ -496,7 +496,7 @@ const SFO_MAX: u32 = 16 * 1024;
 
 /// The `DISC_ID` in the PARAM.SFO at the start of a PSP eboot, which is how a `.pbp` names its
 /// disc: a few hundred bytes are read.
-fn pbp_serial(pbp: &Path) -> Option<String> {
+pub(crate) fn serial_of_pbp(pbp: &Path) -> Option<String> {
     let mut file = File::open(pbp).ok()?;
     let mut head = [0u8; 16];
     file.read_exact(&mut head).ok()?;

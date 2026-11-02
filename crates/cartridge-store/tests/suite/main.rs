@@ -17,6 +17,7 @@ mod music;
 mod platform;
 mod ps1;
 mod ps1_scan;
+mod psp;
 mod region;
 mod ring;
 mod scan;

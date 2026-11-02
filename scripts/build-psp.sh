@@ -7,8 +7,8 @@
 #
 # writes OUT/System/psp/ for the card's System/: PPSSPP and its assets (from the PSP pak for
 # NextUI at https://github.com/ben16w/minui-psp, whose zip is the argument: PPSSPP is GPL and is
-# not kept in this repository), the SDL built here, and padmap, which tells PPSSPP what the
-# buttons are.
+# not kept in this repository), the SDL built here, padmap, which tells PPSSPP what the buttons
+# are, and hotkeys, a keyboard for the hotkeys PPSSPP only takes from one.
 #
 # The SDL is 2.30.6 with the handhelds' Mali video driver as Knulli's H700 builds carry it
 # (https://github.com/knulli-cfw/knulli-linux, the commit below), and third_party/psp/
@@ -35,7 +35,7 @@ if [ -z "${EGL_STUB:-}" ]; then
 	exit 1
 fi
 cp "$EGL_STUB" "$work/libEGL.so"
-cp "$here/third_party/psp/sdl-cartridge.patch" "$here/third_party/psp/padmap.c" "$work/"
+cp "$here/third_party/psp/sdl-cartridge.patch" "$here/third_party/psp/padmap.c" "$here/third_party/psp/hotkeys.c" "$work/"
 
 cat > "$work/build.sh" <<EOF
 set -e
@@ -67,6 +67,7 @@ make -j8 >/dev/null
 cp libSDL2-2.0.so.0.3000.6 /work/libSDL2-2.0.so.0
 cd /work
 aarch64-linux-gnu-gcc padmap.c -ISDL/include -o padmap -Wl,--unresolved-symbols=ignore-in-shared-libs SDL/build/libSDL2-2.0.so.0.3000.6
+aarch64-linux-gnu-gcc hotkeys.c -o hotkeys
 chown -R $(id -u):$(id -g) /work
 EOF
 docker run --rm --platform linux/amd64 -v "$work":/work -w /work rust:1-bullseye sh /work/build.sh
@@ -77,6 +78,6 @@ unzip -q -o "$zip" 'PPSSPP/*' -d "$work/pak"
 cp -R "$work/pak/PPSSPP/." "$dest/"
 mv "$dest/PPSSPPSDL_tg5040" "$dest/PPSSPPSDL"
 rm -f "$dest/PPSSPPSDL_tg5050"
-cp "$work/libSDL2-2.0.so.0" "$work/padmap" "$dest/"
-chmod 755 "$dest/PPSSPPSDL" "$dest/padmap"
+cp "$work/libSDL2-2.0.so.0" "$work/padmap" "$work/hotkeys" "$dest/"
+chmod 755 "$dest/PPSSPPSDL" "$dest/padmap" "$dest/hotkeys"
 echo "build-psp: $dest"

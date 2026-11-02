@@ -595,3 +595,48 @@ fn seated(root: &Path, snapshot: Box<dyn Snapshot>, state: AppState) -> App {
     }
     a
 }
+
+/// An ISO 9660 image of a PSP game, with a PARAM.SFO in `PSP_GAME` that says `disc_id`, a few
+/// sectors long.
+pub fn psp_iso(disc_id: &str) -> Vec<u8> {
+    const SECTOR: usize = 2048;
+    fn le32(b: &mut [u8], at: usize, v: u32) {
+        b[at..at + 4].copy_from_slice(&v.to_le_bytes());
+    }
+    fn record(name: &str, sector: u32, size: u32, dir: bool) -> Vec<u8> {
+        let mut r = vec![0u8; 33 + name.len() + (name.len() + 1) % 2];
+        r[0] = r.len() as u8;
+        le32(&mut r, 2, sector);
+        le32(&mut r, 10, size);
+        r[25] = if dir { 2 } else { 0 };
+        r[32] = name.len() as u8;
+        r[33..33 + name.len()].copy_from_slice(name.as_bytes());
+        r
+    }
+    let key = b"DISC_ID\0";
+    let mut value = disc_id.as_bytes().to_vec();
+    value.push(0);
+    let mut sfo = vec![0u8; 36];
+    sfo[..4].copy_from_slice(b"\0PSF");
+    le32(&mut sfo, 4, 0x0101);
+    le32(&mut sfo, 8, 36);
+    le32(&mut sfo, 12, 36 + key.len() as u32);
+    le32(&mut sfo, 16, 1);
+    sfo[22..24].copy_from_slice(&0x0204u16.to_le_bytes());
+    le32(&mut sfo, 24, value.len() as u32);
+    le32(&mut sfo, 28, value.len() as u32);
+    sfo.extend_from_slice(key);
+    sfo.extend_from_slice(&value);
+    let mut img = vec![0u8; 24 * SECTOR];
+    let pvd = 16 * SECTOR;
+    img[pvd] = 1;
+    img[pvd + 1..pvd + 6].copy_from_slice(b"CD001");
+    let root = record("", 20, SECTOR as u32, true);
+    img[pvd + 156..pvd + 156 + root.len()].copy_from_slice(&root);
+    let game = record("PSP_GAME", 21, SECTOR as u32, true);
+    img[20 * SECTOR..20 * SECTOR + game.len()].copy_from_slice(&game);
+    let file = record("PARAM.SFO;1", 22, sfo.len() as u32, false);
+    img[21 * SECTOR..21 * SECTOR + file.len()].copy_from_slice(&file);
+    img[22 * SECTOR..22 * SECTOR + sfo.len()].copy_from_slice(&sfo);
+    img
+}

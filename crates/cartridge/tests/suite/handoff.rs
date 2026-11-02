@@ -75,7 +75,7 @@ fn the_request_names_the_program_and_the_game_on_two_lines_and_leaves_no_half_fi
 }
 
 #[test]
-fn a_handed_over_game_is_not_left_in_the_slot_to_be_run_again() {
+fn a_handed_over_game_stays_in_the_slot_so_the_next_start_goes_into_it() {
     let d = root();
     let (mut s, _motor) = common::session_with_platform(d.path());
     seat(&mut s, Platform::Psp);
@@ -83,12 +83,22 @@ fn a_handed_over_game_is_not_left_in_the_slot_to_be_run_again() {
         s.update(1.0 / 60.0);
     }
     assert!(s.handoff().is_some());
-    assert_eq!(
-        cartridge_store::read_app_state(d.path()).cart.as_deref(),
-        Some("Racing Game"),
-        "the cart was not in the slot to begin with"
-    );
-    s.app_mut().forget_seated();
     let state = cartridge_store::read_app_state(d.path());
-    assert_eq!((state.cart, state.cart_platform), (None, None));
+    assert_eq!(
+        (state.cart.as_deref(), state.cart_platform),
+        (Some("Racing Game"), Some(Platform::Psp)),
+        "psp.sh clears the slot when a game is left; a power-off leaves it"
+    );
+}
+
+#[test]
+fn a_power_off_note_is_in_the_run_folder_beside_the_request() {
+    assert_eq!(
+        handoff::poweroff_file().file_name().unwrap(),
+        "cartridge-poweroff"
+    );
+    assert_eq!(
+        handoff::poweroff_file().parent(),
+        handoff::request_file().parent()
+    );
 }

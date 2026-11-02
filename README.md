@@ -74,8 +74,10 @@ over on first boot.
   resume and quit.
 - **PSP** from `Games/PSP` (`.iso`, `.cso`, `.pbp`), run by [PPSSPP](https://www.ppsspp.org/), a
   program of its own that takes the screen: A on a UMD seats it, the frontend steps aside, and
-  leaving PPSSPP through its pause menu (MENU, then Exit) brings the shelf back at the same UMD.
-  The volume keys move the volume and show the same gauge as everywhere else. PPSSPP is GPL and
+  holding MENU leaves it (a tap opens PPSSPP's pause menu) and brings the shelf back at the same
+  UMD. The game is saved as it is left, loaded as it is come back to, saved when the power button
+  is held or the battery runs out, and started again by the next power-on; RetroAchievements
+  work, softcore. The volume keys move the volume and show the same gauge as everywhere else. PPSSPP is GPL and
   is not part of this repository: `scripts/build-psp.sh` builds the SDL it needs and puts it,
   PPSSPP from the PSP pak for NextUI and a tool that maps the buttons into `System/psp/` of the
   card. Its saves and save states are the card's `Saves/PSP` and `States/PSP`.

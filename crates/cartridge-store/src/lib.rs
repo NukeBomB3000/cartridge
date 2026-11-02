@@ -17,6 +17,7 @@ pub mod music;
 pub mod nds;
 mod platform;
 pub mod ps1;
+pub mod psp;
 mod region;
 mod ring;
 mod scan;

@@ -19,3 +19,10 @@ pub fn request(file: &Path, program: &str, game: &Path) -> io::Result<()> {
     std::fs::write(&tmp, format!("{program}\n{}\n", game.display()))?;
     std::fs::rename(&tmp, file)
 }
+
+/// Where `psp.sh` leaves a note that the handheld is to power off once cartridge is back: a
+/// game left through the power button or an empty battery, saved, with its cart still in the
+/// slot, so that the next start goes into it.
+pub fn poweroff_file() -> PathBuf {
+    request_file().with_file_name("cartridge-poweroff")
+}

@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
 use std::time::Duration;
 
+use crate::common;
 use cartridge::json::Json;
 use cartridge::label_sync::{
     crc32, fetch_width, game_url, label_regions, lookups, media_url, pick_label, pick_media,
@@ -10,6 +11,7 @@ use cartridge::label_sync::{
     Quota, Reply, Sync, SyncFail, Tally, Want, Who,
 };
 use cartridge_store::ps1::disc_label;
+use cartridge_store::scan;
 use cartridge_store::{Cart, Platform};
 
 #[test]
@@ -1227,4 +1229,53 @@ fn curl_fetches_a_disc_s_media_whose_name_carries_its_number_in_brackets() {
         "curl read the disc's number as a range and asked nothing"
     );
     assert!(server.join().unwrap().contains("support-texture(us)[1]"));
+}
+
+#[test]
+fn a_psp_game_is_asked_about_by_the_serial_in_its_image_then_its_name_never_read_whole() {
+    let d = tempfile::tempdir().unwrap();
+    let games = d.path().join("Games/PSP");
+    std::fs::create_dir_all(&games).unwrap();
+    let image = common::psp_iso("ULUS10311");
+    std::fs::write(games.join("Racing Game (USA).iso"), &image).unwrap();
+    let carts = scan(d.path()).unwrap();
+    let want = Want::cart(&carts[0]);
+    assert_eq!(want.platform, Platform::Psp);
+    let asked = lookups(&want);
+    assert_eq!(asked.len(), 2, "the serial and the name: {asked:?}");
+    assert_eq!(asked[0].serial.as_deref(), Some("ULUS-10311"));
+    assert_eq!(asked[1].serial, None);
+    for l in &asked {
+        assert_eq!((l.crc, l.system, l.kind), (None, 61, "iso"), "{l:?}");
+        assert_eq!(l.size, image.len() as u64);
+    }
+    let url = game_url(("id", "pw"), &Account::default(), &asked[0]);
+    for part in [
+        "systemeid=61",
+        "serialnum=ULUS-10311",
+        "romnom=Racing%20Game%20%28USA%29.iso",
+    ] {
+        assert!(url.contains(part), "{part} is missing from {url}");
+    }
+    assert!(!url.contains("crc="));
+    // a disc's own print, round and square-on, is what the shelf draws: a scan of it, then
+    // the drawn disc, then the box
+    assert_eq!(
+        cartridge::label_sync::label_kinds(Platform::Psp),
+        ["support-texture", "support-2D", "box-2D"]
+    );
+    // the serial's region leads the regions asked for
+    assert_eq!(label_regions(&want).first().copied(), Some("us"));
+}
+
+#[test]
+fn a_european_psp_game_is_asked_for_a_european_label_first() {
+    let d = tempfile::tempdir().unwrap();
+    let games = d.path().join("Games/PSP");
+    std::fs::create_dir_all(&games).unwrap();
+    std::fs::write(games.join("Racing Game.iso"), common::psp_iso("ULES01234")).unwrap();
+    let carts = scan(d.path()).unwrap();
+    let regions = label_regions(&Want::cart(&carts[0]));
+    assert_eq!(regions.first().copied(), Some("eu"));
+    assert!(regions.contains(&"wor"));
 }

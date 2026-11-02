@@ -158,6 +158,11 @@ pub fn run() {
             cartridge::bootlogo::refresh(&card);
             cartridge::root::sweep_temps(&card);
         });
+    // a game left through the power button, saved: the handheld is powered off, the game still in
+    // its slot for the next start
+    if std::fs::remove_file(cartridge::handoff::poweroff_file()).is_ok() {
+        frontend.begin_power_off();
+    }
     let mut drawn = false;
     frontend.drive_emulator();
     let mut pacer = Pacer::new();
@@ -198,13 +203,13 @@ pub fn run() {
             frontend.poweroff();
             return;
         }
-        if let Some(game) = frontend.handoff() {
-            match cartridge::handoff::request(&cartridge::handoff::request_file(), "psp", game) {
-                Ok(()) => {
-                    frontend.forget_seated();
-                    return;
+        if !frontend.shutting_down() {
+            if let Some(game) = frontend.handoff() {
+                match cartridge::handoff::request(&cartridge::handoff::request_file(), "psp", game)
+                {
+                    Ok(()) => return,
+                    Err(e) => eprintln!("cartridge: handing {} over: {e}", game.display()),
                 }
-                Err(e) => eprintln!("cartridge: handing {} over: {e}", game.display()),
             }
         }
         if high {

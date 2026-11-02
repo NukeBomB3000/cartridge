@@ -4,7 +4,8 @@
  * next with the keys it has (a stick adds some), so the numbers are read from the driver: the
  * code of the key each joystick button stands for, and the code of each axis. The roles are
  * the frontend's (input/evdev.rs, the handheld layout): A is the right face button, B the lower,
- * X the upper and Y the left one; the Nintendo way round, which is the PSP's by position. */
+ * X the upper and Y the left one; the Nintendo way round, which is the PSP's by position. MENU is
+ * left out: System/psp.sh watches it, a tap for the pause menu and a long press to leave. */
 #include <fcntl.h>
 #include <linux/joystick.h>
 #include <stdio.h>
@@ -78,7 +79,6 @@ int main(int argc, char **argv)
         { "rightshoulder", 0x135 }, /* R1 */
         { "back", 0x136 },          /* SELECT */
         { "start", 0x137 },
-        { "guide", 0x138 },         /* MENU */
         { "lefttrigger", 0x13a },   /* L2 */
         { "righttrigger", 0x13b },  /* R2 */
         { "leftstick", 0x139 },     /* L3 */

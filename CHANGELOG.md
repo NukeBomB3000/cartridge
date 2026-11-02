@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- PSP games behave like the others. Holding MENU leaves the game (a tap opens PPSSPP's pause menu):
+  `System/psp.sh` saves a state to the last of PPSSPP's five slots and has PPSSPP leave, through a
+  keyboard that is not there (`hotkeys`, made on `/dev/uinput`, because PPSSPP takes its hotkeys
+  only from a keyboard), and the next start loads the newest state by itself, so a game comes
+  back as it was left. Holding the power button or a battery down to 5 % saves and leaves the
+  same way and has cartridge power the handheld off when it is back, with the game still in the
+  slot, so that the next start goes into it. The player's RetroAchievements work in PPSSPP,
+  softcore: its name and token come from `Config/retroachievements.txt` when cartridge's are on.
+  The scraper finds a PSP game by the serial in its image's PARAM.SFO (read from an `.iso` or a
+  `.cso` without reading it whole) and by its file name, and takes the UMD's own printed face,
+  from the region its serial says first, then the drawn disc and the box.
 - PSP games run. A on a UMD seats it; the frontend writes the game down in `$RUN/cartridge-handoff`
   and ends, `launch_frontend.sh` runs `System/psp.sh` on it, and starts the frontend again when
   PPSSPP ends (Exit in its pause menu), on the shelf at the same UMD, the screen cleared. PPSSPP
